@@ -1,0 +1,9 @@
+{
+  "build": {
+    "env": {
+      "COREPACK_ENABLE": "1",
+      "PNPM_VERSION": "9",
+      "NODE_VERSION": "18"
+    }
+  }
+}
