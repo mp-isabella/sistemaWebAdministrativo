@@ -7,95 +7,169 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Role {
-  id    String @id @default(cuid())
-  name  String @unique
-  users User[]
-
-  @@map("roles")
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  roleId    String
-  status    String
-  phone     String?   // <-- campo opcional para teléfono
-  createdAt DateTime @default(now())
+  id       String  @id @default(cuid())
+  email    String  @unique
+  name     String?
+  password String
+  status  String?
 
-  role      Role     @relation(fields: [roleId], references: [id])
-  assignedJobs  Job[]   @relation("AssignedTo")
-  createdJobs   Job[]   @relation("CreatedBy")
-}
+  role   Role   @relation(fields: [roleId], references: [id])
+  roleId String
 
-model Client {
-  id        String   @id @default(cuid())
-  name      String
-  email     String?  @unique
-  phone     String
+  phone     String?
   address   String?
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  jobs Job[]
+  assignedJobs     Job[]             @relation("AssignedTechnician")
+  createdJobs      Job[]             @relation("CreatedByUser")
+  createdClients   Client[]          @relation("CreatedByUser")
+  createdServices  Service[]         @relation("CreatedByUser")
+  cashTransactions CashTransaction[] @relation("CreatedByUser")
+  createdInvoices  Invoice[]         @relation("CreatedByUser")
+
+  @@map("users")
+}
+
+model Role {
+  id    String  @id @default(uuid())
+  name  String  @unique
+
+  users User[]  // Relación inversa para que Prisma no falle
+
+  @@map("roles")
+}
+
+// ... (resto de modelos iguales)
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  address   String?
+  rut       String?  @unique
+  company   String?
+  notes     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobs        Job[]
+  invoices    Invoice[]
+  createdBy   User      @relation("CreatedByUser", fields: [createdById], references: [id])
+  createdById String
 
   @@map("clients")
 }
 
 model Service {
-  id          String  @id @default(cuid())
-  name        String  @unique
-  category    String? 
+  id          String   @id @default(cuid())
+  name        String   @unique
   description String?
   price       Float?
+  category    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  // Relations
-  jobs Job[]
+  jobs        Job[]
+  createdBy   User   @relation("CreatedByUser", fields: [createdById], references: [id])
+  createdById String
 
   @@map("services")
 }
 
 model Job {
-  id          String    @id @default(cuid())
+  id          String      @id @default(cuid())
   title       String
   description String?
-  status      JobStatus @default(PENDING)
-  priority    Priority  @default(MEDIUM)
+  status      JobStatus   @default(PENDING)
+  priority    JobPriority @default(MEDIUM)
   scheduledAt DateTime?
+  startedAt   DateTime?
   completedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  address     String?
+  notes       String?
+  images      String[]
+  signature   String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
-  // Foreign Keys
+  client       Client  @relation(fields: [clientId], references: [id])
   clientId     String
+  service      Service @relation(fields: [serviceId], references: [id])
   serviceId    String
-  assignedToId String?
+  technician   User?   @relation("AssignedTechnician", fields: [technicianId], references: [id])
+  technicianId String?
+  createdBy    User    @relation("CreatedByUser", fields: [createdById], references: [id])
   createdById  String
-
-  // Relations
-  client     Client  @relation(fields: [clientId], references: [id])
-  service    Service @relation(fields: [serviceId], references: [id])
-  assignedTo User?   @relation("AssignedTo", fields: [assignedToId], references: [id])
-  createdBy  User    @relation("CreatedBy", fields: [createdById], references: [id])
-  images     Image[]
 
   @@map("jobs")
 }
 
-model Image {
-  id        String   @id @default(cuid())
-  url       String
-  publicId  String? // For Cloudinary
-  jobId     String
-  createdAt DateTime @default(now())
+model CashTransaction {
+  id            String              @id @default(cuid())
+  amount        Float
+  type          CashTransactionType
+  description   String
+  category      String
+  paymentMethod String
+  reference     String?
+  date          DateTime            @default(now())
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
 
-  // Relations
-  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdBy   User   @relation("CreatedByUser", fields: [createdById], references: [id])
+  createdById String
 
-  @@map("images")
+  @@map("cash_transactions")
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  invoiceNumber String        @unique
+  date          DateTime
+  dueDate       DateTime?
+  subtotal      Float
+  tax           Float
+  total         Float
+  taxRate       Float         @default(19)
+  notes         String?
+  status        InvoiceStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  client      Client        @relation(fields: [clientId], references: [id])
+  clientId    String
+  items       InvoiceItem[]
+  createdBy   User          @relation("CreatedByUser", fields: [createdById], references: [id])
+  createdById String
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  description String
+  quantity    Int
+  unitPrice   Float
+  total       Float
+  createdAt   DateTime @default(now())
+
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId String
+
+  @@map("invoice_items")
 }
 
 enum JobStatus {
@@ -105,9 +179,21 @@ enum JobStatus {
   CANCELLED
 }
 
-enum Priority {
+enum JobPriority {
   LOW
   MEDIUM
   HIGH
   URGENT
+}
+
+enum CashTransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
 }

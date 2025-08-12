@@ -13,6 +13,7 @@ interface ImageUploadProps {
   onImagesUploaded: (images: string[]) => void
   disabled?: boolean
   maxImages?: number
+  onCancel?: () => void // <-- aquí
 }
 
 export default function ImageUpload({ 

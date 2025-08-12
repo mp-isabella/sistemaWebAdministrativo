@@ -11,6 +11,7 @@ interface DigitalSignatureProps {
   existingSignature?: string | null
   onSignatureSaved: (signature: string) => void
   disabled?: boolean
+  onCancel?: () => void // ✅ agrega esto
 }
 
 export default function DigitalSignature({ 

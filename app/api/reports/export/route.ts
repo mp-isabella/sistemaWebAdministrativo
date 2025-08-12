@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import PDFDocument from "pdfkit"
 
+export const dynamic = "force-dynamic" // Esto evita el error de prerenderizado estático
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -37,9 +39,8 @@ export async function GET(request: NextRequest) {
       include: {
         client: true,
         service: true,
-        assignedTo: true,
+        technician: true,
         createdBy: true,
-        images: true,
       },
       orderBy: { createdAt: "desc" },
     })
@@ -47,10 +48,8 @@ export async function GET(request: NextRequest) {
     const doc = new PDFDocument()
     const chunks: Buffer[] = []
 
-    // Declarar explícitamente tipo Buffer para chunk
     doc.on("data", (chunk: Buffer) => chunks.push(chunk))
 
-    // Construimos una promesa para esperar a que termine la generación
     const pdfBufferPromise = new Promise<NextResponse>((resolve) => {
       doc.on("end", () => {
         const pdfBuffer = Buffer.concat(chunks)
@@ -58,7 +57,6 @@ export async function GET(request: NextRequest) {
           new NextResponse(pdfBuffer, {
             headers: {
               "Content-Type": "application/pdf",
-              // Comillas invertidas para usar template string correctamente
               "Content-Disposition": `attachment; filename="reporte-${type}-${new Date()
                 .toISOString()
                 .split("T")[0]}.pdf"`,
@@ -68,14 +66,13 @@ export async function GET(request: NextRequest) {
       })
     })
 
-    // PDF Header
+    // Generar contenido del PDF
     doc.fontSize(20).text("Amestica - Reporte de Trabajos", { align: "center" })
     doc.moveDown()
     doc.fontSize(12).text(`Fecha de generación: ${new Date().toLocaleDateString("es-CL")}`)
     doc.text(`Tipo de reporte: ${type}`)
     doc.moveDown()
 
-    // Jobs table
     jobs.forEach((job, index) => {
       if (index > 0) doc.addPage()
 
@@ -86,7 +83,7 @@ export async function GET(request: NextRequest) {
       doc.text(`Cliente: ${job.client.name}`)
       doc.text(`Servicio: ${job.service.name}`)
       doc.text(`Estado: ${job.status}`)
-      doc.text(`Técnico: ${job.assignedTo?.name || "No asignado"}`)
+      doc.text(`Técnico: ${job.technician?.name || "No asignado"}`)
       doc.text(
         `Fecha programada: ${
           job.scheduledAt ? new Date(job.scheduledAt).toLocaleDateString("es-CL") : "No programada"
@@ -113,7 +110,6 @@ export async function GET(request: NextRequest) {
 
     doc.end()
 
-    // Esperamos la promesa para retornar el PDF ya generado
     return pdfBufferPromise
   } catch (error) {
     console.error("Error generating report:", error)

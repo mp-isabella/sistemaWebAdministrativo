@@ -1,77 +1,88 @@
-"use client";
+"use client"
 
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Eye, EyeOff, Lock, User } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
-import { getSession } from "next-auth/react";
-import Image from "next/image";
+import type React from "react"
+
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Eye, EyeOff, Lock, User } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
+import Image from "next/image"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  })
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
+    e.preventDefault()
+    setIsLoading(true)
+    setError("")
 
     try {
-      const res = await signIn("credentials", {
-        redirect: false,
+      const result = await signIn("credentials", {
         email: formData.email,
         password: formData.password,
-      });
+        redirect: false,
+      })
 
-      if (res?.error) {
-        setError("Credenciales inválidas. Por favor, intenta nuevamente.");
-        return;
-      }
+      if (result?.error) {
+        setError("Credenciales inválidas. Por favor, intenta nuevamente.")
+      } else if (result?.ok) {
+        // Obtener la sesión para conocer el rol
+        const response = await fetch("/api/auth/session")
+        const session = await response.json()
 
-      const session = await getSession();
-
-      const role = session?.user?.role;
-
-      if (role === "admin") {
-        router.push("/dashboard/workers");
-      } else if (role === "trabajador") {
-        router.push("/dashboard/analytics");
-      } else {
-        router.push("/dashboard/my-jobs");
+        if (session?.user?.role) {
+          // Redireccionar según el rol
+          switch (session.user.role) {
+            case "admin":
+              router.push("/dashboard")
+              break
+            case "secretaria":
+              router.push("/dashboard")
+              break
+            case "operador":
+              router.push("/dashboard/my-jobs")
+              break
+            default:
+              router.push("/dashboard")
+          }
+        } else {
+          router.push("/dashboard")
+        }
       }
     } catch (err) {
-      console.error("Login error:", err);
-      setError("Ocurrió un error. Intenta nuevamente.");
+      setError("Error de conexión. Por favor, intenta nuevamente.")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    });
-  };
+    })
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
-          <Image
+           <Image
             src="/logo.png"
             alt="Logo Améstica"
             width={260}
@@ -80,20 +91,14 @@ export default function LoginPage() {
             priority
           />
 
-          <h2 className="text-3xl font-bold text-gray-900">
-            Acceso de Trabajadores
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Ingresa tus credenciales para acceder al sistema interno
-          </p>
+          <h2 className="text-3xl font-bold text-gray-900 mt-6">Acceso de Trabajadores</h2>
+          <p className="mt-2 text-sm text-gray-600">Ingresa tus credenciales para acceder al sistema interno</p>
         </div>
 
         {/* Login Form */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-center text-gray-800">
-              Iniciar Sesión
-            </CardTitle>
+            <CardTitle className="text-center text-gray-800">Iniciar Sesión</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -104,10 +109,7 @@ export default function LoginPage() {
               )}
 
               <div>
-                <Label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <Label htmlFor="email" className="block text-sm font-medium text-gray-700">
                   Email
                 </Label>
                 <div className="mt-1 relative">
@@ -127,10 +129,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <Label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   Contraseña
                 </Label>
                 <div className="mt-1 relative">
@@ -168,19 +167,13 @@ export default function LoginPage() {
                     type="checkbox"
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label
-                    htmlFor="remember-me"
-                    className="ml-2 block text-sm text-gray-900"
-                  >
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                     Recordarme
                   </label>
                 </div>
 
                 <div className="text-sm">
-                  <Link
-                    href="/forgot-password"
-                    className="font-medium text-blue-600 hover:text-blue-500"
-                  >
+                  <Link href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
                     ¿Olvidaste tu contraseña?
                   </Link>
                 </div>
@@ -205,5 +198,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

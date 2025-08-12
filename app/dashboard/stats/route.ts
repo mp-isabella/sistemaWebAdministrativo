@@ -3,8 +3,11 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
+    
     const session = await getServerSession(authOptions)
 
     if (!session) {
@@ -79,7 +82,7 @@ export async function GET(request: NextRequest) {
 
     // Trabajos por técnico
     const jobsByTechnician = await prisma.job.groupBy({
-      by: ["assignedToId"],
+      by: ["technicianId"],
       where: { ...where, assignedToId: { not: null } },
       _count: { id: true }
     })
@@ -87,7 +90,7 @@ export async function GET(request: NextRequest) {
     const techniciansWithJobs = await Promise.all(
       jobsByTechnician.map(async (item) => {
         const technician = await prisma.user.findUnique({
-          where: { id: item.assignedToId! }
+          where: { id: item.technicianId! }
         })
         return {
           name: technician?.name || "Sin asignar",

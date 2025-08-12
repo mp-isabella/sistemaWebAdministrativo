@@ -10,9 +10,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { User, Mail, Phone, MapPin, Building, CreditCard, Users } from 'lucide-react'
 
+export interface ClientData {
+  name: string;
+  email?: string;
+  phone: string;
+  address: string;
+  type: string;
+  rut?: string;
+  contactPerson?: string;
+}
+
 interface ClientFormProps {
-  client?: any
-  onSubmit: (data: any) => void
+  client?: ClientData
+  onSubmit: (data: ClientData) => void
   onCancel: () => void
   loading?: boolean
 }
@@ -194,7 +204,7 @@ export default function ClientForm({ client, onSubmit, onCancel, loading = false
           {/* Información Adicional */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="rut">RUT/RUN</Label>
+              <Label htmlFor="rut">RUT</Label>
               <div className="relative">
                 <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input

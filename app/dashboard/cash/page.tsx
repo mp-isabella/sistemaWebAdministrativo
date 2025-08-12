@@ -38,6 +38,20 @@ export default function CashPage() {
     },
   ])
 
+  // Estado para mostrar/ocultar formulario y si es ingreso o gasto
+  const [showForm, setShowForm] = useState(false)
+  const [formType, setFormType] = useState<"income" | "expense">("income")
+
+  // Estado para campos del formulario
+  const [formData, setFormData] = useState({
+    description: "",
+    amount: "",
+    date: new Date().toISOString().slice(0, 10), // formato yyyy-mm-dd
+    method: "efectivo",
+    category: "",
+  })
+
+  // Cálculos para mostrar resumen
   const totalIncome = transactions.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount, 0)
   const totalExpenses = transactions.filter((t) => t.type === "expense").reduce((sum, t) => sum + t.amount, 0)
   const balance = totalIncome - totalExpenses
@@ -59,6 +73,43 @@ export default function CashPage() {
     }
   }
 
+  // Manejar cambios en inputs
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }))
+  }
+
+  // Guardar nueva transacción
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!formData.description || !formData.amount || Number(formData.amount) <= 0) {
+      alert("Por favor, complete la descripción y un monto válido.")
+      return
+    }
+
+    const newTransaction = {
+      id: Date.now().toString(),
+      type: formType,
+      amount: Number(formData.amount),
+      description: formData.description,
+      date: formData.date,
+      method: formData.method,
+      category: formData.category || "varios",
+    }
+
+    setTransactions((prev) => [newTransaction, ...prev])
+    setShowForm(false)
+    setFormData({
+      description: "",
+      amount: "",
+      date: new Date().toISOString().slice(0, 10),
+      method: "efectivo",
+      category: "",
+    })
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -68,78 +119,40 @@ export default function CashPage() {
           <p className="text-gray-600 mt-1">Control de ingresos, gastos y flujo de efectivo</p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline" className="bg-white">
-            <ArrowDownRight className="mr-2 h-4 w-4" />
-            Registrar Gasto
-          </Button>
-          <Button className="bg-green-600 hover:bg-green-700">
-            <ArrowUpRight className="mr-2 h-4 w-4" />
-            Registrar Ingreso
-          </Button>
+          <Button
+  variant="outline"
+  className="bg-white bg-opacity-30 backdrop-blur-md border border-gray-300 rounded-lg shadow-md
+             hover:bg-green-50 hover:border-green-400 hover:shadow-lg
+             transition duration-300 ease-in-out flex items-center"
+  onClick={() => {
+    setFormType("expense")
+    setShowForm(true)
+  }}
+>
+  <ArrowDownRight className="mr-2 h-5 w-5 text-red-600 hover:text-red-700 transition-colors" />
+  Registrar Gasto
+</Button>
+
+<Button
+  className="bg-gradient-to-r from-green-500 to-green-700 rounded-lg shadow-lg
+             hover:from-green-600 hover:to-green-800
+             transform hover:scale-105
+             transition duration-300 ease-in-out flex items-center"
+  onClick={() => {
+    setFormType("income")
+    setShowForm(true)
+  }}
+>
+  <ArrowUpRight className="mr-2 h-5 w-5 text-white" />
+  Registrar Ingreso
+</Button>
+
         </div>
       </div>
 
       {/* Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-l-4 border-l-green-500">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Balance Total</p>
-                <p className="text-3xl font-bold text-gray-900">${balance.toLocaleString("es-CL")}</p>
-                <p className="text-xs text-green-600 mt-1">Saldo actual</p>
-              </div>
-              <div className="p-3 bg-green-100 rounded-full">
-                <Wallet className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-blue-500">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Ingresos</p>
-                <p className="text-3xl font-bold text-gray-900">${totalIncome.toLocaleString("es-CL")}</p>
-                <p className="text-xs text-blue-600 mt-1">Este mes</p>
-              </div>
-              <div className="p-3 bg-blue-100 rounded-full">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-red-500">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Gastos</p>
-                <p className="text-3xl font-bold text-gray-900">${totalExpenses.toLocaleString("es-CL")}</p>
-                <p className="text-xs text-red-600 mt-1">Este mes</p>
-              </div>
-              <div className="p-3 bg-red-100 rounded-full">
-                <ArrowDownRight className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-purple-500">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Transacciones</p>
-                <p className="text-3xl font-bold text-gray-900">{transactions.length}</p>
-                <p className="text-xs text-purple-600 mt-1">Hoy</p>
-              </div>
-              <div className="p-3 bg-purple-100 rounded-full">
-                <CreditCard className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* ... tus Cards actuales ... */}
       </div>
 
       {/* Recent Transactions */}
@@ -194,6 +207,100 @@ export default function CashPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal / Form para nueva transacción */}
+      {showForm && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+    <div className="bg-white p-8 rounded-lg w-96 shadow-lg"> {/* padding aumentado */}
+      <h2 className="text-2xl font-bold mb-6"> {/* texto más grande y margen inferior */}
+        {formType === "income" ? "Registrar Ingreso" : "Registrar Gasto"}
+      </h2>
+      <form onSubmit={handleSubmit} className="space-y-6"> {/* más espacio entre campos */}
+        <div>
+          <label className="block text-lg font-medium text-gray-700">Descripción</label> {/* texto más grande */}
+          <input
+            type="text"
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            className="mt-2 block w-full rounded-md border-gray-300 shadow-sm py-3 text-lg"  
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-lg font-medium text-gray-700">Monto</label>
+          <input
+            type="number"
+            name="amount"
+            value={formData.amount}
+            onChange={handleInputChange}
+            className="mt-2 block w-full rounded-md border-gray-300 shadow-sm py-3 text-lg"
+            min={1}
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-lg font-medium text-gray-700">Fecha</label>
+          <input
+            type="date"
+            name="date"
+            value={formData.date}
+            onChange={handleInputChange}
+            className="mt-2 block w-full rounded-md border-gray-300 shadow-sm py-3 text-lg"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-lg font-medium text-gray-700">Método</label>
+          <select
+            name="method"
+            value={formData.method}
+            onChange={handleInputChange}
+            className="mt-2 block w-full rounded-md border-gray-300 shadow-sm py-3 text-lg"
+          >
+            <option value="efectivo">Efectivo</option>
+            <option value="tarjeta">Tarjeta</option>
+            <option value="transferencia">Transferencia</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-lg font-medium text-gray-700">Categoría</label>
+          <input
+            type="text"
+            name="category"
+            value={formData.category}
+            onChange={handleInputChange}
+            placeholder="Servicios, Operacional, etc."
+            className="mt-2 block w-full rounded-md border-gray-300 shadow-sm py-3 text-lg"
+          />
+        </div>
+
+        <div className="flex justify-end space-x-4 pt-6"> {/* más espacio entre botones y arriba */}
+          <Button
+            variant="outline"
+            type="button"
+            onClick={() => setShowForm(false)}
+            className="px-6 py-2 text-lg"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            className={`${formType === "income" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"} px-6 py-2 text-lg`}
+          >
+            Guardar
+          </Button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
+      
     </div>
   )
 }

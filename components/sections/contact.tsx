@@ -324,7 +324,7 @@ export default function SeccionContactoOp2(): React.JSX.Element {
               <div className="space-y-6 md:col-span-1">
                 <div className="rounded-lg shadow-md overflow-hidden">
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13303.491686461875!2d-70.59752538965936!3d-33.454238596645315!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9662cf5025d2787f%3A0x2a0f1d5336d3c018!2s%C3%91u%C3%B1oa%2C%20Regi%C3%B3n%20Metropolitana!5e0!3m2!1sen!2scl!4v1628172935272!5m2!1sen!2scl"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3697.7707675832953!2d-70.58032842379454!3d-33.44164099706208!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9662cfac5031be41%3A0xf4a12621448d42df!2sHamburgo%201398%2C%207790236%20%C3%91u%C3%B1oa%2C%20Regi%C3%B3n%20Metropolitana!5e1!3m2!1sen!2scl!4v1754536247038!5m2!1sen!2scl" 
                     className="w-full h-[250px]"
                     style={{ border: 0 }}
                     allowFullScreen
@@ -335,7 +335,7 @@ export default function SeccionContactoOp2(): React.JSX.Element {
                 </div>
                 <div className="rounded-lg shadow-md overflow-hidden">
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14949.771617594957!2d-72.29631622934279!3d-36.5670879659754!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9669527f5518b087%3A0xf64c127e9f3b185d!2sCoihueco%2C%20%C3%91uble%2C%20Chile!5e0!3m2!1sen!2scl!4v1628173007621!5m2!1sen!2scl"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3556.3665169833644!2d-71.83462282365821!3d-36.62685266714297!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x966ed6eade46d19d%3A0xaa904d2bd2b607fd!2sC.%20Balmaceda%201375%2C%207380000%20Coihueco%2C%20%C3%91uble!5e1!3m2!1sen!2scl!4v1754536349284!5m2!1sen!2scl" 
                     className="w-full h-[250px]"
                     style={{ border: 0 }}
                     allowFullScreen

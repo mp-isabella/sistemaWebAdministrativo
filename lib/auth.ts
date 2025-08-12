@@ -19,11 +19,15 @@ export const authOptions: NextAuthOptions = {
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-          include: { role: true }, // Asegura que estás incluyendo la relación `role`
+          where: {
+            email: credentials.email.trim().toLowerCase(),
+          },
+          include: {
+            role: true,
+          },
         })
 
-        if (!user || !user.password || !user.role) {
+        if (!user) {
           return null
         }
 
@@ -33,12 +37,11 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // Devuelve el objeto que se guarda en JWT
         return {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role.name, // <- asegúrate que esto existe como string
+          role: user.role.name,
         }
       },
     }),
@@ -51,13 +54,14 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id
         token.role = user.role
+        token.sub = user.id // Aseguramos que `sub` esté definido
       }
       return token
     },
     async session({ session, token }) {
-      if (session.user && token) {
-        session.user.id = token.id
-        session.user.role = token.role
+      if (session.user && token.sub && token.role) {
+        session.user.id = token.sub as string
+        session.user.role = token.role as string
       }
       return session
     },

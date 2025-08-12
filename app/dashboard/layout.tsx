@@ -2,8 +2,9 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { redirect } from "next/navigation";
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Calendar,
   Users,
@@ -34,7 +35,14 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { useEffect } from "react";
+
+type SearchResult = {
+  id: string | number;
+  tipo: string;
+  nombre?: string;
+  titulo?: string;
+};
+
 
 export default function DashboardLayout({
   children,
@@ -42,54 +50,75 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { data: session, status } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState(3);
-  const [resultados, setResultados] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  type SearchResult = {
-    id: string | number;
-    tipo: string;
-    nombre?: string;
-    titulo?: string;
-  };
-
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [search, setSearch] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
+  // Función para manejar la búsqueda con debounce
+  useEffect(() => {
+    const fetchResults = async () => {
+      if (search.trim() === "") {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
 
-const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const value = e.target.value;
-  setSearch(value);
-  if (value.length > 1) {
-    fetchResults(value);
-  } else {
-    setSearchResults([]); // Limpia resultados si no hay texto suficiente
-  }
-};
+      setIsSearching(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(search)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSearchResults(data);
+        } else {
+          console.error("Error en la búsqueda:", res.statusText);
+          setSearchResults([]);
+        }
+      } catch (error) {
+        console.error("Error buscando:", error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    };
 
-useEffect(() => {
-  const fetchResults = async () => {
-    if (searchTerm.trim() === "") {
-      setSearchResults([]);
-      return;
-    }
+    const timer = setTimeout(fetchResults, 300); // Debounce de 300ms
+    return () => clearTimeout(timer);
+  }, [search]);
 
-    const res = await fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`);
-    const data = await res.json();
-    setSearchResults(data); // Debe incluir tipo, id y nombre o título
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
   };
 
-  const timer = setTimeout(fetchResults, 300); // Debounce
-  return () => clearTimeout(timer);
-}, [searchTerm]);
+  // Función para manejar clics en resultados de búsqueda
+ const handleSearchResultClick = async (item: SearchResult) => {
+  if (!item || !item.id || !item.tipo) {
+    console.warn("Elemento de búsqueda inválido:", item);
+    return;
+  }
 
-const fetchResults = async (query: string) => {
-  try {
-    const res = await fetch(`/api/search?q=${query}`);
-    const data = await res.json();
-    setSearchResults(data);
-  } catch (error) {
-    console.error("Error buscando:", error);
+  const href =
+    item.tipo === "cliente"
+      ? `/dashboard/clients/${item.id}`
+      : item.tipo === "trabajo"
+      ? `/dashboard/my-jobs/${item.id}`
+      : null;
+
+  if (!href) {
+    console.warn("Tipo desconocido en resultado de búsqueda:", item.tipo);
+    return;
+  }
+
+  console.log("Navegando a resultado:", href);
+  setSearch("");
+  setSearchResults([]);
+
+  if (pathname !== href) {
+    await router.refresh(); // invalida la cache de la página actual o ruta
+    router.push(href);
   }
 };
 
@@ -104,23 +133,33 @@ const fetchResults = async (query: string) => {
     );
   }
 
-  if (!session) redirect("/login");
+  if (!session) {
+    redirect("/login");
+    return null;
+  }
 
-  const userRole = session.user.role;
+  const userRole = session?.user?.role?.toLowerCase() ?? "";
 
   const getNavigationItems = () => {
-    const baseItems = [
+    const commonItems = [
       {
-        name: "Agenda",
-        href: "/dashboard",
+        name: "Calendario",
+        href: "/dashboard/schedule/calendar",
         icon: Calendar,
-        color: "text-blue-600",
+        color: "text-yellow-600",
       },
     ];
+
     switch (userRole) {
       case "admin":
         return [
-          ...baseItems,
+          ...commonItems,
+          {
+            name: "Agenda",
+            href: "/dashboard/schedule",
+            icon: Calendar,
+            color: "text-purple-600",
+          },
           {
             name: "Clientes",
             href: "/dashboard/clients",
@@ -128,16 +167,29 @@ const fetchResults = async (query: string) => {
             color: "text-green-600",
           },
           {
+            name: "Trabajadores",
+            href: "/dashboard/workers",
+            icon: Users,
+            color: "text-indigo-600",
+          },
+          
+          {
             name: "Cajas",
             href: "/dashboard/cash",
             icon: CreditCard,
             color: "text-purple-600",
           },
           {
-            name: "Recaudación",
+            name: "Facturación",
             href: "/dashboard/billing",
             icon: DollarSign,
             color: "text-orange-600",
+          },
+          {
+            name: "Reportes",
+            href: "/dashboard/reports",
+            icon: FileText,
+            color: "text-red-600",
           },
           {
             name: "Administración",
@@ -145,22 +197,23 @@ const fetchResults = async (query: string) => {
             icon: Settings,
             color: "text-gray-600",
           },
-          {
-            name: "Reportes",
-            href: "/dashboard/reports",
-            icon: FileText,
-            color: "text-red-600",
-          },
         ];
       case "secretaria":
         return [
-          ...baseItems,
+          ...commonItems,
+          {
+            name: "Programación",
+            href: "/dashboard/schedule",
+            icon: Calendar,
+            color: "text-purple-600",
+          },
           {
             name: "Clientes",
             href: "/dashboard/clients",
             icon: Users,
             color: "text-green-600",
           },
+          
           {
             name: "Cajas",
             href: "/dashboard/cash",
@@ -168,7 +221,7 @@ const fetchResults = async (query: string) => {
             color: "text-purple-600",
           },
           {
-            name: "Recaudación",
+            name: "Facturación",
             href: "/dashboard/billing",
             icon: DollarSign,
             color: "text-orange-600",
@@ -179,9 +232,11 @@ const fetchResults = async (query: string) => {
             icon: FileText,
             color: "text-red-600",
           },
+          
         ];
       case "operador":
         return [
+          ...commonItems,
           {
             name: "Mis Trabajos",
             href: "/dashboard/my-jobs",
@@ -190,13 +245,13 @@ const fetchResults = async (query: string) => {
           },
           {
             name: "Evidencias",
-            href: "/dashboard/evidence",
-            icon: Camera,
-            color: "text-green-600",
+            href: "/dashboard/evidences",
+            icon: Wrench,
+            color: "text-red-600",
           },
         ];
       default:
-        return baseItems;
+        return commonItems;
     }
   };
 
@@ -220,13 +275,20 @@ const fetchResults = async (query: string) => {
       case "secretaria":
         return "Secretaria";
       case "operador":
-        return "Técnico";
+        return "Operador";
       default:
         return role;
     }
   };
 
   const navigationItems = getNavigationItems();
+
+  const isActiveRoute = (href: string) => {
+    if (href === "/dashboard") {
+      return pathname === "/dashboard";
+    }
+    return pathname.startsWith(href);
+  };
 
   return (
     <>
@@ -236,11 +298,14 @@ const fetchResults = async (query: string) => {
           <div className="fixed inset-y-0 left-0 w-64 bg-white border-r shadow-lg z-50">
             <aside>
               <div className="flex items-center justify-between h-16 px-6 bg-gradient-to-r from-blue-600 to-blue-700 border-b">
-                <Link href="/dashboard" className="flex items-center space-x-3">
+                <Link
+                  href="/dashboard"
+                  className="flex items-center space-x-3 text-white hover:opacity-90 transition-opacity"
+                >
                   <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
                     <Droplets className="h-5 w-5 text-blue-600" />
                   </div>
-                  <div className="text-white">
+                  <div>
                     <h1 className="text-lg font-bold">Améstica</h1>
                     <p className="text-xs text-blue-100">Servicios Técnicos</p>
                   </div>
@@ -251,10 +316,16 @@ const fetchResults = async (query: string) => {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="group flex items-center px-3 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900"
+                    className={`group w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                      isActiveRoute(item.href)
+                        ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                    }`}
                   >
                     <item.icon
-                      className={`mr-3 h-5 w-5 ${item.color} group-hover:scale-110 transition-transform`}
+                      className={`mr-3 h-5 w-5 pointer-events-none ${
+                        isActiveRoute(item.href) ? "text-blue-700" : item.color
+                      } group-hover:scale-110 transition-transform`}
                     />
                     {item.name}
                   </Link>
@@ -293,37 +364,48 @@ const fetchResults = async (query: string) => {
         >
           <aside>
             <div className="flex items-center justify-between h-16 px-6 bg-gradient-to-r from-blue-600 to-blue-700 border-b">
-              <Link href="/dashboard" className="flex items-center space-x-3">
+              <Link
+                href="/dashboard"
+                className="flex items-center space-x-3 text-white hover:opacity-90 transition-opacity"
+              >
                 <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
                   <Droplets className="h-5 w-5 text-blue-600" />
                 </div>
-                <div className="text-white">
+                <div>
                   <h1 className="text-lg font-bold">Améstica</h1>
                   <p className="text-xs text-blue-100">Servicios Técnicos</p>
                 </div>
               </Link>
               <button
-                className="lg:hidden text-white"
+                className="lg:hidden text-white hover:opacity-75 transition-opacity"
                 onClick={() => setSidebarOpen(false)}
               >
                 <X className="h-6 w-6" />
               </button>
             </div>
             <nav className="mt-6 px-3 space-y-1">
-              {navigationItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="group flex items-center px-3 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900"
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <item.icon
-                    className={`mr-3 h-5 w-5 ${item.color} group-hover:scale-110 transition-transform`}
-                  />
-                  {item.name}
-                </Link>
-              ))}
-            </nav>
+  {navigationItems.map((item) => (
+    <Link key={item.name} href={item.href} legacyBehavior>
+  <a
+    className={`group w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+      isActiveRoute(item.href)
+        ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
+        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+    }`}
+  >
+    <item.icon
+      className={`mr-3 h-5 w-5 pointer-events-none ${
+        isActiveRoute(item.href) ? "text-blue-700" : item.color
+      } group-hover:scale-110 transition-transform`}
+    />
+    {item.name}
+  </a>
+</Link>
+
+
+  ))}
+</nav>
+
           </aside>
         </div>
 
@@ -332,39 +414,52 @@ const fetchResults = async (query: string) => {
           <header className="sticky top-0 z-30 bg-white border-b shadow-sm h-16 flex items-center px-4 sm:px-6 justify-between">
             <div className="flex items-center space-x-4">
               <button
-                className="lg:hidden text-gray-600"
+                className="lg:hidden text-gray-600 hover:text-gray-900 transition-colors"
                 onClick={() => setSidebarOpen(true)}
               >
                 <Menu className="h-6 w-6" />
               </button>
               <div className="hidden md:block relative">
-  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-  <Input
-    placeholder="Buscar clientes, trabajos..."
-    className="pl-10 w-80 bg-gray-50 border-gray-200 focus:bg-white"
-    value={search}
-    onChange={handleSearch}
-  />
-  
-  {searchResults.length > 0 && (
-    <div className="absolute top-full left-0 mt-2 bg-white border rounded shadow-lg w-80 z-50">
-      {searchResults.map((item) => (
-        <Link
-          key={item.id}
-          href={
-            item.tipo === "cliente"
-              ? `/dashboard/clients/${item.id}`
-              : `/dashboard/my-jobs/${item.id}`
-          }
-          className="block px-4 py-2 hover:bg-gray-100 cursor-pointer"
-        >
-          {item.nombre || item.titulo}
-        </Link>
-      ))}
-    </div>
-  )}
-</div>
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar clientes / trabajos..."
+                  className="pl-10 w-80 bg-gray-50 border-gray-200 focus:bg-white"
+                  value={search}
+                  onChange={handleSearch}
+                />
 
+                {/* Resultados de búsqueda */}
+                {(searchResults.length > 0 || isSearching) && search && (
+                  <div className="absolute top-full left-0 mt-2 bg-white border rounded-lg shadow-lg w-80 z-50 max-h-60 overflow-y-auto">
+                    {isSearching ? (
+                      <div className="px-4 py-3 text-center text-gray-500">
+                        Buscando...
+                      </div>
+                    ) : searchResults.length > 0 ? (
+                      searchResults.map((item) => (
+                        <button
+                          key={`${item.tipo}-${item.id}`}
+                          onClick={() => handleSearchResultClick(item)}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">
+                              {item.nombre || item.titulo}
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              {item.tipo}
+                            </Badge>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-center text-gray-500">
+                        No se encontraron resultados
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <Button variant="ghost" size="sm" className="relative">
@@ -404,11 +499,17 @@ const fetchResults = async (query: string) => {
                       </p>
                     </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard/profile">Mi Perfil</Link>
+                    <DropdownMenuItem
+                      onClick={() => router.push("/dashboard/profile")}
+                      className="cursor-pointer"
+                    >
+                      Mi Perfil
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard/settings">Configuración</Link>
+                    <DropdownMenuItem
+                      onClick={() => router.push("/dashboard/settings")}
+                      className="cursor-pointer"
+                    >
+                      Configuración
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem

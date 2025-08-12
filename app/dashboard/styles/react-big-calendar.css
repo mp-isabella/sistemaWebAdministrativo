@@ -1,0 +1,14 @@
+@import 'https://cdn.jsdelivr.net/npm/react-big-calendar@1.2.0/lib/css/react-big-calendar.css';
+
+/* Opcional: Personaliza el tema de tu calendario */
+.rbc-calendar {
+  font-family: Arial, sans-serif;
+}
+.rbc-event {
+  background-color: #4285F4; /* Azul de Google */
+  border-radius: 4px;
+  color: white;
+}
+.rbc-today {
+  background-color: #e8f0fe !important; /* Resalta el día de hoy */
+}

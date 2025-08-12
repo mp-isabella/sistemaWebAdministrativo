@@ -1,162 +1,113 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
+export const dynamic = 'force-dynamic';
+import { type NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import PDFDocument from "pdfkit";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-
+    const session = await getServerSession(authOptions);
     if (!session) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url)
-    const period = searchParams.get("period") || "month"
-    const technicianId = searchParams.get("technicianId")
-
-    // Calcular fechas según el período
-    const now = new Date()
-    let startDate: Date
-
-    switch (period) {
-      case "day":
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-        break
-      case "week":
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-        break
-      case "month":
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-        break
-      case "year":
-        startDate = new Date(now.getFullYear(), 0, 1)
-        break
-      default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+    if (!["admin", "secretaria"].includes(session.user.role)) {
+      return NextResponse.json({ error: "Sin permisos para exportar reportes" }, { status: 403 });
     }
 
-    const where: any = {
-      createdAt: {
-        gte: startDate,
-        lte: now
-      }
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get("type") || "general";
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+    const clientId = searchParams.get("clientId");
+    const technicianId = searchParams.get("technicianId");
+
+    const whereClause: any = {};
+    if (startDate && endDate) {
+      whereClause.createdAt = {
+        gte: new Date(startDate),
+        lte: new Date(endDate),
+      };
     }
+    if (clientId) whereClause.clientId = clientId;
+    if (technicianId) whereClause.technicianId = technicianId;
 
-    // Filtros por rol
-    if (session.user.role === "operador") {
-      where.assignedToId = session.user.id
-    } else if (technicianId) {
-      where.assignedToId = technicianId
-    }
-
-    // Estadísticas generales
-    const [
-      totalJobs,
-      pendingJobs,
-      inProgressJobs,
-      completedJobs,
-      totalClients,
-      totalWorkers,
-      totalServices
-    ] = await Promise.all([
-      prisma.job.count({ where }),
-      prisma.job.count({ where: { ...where, status: "PENDING" } }),
-      prisma.job.count({ where: { ...where, status: "IN_PROGRESS" } }),
-      prisma.job.count({ where: { ...where, status: "COMPLETED" } }),
-      prisma.client.count(),
-      prisma.user.count({ where: { role: { name: { not: "admin" } } } }),
-      prisma.service.count()
-    ])
-
-    // Ingresos (basado en trabajos completados)
-    const completedJobsWithServices = await prisma.job.findMany({
-      where: { ...where, status: "COMPLETED" },
-      include: { service: true }
-    })
-
-    const totalRevenue = completedJobsWithServices.reduce((sum, job) => sum + (job.service.price || 0), 0)
-
-    // Trabajos por técnico
-    const jobsByTechnician = await prisma.job.groupBy({
-      by: ["assignedToId"],
-      where: { ...where, assignedToId: { not: null } },
-      _count: { id: true }
-    })
-
-    const techniciansWithJobs = await Promise.all(
-      jobsByTechnician.map(async (item) => {
-        const technician = await prisma.user.findUnique({
-          where: { id: item.assignedToId! }
-        })
-        return {
-          name: technician?.name || "Sin asignar",
-          jobs: item._count.id
-        }
-      })
-    )
-
-    // Trabajos por servicio
-    const jobsByService = await prisma.job.groupBy({
-      by: ["serviceId"],
-      where,
-      _count: { id: true }
-    })
-
-    const servicesWithJobs = await Promise.all(
-      jobsByService.map(async (item) => {
-        const service = await prisma.service.findUnique({
-          where: { id: item.serviceId }
-        })
-        return {
-          name: service?.name || "Sin servicio",
-          jobs: item._count.id
-        }
-      })
-    )
-
-    // Trabajos por día (últimos 7 días)
-    const dailyJobs = []
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000)
-      const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-      const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000)
-
-      const count = await prisma.job.count({
-        where: {
-          ...where,
-          createdAt: {
-            gte: dayStart,
-            lt: dayEnd
-          }
-        }
-      })
-
-      dailyJobs.push({
-        date: date.toLocaleDateString("es-CL"),
-        jobs: count
-      })
-    }
-
-    return NextResponse.json({
-      general: {
-        totalJobs,
-        pendingJobs,
-        inProgressJobs,
-        completedJobs,
-        totalClients,
-        totalWorkers,
-        totalServices,
-        totalRevenue
+    const jobs = await prisma.job.findMany({
+      where: whereClause,
+      include: {
+        client: true,
+        service: true,
+        technician: true,
+        createdBy: true,
       },
-      charts: {
-        jobsByTechnician: techniciansWithJobs,
-        jobsByService: servicesWithJobs,
-        dailyJobs
+      orderBy: { createdAt: "desc" },
+    });
+
+    const doc = new PDFDocument();
+    const chunks: Buffer[] = [];
+    doc.on("data", (chunk: Buffer) => chunks.push(chunk));
+
+    const pdfBufferPromise = new Promise<NextResponse>((resolve) => {
+      doc.on("end", () => {
+        const pdfBuffer = Buffer.concat(chunks);
+        resolve(
+          new NextResponse(pdfBuffer, {
+            headers: {
+              "Content-Type": "application/pdf",
+              "Content-Disposition": `attachment; filename="reporte-${type}-${new Date()
+                .toISOString()
+                .split("T")[0]}.pdf"`,
+            },
+          }),
+        );
+      });
+    });
+
+    // Encabezado
+    doc.fontSize(20).text("Amestica - Reporte de Trabajos", { align: "center" });
+    doc.moveDown();
+    doc.fontSize(12).text(`Fecha de generación: ${new Date().toLocaleDateString("es-CL")}`);
+    doc.text(`Tipo de reporte: ${type}`);
+    doc.moveDown();
+
+    // Detalles de cada trabajo
+    jobs.forEach((job, idx) => {
+      if (idx > 0) doc.addPage();
+
+      doc.fontSize(14).text(`Trabajo #${job.id}`, { underline: true });
+      doc.moveDown(0.5);
+
+      doc.fontSize(10);
+      doc.text(`Cliente: ${job.client.name}`);
+      doc.text(`Servicio: ${job.service.name}`);
+      doc.text(`Estado: ${job.status}`);
+      doc.text(`Técnico: ${job.technician?.name ?? "No asignado"}`);
+      doc.text(
+        `Fecha programada: ${job.scheduledAt ? new Date(job.scheduledAt).toLocaleDateString("es-CL") : "No programada"}`,
+      );
+      doc.text(
+        `Fecha completada: ${job.completedAt ? new Date(job.completedAt).toLocaleDateString("es-CL") : "No completada"}`,
+      );
+      doc.moveDown();
+
+      if (job.description) {
+        doc.text("Descripción:");
+        doc.text(job.description, { indent: 20 });
+        doc.moveDown();
       }
-    })
+
+      if (job.images.length > 0) {
+        doc.text(`Evidencias: ${job.images.length} imagen(es)`);
+        doc.moveDown();
+      }
+    });
+
+    doc.end();
+
+    return pdfBufferPromise;
   } catch (error) {
-    console.error("Error fetching dashboard stats:", error)
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
+    console.error("Error generating report:", error);
+    return NextResponse.json({ error: "Error generando reporte" }, { status: 500 });
   }
 }
