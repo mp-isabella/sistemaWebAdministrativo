@@ -1,6 +1,6 @@
-# Sistema de Gestión — Améstica
+# Sistema de Gestión y Administrativo— Améstica
 
-💧 **Proyecto de desarrollo web para la empresa Améstica, dedicada a la detección de fugas de agua en Coihueco, Chile.**
+💧 **Proyecto de desarrollo web para la empresa Améstica, dedicada a la detección de fugas de agua**
 ---
 
 ## 🧾 Descripción
