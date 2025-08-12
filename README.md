@@ -29,7 +29,6 @@ Incluye:
 - [Prisma ORM](https://www.prisma.io/)
 - [PostgreSQL](https://www.postgresql.org/)
 - [Vercel](https://vercel.com/)
-- [v0.dev](https://v0.dev/) (para diseño inicial de componentes)
 
 ---
 
