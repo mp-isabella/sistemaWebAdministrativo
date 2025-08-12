@@ -1,6 +1,6 @@
-# Sistema de Gestión — Améstica
+# Sistema de Gestión y Administrativo— Améstica
 
-💧 **Proyecto de desarrollo web para la empresa Améstica, dedicada a la detección de fugas de agua en Coihueco, Chile.**
+💧 **Proyecto de desarrollo web para la empresa Améstica, dedicada a la detección de fugas de agua**
 ---
 
 ## 🧾 Descripción
@@ -29,7 +29,6 @@ Incluye:
 - [Prisma ORM](https://www.prisma.io/)
 - [PostgreSQL](https://www.postgresql.org/)
 - [Vercel](https://vercel.com/)
-- [v0.dev](https://v0.dev/) (para diseño inicial de componentes)
 
 ---
 
