@@ -111,9 +111,5 @@ body {
   }
   body {
     @apply bg-background text-foreground;
-    font-size: 1.25rem;
-    line-height: 1.75;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
   }
 }
