@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 👇 Agrega esta línea para generar una exportación estática
-  output: 'export', 
+  output: 'standalone', // ✅ Modo para serverless en Netlify
   eslint: {
     ignoreDuringBuilds: true,
   },
