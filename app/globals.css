@@ -111,7 +111,8 @@ body {
   }
   body {
     @apply bg-background text-foreground;
-    /* Solución al problema de zoom y desbordamiento */
     min-width: 375px; 
+    /* ---- CAMBIO AQUÍ ---- */
+    overflow-x: hidden;
   }
 }
