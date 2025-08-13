@@ -1,13 +1,21 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next'; // Asegúrate de importar Viewport
 import './globals.css';
-import ClientProvider from './ClientProvider';
 import { Montserrat } from 'next/font/google';
+import Providers from './providers';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
   variable: '--font-montserrat',
   display: 'swap',
 });
+
+// Separamos la configuración del viewport en su propia exportación
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  minimumScale: 1,
+  userScalable: true,
+};
 
 export const metadata: Metadata = {
   title: {
@@ -25,7 +33,7 @@ export const metadata: Metadata = {
     'empresa Chillán',
   ],
   authors: [{ name: 'MP Riquelme', url: 'https://mpriquelme.dev' }],
-  metadataBase: new URL('https://amestica.cl'), // cámbialo cuando esté deployado
+  metadataBase: new URL('https://amestica.cl'),
   openGraph: {
     title: 'Amestica | Especialistas en Detección de Fugas',
     description: 'Soluciones profesionales en detección de fugas de agua.',
@@ -63,7 +71,9 @@ export default function RootLayout({
       <body
         className={`${montserrat.variable} bg-background text-foreground antialiased`}
       >
-        <ClientProvider>{children}</ClientProvider>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
