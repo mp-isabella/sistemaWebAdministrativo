@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "vercel-build": "corepack prepare pnpm@9 --activate && pnpm install && pnpm run build",
-    "build": "prisma generate && next build",
     "dev": "next dev",
-    "lint": "next lint",
+    "build": "next build",
     "start": "next start",
+    "postinstall": "prisma generate",
+    "lint": "next lint",
     "seed": "ts-node prisma/seed.ts"
   },
   "prisma": {
@@ -59,8 +59,8 @@
     "framer-motion": "^12.23.7",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
-    "next": "14.2.16",
-    "next-auth": "latest",
+    "next": "^14.2.31",
+    "next-auth": "^4.24.7",
     "next-themes": "^0.4.4",
     "nodemailer": "latest",
     "pdfkit": "^0.17.1",

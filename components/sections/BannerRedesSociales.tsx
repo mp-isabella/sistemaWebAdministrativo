@@ -1,4 +1,6 @@
-"use client"
+"use client";
+
+import React from "react";
 
 export default function ServicesBanner() {
   const services = [
@@ -7,31 +9,43 @@ export default function ServicesBanner() {
     "Lunes a viernes 8:00 - 20:00 | Sábado 9:00 - 19:00",
     "Síguenos en nuestras redes sociales",
     "Entérate de nuestras novedades, servicios y cobertura en todo Chile",
-  ]
+  ];
 
   return (
     <div className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 py-4 overflow-hidden">
       <div className="flex animate-marquee whitespace-nowrap">
-        {/* First set of services */}
+        {/* Primera serie de servicios */}
         <div className="flex items-center space-x-8 mx-8">
           {services.map((service, index) => (
-            <div key={index} className="flex items-center space-x-8">
+            <div key={index} className="flex items-center space-x-2">
               <span className="text-white text-lg font-medium">{service}</span>
               <span className="text-white text-2xl">✱</span>
             </div>
           ))}
         </div>
 
-        {/* Duplicate set for seamless loop */}
+        {/* Segunda serie duplicada para loop continuo */}
         <div className="flex items-center space-x-8 mx-8">
           {services.map((service, index) => (
-            <div key={`duplicate-${index}`} className="flex items-center space-x-8">
+            <div key={`duplicate-${index}`} className="flex items-center space-x-2">
               <span className="text-white text-lg font-medium">{service}</span>
               <span className="text-white text-2xl">✱</span>
             </div>
           ))}
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes marquee {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+
+        .animate-marquee {
+          display: flex;
+          animation: marquee 20s linear infinite;
+        }
+      `}</style>
     </div>
-  )
+  );
 }

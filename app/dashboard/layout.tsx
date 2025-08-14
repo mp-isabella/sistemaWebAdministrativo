@@ -1,10 +1,11 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { redirect } from "next/navigation";
-import { useState, Suspense, useEffect } from "react";
+import { redirect, usePathname, useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
 import {
   Calendar,
   Users,
@@ -12,29 +13,26 @@ import {
   DollarSign,
   Settings,
   FileText,
-  LogOut,
-  Menu,
-  X,
-  Bell,
-  Search,
-  Droplets,
   Wrench,
-  Camera,
+  Droplets,
   ChevronDown,
   Building2,
+  Menu,
+  X,
+  Search,
+  LogOut,
+  Bell,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"; // Usamos versión de Shadcn UI
 
 type SearchResult = {
   id: string | number;
@@ -42,7 +40,6 @@ type SearchResult = {
   nombre?: string;
   titulo?: string;
 };
-
 
 export default function DashboardLayout({
   children,
@@ -53,12 +50,11 @@ export default function DashboardLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [notifications, setNotifications] = useState(3);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [search, setSearch] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [notifications, setNotifications] = useState(3);
 
-  // Función para manejar la búsqueda con debounce
   useEffect(() => {
     const fetchResults = async () => {
       if (search.trim() === "") {
@@ -74,18 +70,16 @@ export default function DashboardLayout({
           const data = await res.json();
           setSearchResults(data);
         } else {
-          console.error("Error en la búsqueda:", res.statusText);
           setSearchResults([]);
         }
-      } catch (error) {
-        console.error("Error buscando:", error);
+      } catch {
         setSearchResults([]);
       } finally {
         setIsSearching(false);
       }
     };
 
-    const timer = setTimeout(fetchResults, 300); // Debounce de 300ms
+    const timer = setTimeout(fetchResults, 300); // debounce
     return () => clearTimeout(timer);
   }, [search]);
 
@@ -93,34 +87,25 @@ export default function DashboardLayout({
     setSearch(e.target.value);
   };
 
-  // Función para manejar clics en resultados de búsqueda
- const handleSearchResultClick = async (item: SearchResult) => {
-  if (!item || !item.id || !item.tipo) {
-    console.warn("Elemento de búsqueda inválido:", item);
-    return;
-  }
+  const handleSearchResultClick = async (item: SearchResult) => {
+    if (!item?.id || !item?.tipo) return;
+    const href =
+      item.tipo === "cliente"
+        ? `/dashboard/clients/${item.id}`
+        : item.tipo === "trabajo"
+        ? `/dashboard/my-jobs/${item.id}`
+        : null;
 
-  const href =
-    item.tipo === "cliente"
-      ? `/dashboard/clients/${item.id}`
-      : item.tipo === "trabajo"
-      ? `/dashboard/my-jobs/${item.id}`
-      : null;
+    if (!href) return;
 
-  if (!href) {
-    console.warn("Tipo desconocido en resultado de búsqueda:", item.tipo);
-    return;
-  }
+    setSearch("");
+    setSearchResults([]);
 
-  console.log("Navegando a resultado:", href);
-  setSearch("");
-  setSearchResults([]);
-
-  if (pathname !== href) {
-    await router.refresh(); // invalida la cache de la página actual o ruta
-    router.push(href);
-  }
-};
+    if (pathname !== href) {
+      await router.refresh();
+      router.push(href);
+    }
+  };
 
   if (status === "loading") {
     return (
@@ -154,101 +139,28 @@ export default function DashboardLayout({
       case "admin":
         return [
           ...commonItems,
-          {
-            name: "Agenda",
-            href: "/dashboard/schedule",
-            icon: Calendar,
-            color: "text-purple-600",
-          },
-          {
-            name: "Clientes",
-            href: "/dashboard/clients",
-            icon: Users,
-            color: "text-green-600",
-          },
-          {
-            name: "Trabajadores",
-            href: "/dashboard/workers",
-            icon: Users,
-            color: "text-indigo-600",
-          },
-          
-          {
-            name: "Cajas",
-            href: "/dashboard/cash",
-            icon: CreditCard,
-            color: "text-purple-600",
-          },
-          {
-            name: "Facturación",
-            href: "/dashboard/billing",
-            icon: DollarSign,
-            color: "text-orange-600",
-          },
-          {
-            name: "Reportes",
-            href: "/dashboard/reports",
-            icon: FileText,
-            color: "text-red-600",
-          },
-          {
-            name: "Administración",
-            href: "/dashboard/admin",
-            icon: Settings,
-            color: "text-gray-600",
-          },
+          { name: "Agenda", href: "/dashboard/schedule", icon: Calendar, color: "text-purple-600" },
+          { name: "Clientes", href: "/dashboard/clients", icon: Users, color: "text-green-600" },
+          { name: "Trabajadores", href: "/dashboard/workers", icon: Users, color: "text-indigo-600" },
+          { name: "Cajas", href: "/dashboard/cash", icon: CreditCard, color: "text-purple-600" },
+          { name: "Facturación", href: "/dashboard/billing", icon: DollarSign, color: "text-orange-600" },
+          { name: "Reportes", href: "/dashboard/reports", icon: FileText, color: "text-red-600" },
+          { name: "Administración", href: "/dashboard/admin", icon: Settings, color: "text-gray-600" },
         ];
       case "secretaria":
         return [
           ...commonItems,
-          {
-            name: "Programación",
-            href: "/dashboard/schedule",
-            icon: Calendar,
-            color: "text-purple-600",
-          },
-          {
-            name: "Clientes",
-            href: "/dashboard/clients",
-            icon: Users,
-            color: "text-green-600",
-          },
-          
-          {
-            name: "Cajas",
-            href: "/dashboard/cash",
-            icon: CreditCard,
-            color: "text-purple-600",
-          },
-          {
-            name: "Facturación",
-            href: "/dashboard/billing",
-            icon: DollarSign,
-            color: "text-orange-600",
-          },
-          {
-            name: "Reportes",
-            href: "/dashboard/reports",
-            icon: FileText,
-            color: "text-red-600",
-          },
-          
+          { name: "Programación", href: "/dashboard/schedule", icon: Calendar, color: "text-purple-600" },
+          { name: "Clientes", href: "/dashboard/clients", icon: Users, color: "text-green-600" },
+          { name: "Cajas", href: "/dashboard/cash", icon: CreditCard, color: "text-purple-600" },
+          { name: "Facturación", href: "/dashboard/billing", icon: DollarSign, color: "text-orange-600" },
+          { name: "Reportes", href: "/dashboard/reports", icon: FileText, color: "text-red-600" },
         ];
       case "operador":
         return [
           ...commonItems,
-          {
-            name: "Mis Trabajos",
-            href: "/dashboard/my-jobs",
-            icon: Wrench,
-            color: "text-blue-600",
-          },
-          {
-            name: "Evidencias",
-            href: "/dashboard/evidences",
-            icon: Wrench,
-            color: "text-red-600",
-          },
+          { name: "Mis Trabajos", href: "/dashboard/my-jobs", icon: Wrench, color: "text-blue-600" },
+          { name: "Evidencias", href: "/dashboard/evidences", icon: Wrench, color: "text-red-600" },
         ];
       default:
         return commonItems;
@@ -275,258 +187,161 @@ export default function DashboardLayout({
       case "secretaria":
         return "Secretaria";
       case "operador":
-        return "Operador";
+        return "Técnico";
       default:
         return role;
     }
   };
 
-  const navigationItems = getNavigationItems();
-
-  const isActiveRoute = (href: string) => {
-    if (href === "/dashboard") {
-      return pathname === "/dashboard";
-    }
-    return pathname.startsWith(href);
-  };
-
   return (
-    <>
-      <div className="min-h-screen bg-gray-50">
-        {/* Sidebar fijo en escritorio */}
-        <div className="hidden lg:flex">
-          <div className="fixed inset-y-0 left-0 w-64 bg-white border-r shadow-lg z-50">
-            <aside>
-              <div className="flex items-center justify-between h-16 px-6 bg-gradient-to-r from-blue-600 to-blue-700 border-b">
-                <Link
-                  href="/dashboard"
-                  className="flex items-center space-x-3 text-white hover:opacity-90 transition-opacity"
-                >
-                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                    <Droplets className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h1 className="text-lg font-bold">Améstica</h1>
-                    <p className="text-xs text-blue-100">Servicios Técnicos</p>
-                  </div>
-                </Link>
-              </div>
-              <nav className="mt-6 px-3 space-y-1">
-                {navigationItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`group w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
-                      isActiveRoute(item.href)
-                        ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    }`}
-                  >
-                    <item.icon
-                      className={`mr-3 h-5 w-5 pointer-events-none ${
-                        isActiveRoute(item.href) ? "text-blue-700" : item.color
-                      } group-hover:scale-110 transition-transform`}
-                    />
-                    {item.name}
-                  </Link>
-                ))}
-              </nav>
-              {userRole === "admin" && (
-                <div className="absolute bottom-4 left-3 right-3">
-                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Building2 className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm font-medium text-gray-700">
-                          Améstica
-                        </span>
-                      </div>
-                      <ChevronDown className="h-4 w-4 text-gray-400" />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </aside>
-          </div>
-        </div>
-
-        {/* Overlay móvil y sidebar móvil */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 z-40 bg-black bg-opacity-40 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-        <div
-          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r shadow-xl transform transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-          lg:hidden`}
-        >
-          <aside>
-            <div className="flex items-center justify-between h-16 px-6 bg-gradient-to-r from-blue-600 to-blue-700 border-b">
-              <Link
-                href="/dashboard"
-                className="flex items-center space-x-3 text-white hover:opacity-90 transition-opacity"
-              >
-                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                  <Droplets className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold">Améstica</h1>
-                  <p className="text-xs text-blue-100">Servicios Técnicos</p>
-                </div>
-              </Link>
-              <button
-                className="lg:hidden text-white hover:opacity-75 transition-opacity"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <X className="h-6 w-6" />
-              </button>
+    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Logo Section */}
+        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700">
+          <Link href="/dashboard" className="flex items-center space-x-3">
+            <div className="flex items-center justify-center w-8 h-8 bg-white rounded-lg">
+              <Droplets className="h-5 w-5 text-blue-600" />
             </div>
-            <nav className="mt-6 px-3 space-y-1">
-  {navigationItems.map((item) => (
-    <Link key={item.name} href={item.href} legacyBehavior>
-  <a
-    className={`group w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
-      isActiveRoute(item.href)
-        ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
-        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-    }`}
-  >
-    <item.icon
-      className={`mr-3 h-5 w-5 pointer-events-none ${
-        isActiveRoute(item.href) ? "text-blue-700" : item.color
-      } group-hover:scale-110 transition-transform`}
-    />
-    {item.name}
-  </a>
-</Link>
-
-
-  ))}
-</nav>
-
-          </aside>
+            <div className="text-white">
+              <h1 className="text-lg font-bold">Améstica</h1>
+              <p className="text-xs text-blue-100">Servicios Técnicos</p>
+            </div>
+          </Link>
+          <button className="lg:hidden text-white" onClick={() => setSidebarOpen(false)}>
+            <X className="h-6 w-6" />
+          </button>
         </div>
 
-        {/* Contenido principal */}
-        <div className="flex flex-col min-h-screen lg:pl-64">
-          <header className="sticky top-0 z-30 bg-white border-b shadow-sm h-16 flex items-center px-4 sm:px-6 justify-between">
+        {/* Navigation */}
+        <nav className="mt-6 px-3 space-y-1">
+          {getNavigationItems().map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              className="group flex items-center px-3 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <item.icon className={`mr-3 h-5 w-5 ${item.color} group-hover:scale-110 transition-transform`} />
+              <span>{item.name}</span>
+            </Link>
+          ))}
+        </nav>
+
+        {/* Company Selector */}
+        {userRole === "admin" && (
+          <div className="absolute bottom-4 left-3 right-3">
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 flex justify-between items-center">
+              <div className="flex items-center space-x-2">
+                <Building2 className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">Améstica</span>
+              </div>
+              <ChevronDown className="h-4 w-4 text-gray-400" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1">
+        {/* Top header */}
+        <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+          <div className="flex items-center justify-between h-16 px-4 sm:px-6">
             <div className="flex items-center space-x-4">
-              <button
-                className="lg:hidden text-gray-600 hover:text-gray-900 transition-colors"
-                onClick={() => setSidebarOpen(true)}
-              >
+              <button className="lg:hidden text-gray-600" onClick={() => setSidebarOpen(true)}>
                 <Menu className="h-6 w-6" />
               </button>
+
+              {/* Search Bar */}
               <div className="hidden md:block relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Buscar clientes / trabajos..."
-                  className="pl-10 w-80 bg-gray-50 border-gray-200 focus:bg-white"
+                  placeholder="Buscar clientes, trabajos..."
                   value={search}
                   onChange={handleSearch}
+                  className="pl-10 w-80 bg-gray-50 border-gray-200 focus:bg-white"
                 />
-
-                {/* Resultados de búsqueda */}
-                {(searchResults.length > 0 || isSearching) && search && (
-                  <div className="absolute top-full left-0 mt-2 bg-white border rounded-lg shadow-lg w-80 z-50 max-h-60 overflow-y-auto">
-                    {isSearching ? (
-                      <div className="px-4 py-3 text-center text-gray-500">
-                        Buscando...
+                {searchResults.length > 0 && (
+                  <div className="absolute mt-1 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                    {searchResults.map((item) => (
+                      <div
+                        key={`${item.tipo}-${item.id}`}
+                        onClick={() => handleSearchResultClick(item)}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      >
+                        {item.nombre || item.titulo}
                       </div>
-                    ) : searchResults.length > 0 ? (
-                      searchResults.map((item) => (
-                        <button
-                          key={`${item.tipo}-${item.id}`}
-                          onClick={() => handleSearchResultClick(item)}
-                          className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-b border-gray-100 last:border-b-0"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium">
-                              {item.nombre || item.titulo}
-                            </span>
-                            <Badge variant="outline" className="text-xs">
-                              {item.tipo}
-                            </Badge>
-                          </div>
-                        </button>
-                      ))
-                    ) : (
-                      <div className="px-4 py-3 text-center text-gray-500">
-                        No se encontraron resultados
-                      </div>
-                    )}
+                    ))}
                   </div>
                 )}
               </div>
             </div>
+
             <div className="flex items-center space-x-4">
+              {/* Notifications */}
               <Button variant="ghost" size="sm" className="relative">
-                <Bell className="h-6 w-6 text-gray-600" />
+                <Bell className="h-5 w-5 text-gray-600" />
                 {notifications > 0 && (
                   <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
                     {notifications}
                   </span>
                 )}
               </Button>
+
+              {/* User Role Badge */}
               <Badge className={getRoleColor(userRole)} variant="outline">
                 {getRoleLabel(userRole)}
               </Badge>
-              <Suspense fallback={<div>Cargando...</div>}>
+
+              {/* User Menu */}
+              <Suspense fallback={<div>Loading...</div>}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="h-10 w-10 p-0 rounded-full"
-                    >
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage
-                          src="/placeholder.svg"
-                          alt={session.user.name || ""}
-                        />
+                        <AvatarImage src="/placeholder.svg" alt={session.user.name || ""} />
                         <AvatarFallback className="bg-blue-100 text-blue-700">
                           {session.user.name?.charAt(0) || "U"}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <div className="p-3 space-y-1">
+                  <DropdownMenuContent className="w-56" align="end">
+                    <div className="flex flex-col gap-1 p-3">
                       <p className="font-medium text-sm">{session.user.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {session.user.email}
-                      </p>
+                      <p className="truncate text-xs text-muted-foreground">{session.user.email}</p>
                     </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => router.push("/dashboard/profile")}
-                      className="cursor-pointer"
-                    >
-                      Mi Perfil
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/profile">Mi Perfil</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => router.push("/dashboard/settings")}
-                      className="cursor-pointer"
-                    >
-                      Configuración
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/settings">Configuración</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => signOut()}
-                      className="text-red-600 cursor-pointer"
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Cerrar Sesión
+                    <DropdownMenuItem onClick={() => signOut()} className="text-red-600">
+                      <LogOut className="mr-2 h-4 w-4" /> Cerrar Sesión
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </Suspense>
             </div>
-          </header>
-          <main className="flex-1 p-6 w-full">{children}</main>
-        </div>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="p-6 flex-1 overflow-y-auto">
+          {children || (
+            <div className="text-center text-gray-500 mt-10">
+              Selecciona una opción del menú para comenzar
+            </div>
+          )}
+        </main>
       </div>
-    </>
+    </div>
   );
 }

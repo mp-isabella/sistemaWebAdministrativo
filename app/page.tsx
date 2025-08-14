@@ -1,5 +1,6 @@
-'use client';
+"use client";
 
+import dynamic from 'next/dynamic';
 import FloatingButtons from '@/components/ui/floating-buttons';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
@@ -8,13 +9,15 @@ import TopBar from '@/components/sections/TopBar';
 import Hero from '@/components/sections/hero';
 import Services from '@/components/sections/services';
 import About from '@/components/sections/about';
-import Gallery from '@/components/sections/gallery';
-import FAQ from '@/components/sections/faq';
-import Testimonials from '@/components/sections/testimonials';
 import Contact from '@/components/sections/contact';
 import BannerRedesSociales from '@/components/sections/BannerRedesSociales';
 import BannerLogos from '@/components/sections/BannerLogos';
 import BannerTexto from '@/components/sections/BannerTexto';
+
+// Lazy load de secciones pesadas
+import FAQ from "@/components/sections/faq";
+import Gallery from "@/components/sections/gallery";
+import Testimonials from "@/components/sections/testimonials";
 
 const sections = [
   { id: 'hero', component: Hero },
@@ -37,7 +40,9 @@ export default function Page() {
       <Header />
       <main className="flex-grow">
         {sections.map(({ id, component: Section }) => (
-          <Section key={id} />
+          <div key={id} id={id}>
+            <Section />
+          </div>
         ))}
       </main>
       <Footer />

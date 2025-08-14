@@ -1,51 +1,55 @@
 "use client"
 
-import { useEffect, type ReactNode } from "react"
+import { ReactNode, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
-type Role = string
-
 interface RoleRedirectProps {
-  allowedRoles: Role[]
-  redirectTo?: string
   children: ReactNode
 }
 
-export default function RoleRedirect({
-  allowedRoles,
-  redirectTo = "/dashboard",
-  children,
-}: RoleRedirectProps) {
+export function RoleRedirect({ children }: RoleRedirectProps) {
   const { data: session, status } = useSession()
   const router = useRouter()
 
   useEffect(() => {
-    if (status === "loading") return
+    if (status === "authenticated" && session?.user?.role) {
+      const userRole = session.user.role
 
-    if (!session) {
-      router.replace("/login")
-      return
+      switch (userRole) {
+        case "admin":
+          router.push("/dashboard/admin")
+          break
+        case "secretaria":
+          router.push("/dashboard/schedule")
+          break
+        case "operador":
+          router.push("/dashboard/my-jobs")
+          break
+        default:
+          router.push("/dashboard")
+          break
+      }
+    } else if (status === "unauthenticated") {
+      router.push("/login")
     }
-
-    const userRole = session.user?.role
-
-    if (!userRole || !allowedRoles.includes(userRole)) {
-      router.replace(redirectTo)
-    }
-  }, [session, status, router, allowedRoles, redirectTo])
+  }, [session, status, router])
 
   if (status === "loading") {
     return (
-      <div className="flex items-center justify-center min-h-screen text-lg text-gray-600">
-        Cargando...
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando sesión...</p>
+        </div>
       </div>
     )
   }
 
-  if (!session || !allowedRoles.includes(session.user?.role)) {
-    return null
+  // Solo muestra el contenido si el usuario está autenticado
+  if (status === "authenticated") {
+    return <>{children}</>
   }
 
-  return <>{children}</>
+  return null
 }

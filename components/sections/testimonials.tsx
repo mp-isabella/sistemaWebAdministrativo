@@ -6,20 +6,20 @@ import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import React from "react";
 
-// Paleta de colores para un uso más limpio y unificado
+// Paleta de colores
 const colors = {
-  dark: "#002D71", // Azul oscuro para títulos
+  dark: "#002D71",
   medium: "#014C90",
-  strong: "#016AAB", // Azul medio para enlaces y botones
+  strong: "#016AAB",
   soft: "#5692C8",
   light: "#9ABCE1",
-  highlight: "#F46015", // Naranja para detalles
+  highlight: "#F46015",
   white: "#FFFFFF",
   gray: "#4B5563",
   lightGray: "#6B7280",
 };
 
-// Datos de testimonios.
+// Testimonios
 const testimonials = [
   {
     name: "María González",
@@ -81,82 +81,60 @@ export default function Testimonials() {
   return (
     <section id="testimonios" className="py-20 bg-gray-100 relative">
       <div className="relative max-w-7xl mx-auto px-4 md:px-12">
-        {/* Encabezado de la sección */}
+        {/* Encabezado */}
         <div className="text-center mb-16">
-          <h2
-            className="text-4xl md:text-5xl font-extrabold mb-4"
-            style={{ color: colors.dark }}
-          >
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-4" style={{ color: colors.dark }}>
             Testimonios de Clientes Satisfechos
           </h2>
-          <p
-            className="text-lg max-w-3xl mx-auto leading-relaxed font-medium"
-            style={{ color: colors.medium }}
-          >
-            Nuestros clientes confían en nuestra experiencia y tecnología.
-            Escucha lo que tienen que decir.
+          <p className="text-lg max-w-3xl mx-auto leading-relaxed font-medium" style={{ color: colors.medium }}>
+            Nuestros clientes confían en nuestra experiencia y tecnología. Escucha lo que tienen que decir.
           </p>
         </div>
 
-        {/* Wrapper del carrusel con overflow-hidden */}
+        {/* Carrusel */}
         <div className="relative w-full overflow-hidden">
           <motion.div
             className="flex w-full"
             animate={{ x: `-${currentSlide * 100}%` }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
+            transition={{ type: "tween", ease: "easeInOut", duration: 0.5 }}
           >
             {testimonials.map((testimonial, index) => {
               const cardPositionInSlide = index % cardsPerPage;
-              
-              // Define la rotación en base a la posición de la tarjeta
+
+              // Rotación solo en md+
               const rotation =
                 cardPositionInSlide === 0
-                  ? "-2deg" // Tarjeta de la izquierda
+                  ? "-2deg"
                   : cardPositionInSlide === 1
-                  ? "0deg" // Tarjeta del centro
-                  : "2deg"; // Tarjeta de la derecha
-              
+                  ? "0deg"
+                  : "2deg";
+
               return (
                 <div
                   key={index}
                   className="flex-shrink-0 w-full md:w-1/3 p-4"
                   style={{ transform: `rotate(${rotation})` }}
                 >
-                  <Card className="h-full bg-white shadow-xl border-t-8 rounded-3xl"
-                    style={{ borderColor: colors.highlight }}>
+                  <Card className="h-full bg-white shadow-xl border-t-8 rounded-3xl" style={{ borderColor: colors.highlight }}>
                     <CardContent className="h-full flex flex-col justify-between p-8">
                       <div>
-                        {/* Estrellas de calificación */}
                         <div className="flex justify-center mb-6">
                           {[...Array(testimonial.rating)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className="h-6 w-6 fill-current"
-                              style={{ color: colors.highlight }}
-                            />
+                            <Star key={i} className="h-6 w-6 fill-current" style={{ color: colors.highlight }} />
                           ))}
                         </div>
-                        {/* Texto del testimonio */}
-                        <blockquote className="text-lg font-light italic leading-relaxed mb-6"
-                          style={{ color: colors.gray }}>
+                        <blockquote className="text-lg font-light italic leading-relaxed mb-6" style={{ color: colors.gray }}>
                           "{testimonial.text}"
                         </blockquote>
                       </div>
-                      {/* Información del cliente */}
                       <div className="border-t pt-6 border-gray-200">
-                        <h4
-                          className="font-bold text-lg"
-                          style={{ color: colors.dark }}
-                        >
+                        <h4 className="font-bold text-lg" style={{ color: colors.dark }}>
                           {testimonial.name}
                         </h4>
                         <p className="mb-2" style={{ color: colors.lightGray }}>
                           {testimonial.location}
                         </p>
-                        <p
-                          className="font-semibold text-sm"
-                          style={{ color: colors.strong }}
-                        >
+                        <p className="font-semibold text-sm" style={{ color: colors.strong }}>
                           {testimonial.service}
                         </p>
                       </div>
@@ -168,46 +146,37 @@ export default function Testimonials() {
           </motion.div>
         </div>
 
-        {/* Botones de navegación */}
+        {/* Botones */}
         <button
-          className="absolute left-0 top-1/2 -translate-y-1/2 ml-4 p-3 rounded-full shadow-lg border-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Anterior slide"
+          className="absolute left-0 top-1/2 -translate-y-1/2 ml-4 p-3 rounded-full shadow-lg border-2 transition-transform duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110"
           onClick={prevSlide}
           disabled={currentSlide === 0}
-          style={{
-            backgroundColor: colors.white,
-            borderColor: colors.strong,
-            color: colors.strong,
-          }}
+          style={{ backgroundColor: colors.white, borderColor: colors.strong, color: colors.strong }}
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
 
         <button
-          className="absolute right-0 top-1/2 -translate-y-1/2 mr-4 p-3 rounded-full shadow-lg border-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Siguiente slide"
+          className="absolute right-0 top-1/2 -translate-y-1/2 mr-4 p-3 rounded-full shadow-lg border-2 transition-transform duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110"
           onClick={nextSlide}
           disabled={currentSlide === totalSlides - 1}
-          style={{
-            backgroundColor: colors.white,
-            borderColor: colors.strong,
-            color: colors.strong,
-          }}
+          style={{ backgroundColor: colors.white, borderColor: colors.strong, color: colors.strong }}
         >
           <ChevronRight className="h-6 w-6" />
         </button>
       </div>
 
-      {/* Indicadores (puntos) */}
+      {/* Indicadores */}
       <div className="flex justify-center mt-8 space-x-2">
         {Array.from({ length: totalSlides }).map((_, index) => (
-          <button
+          <motion.button
             key={index}
-            className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-              index === currentSlide ? "scale-125" : "bg-gray-400"
-            }`}
             onClick={() => setCurrentSlide(index)}
-            style={{
-              backgroundColor: index === currentSlide ? colors.strong : colors.gray,
-            }}
+            animate={{ scale: index === currentSlide ? 1.25 : 1 }}
+            className="w-3 h-3 rounded-full transition-colors duration-300"
+            style={{ backgroundColor: index === currentSlide ? colors.strong : colors.gray }}
           />
         ))}
       </div>

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar, Users, DollarSign, Wrench, TrendingUp, Clock, CheckCircle, Plus } from 'lucide-react'
 import { Bar, Line, Doughnut } from "react-chartjs-2"
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend } from "chart.js"
+import { RoleRedirect } from "@/components/auth/role-redirect"
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend)
 
@@ -23,137 +24,56 @@ export default function DashboardPage() {
   })
 
   const [todaySchedule, setTodaySchedule] = useState([
-    {
-      id: "1",
-      time: "09:00",
-      client: "María González",
-      service: "Detección de Fugas",
-      technician: "Juan Pérez",
-      status: "confirmed",
-      priority: "high",
-    },
-    {
-      id: "2",
-      time: "11:30",
-      client: "Empresa ABC",
-      service: "Video Inspección",
-      technician: "Ana Silva",
-      status: "in_progress",
-      priority: "medium",
-    },
-    {
-      id: "3",
-      time: "14:00",
-      client: "Carlos Rodríguez",
-      service: "Destape Alcantarillado",
-      technician: "Luis Torres",
-      status: "pending",
-      priority: "high",
-    },
-    {
-      id: "4",
-      time: "16:30",
-      client: "Condominio Los Pinos",
-      service: "Detección de Fugas",
-      technician: "Pedro Sánchez",
-      status: "confirmed",
-      priority: "low",
-    },
+    { id: "1", time: "09:00", client: "María González", service: "Detección de Fugas", technician: "Juan Pérez", status: "confirmed", priority: "high" },
+    { id: "2", time: "11:30", client: "Empresa ABC", service: "Video Inspección", technician: "Ana Silva", status: "in_progress", priority: "medium" },
+    { id: "3", time: "14:00", client: "Carlos Rodríguez", service: "Destape Alcantarillado", technician: "Luis Torres", status: "pending", priority: "high" },
+    { id: "4", time: "16:30", client: "Condominio Los Pinos", service: "Detección de Fugas", technician: "Pedro Sánchez", status: "confirmed", priority: "low" },
   ])
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "confirmed":
-        return "bg-blue-100 text-blue-800"
-      case "in_progress":
-        return "bg-green-100 text-green-800"
-      case "pending":
-        return "bg-yellow-100 text-yellow-800"
-      case "completed":
-        return "bg-gray-100 text-gray-800"
-      default:
-        return "bg-gray-100 text-gray-800"
+      case "confirmed": return "bg-blue-100 text-blue-800"
+      case "in_progress": return "bg-green-100 text-green-800"
+      case "pending": return "bg-yellow-100 text-yellow-800"
+      case "completed": return "bg-gray-100 text-gray-800"
+      default: return "bg-gray-100 text-gray-800"
     }
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-800"
-      case "medium":
-        return "bg-yellow-100 text-yellow-800"
-      case "low":
-        return "bg-green-100 text-green-800"
-      default:
-        return "bg-gray-100 text-gray-800"
+      case "high": return "bg-red-100 text-red-800"
+      case "medium": return "bg-yellow-100 text-yellow-800"
+      case "low": return "bg-green-100 text-green-800"
+      default: return "bg-gray-100 text-gray-800"
     }
   }
 
   // Chart data
   const weeklyJobsData = {
     labels: ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
-    datasets: [
-      {
-        label: "Trabajos Completados",
-        data: [12, 15, 8, 18, 22, 14, 6],
-        backgroundColor: "rgba(59, 130, 246, 0.8)",
-        borderColor: "rgb(59, 130, 246)",
-        borderWidth: 1,
-        borderRadius: 4,
-      },
-    ],
+    datasets: [{ label: "Trabajos Completados", data: [12, 15, 8, 18, 22, 14, 6], backgroundColor: "rgba(59, 130, 246, 0.8)", borderColor: "rgb(59, 130, 246)", borderWidth: 1, borderRadius: 4 }],
   }
 
   const revenueData = {
     labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Ingresos (CLP)",
-        data: [1200000, 1900000, 1500000, 2500000, 2200000, 2850000],
-        borderColor: "rgb(245, 124, 0)",
-        backgroundColor: "rgba(245, 124, 0, 0.1)",
-        tension: 0.4,
-        fill: true,
-      },
-    ],
+    datasets: [{ label: "Ingresos (CLP)", data: [1200000, 1900000, 1500000, 2500000, 2200000, 2850000], borderColor: "rgb(245, 124, 0)", backgroundColor: "rgba(245, 124, 0, 0.1)", tension: 0.4, fill: true }],
   }
 
   const serviceDistribution = {
     labels: ["Detección de Fugas", "Destape Alcantarillado", "Video Inspección"],
-    datasets: [
-      {
-        data: [45, 35, 20],
-        backgroundColor: ["rgba(59, 130, 246, 0.8)", "rgba(245, 124, 0, 0.8)", "rgba(34, 197, 94, 0.8)"],
-        borderWidth: 0,
-      },
-    ],
+    datasets: [{ data: [45, 35, 20], backgroundColor: ["rgba(59, 130, 246, 0.8)", "rgba(245, 124, 0, 0.8)", "rgba(34, 197, 94, 0.8)"], borderWidth: 0 }],
   }
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: "rgba(0, 0, 0, 0.05)",
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-    },
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, grid: { color: "rgba(0, 0, 0, 0.05)" } }, x: { grid: { display: false } } },
   }
 
   return (
-    
+    <RoleRedirect>
       <div className="space-y-6">
         {/* Welcome Header */}
         <div className="flex justify-between items-start">
@@ -372,6 +292,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-    
+    </RoleRedirect>
   )
 }

@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone', // ✅ Modo para serverless en Netlify
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -8,7 +7,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    unoptimized: true, // Solo si no usas el optimizador de imágenes de Vercel
   },
 };
 

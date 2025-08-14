@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Paleta de colores para un uso más limpio en Tailwind CSS
+// Paleta de colores
 const colors = {
   dark: "#002D71",
   medium: "#014C90",
@@ -16,6 +16,7 @@ const colors = {
   white: "#FFFFFF",
 };
 
+// Preguntas frecuentes
 const faqs = [
   {
     question: "¿Cómo saber si tengo una fuga si no hay señales visibles?",
@@ -59,6 +60,7 @@ const faqs = [
   },
 ];
 
+// Formas de fondo
 const backgroundShapes = [
   { color: colors.light, size: 24, top: "10%", left: "5%", rotate: 45 },
   { color: colors.soft, size: 32, top: "25%", right: "15%", rotate: 45 },
@@ -75,16 +77,18 @@ export default function FAQ() {
 
   const toggleItem = (index: number) => {
     setOpenItems((prev) =>
-      prev.includes(index)
-        ? prev.filter((item) => item !== index)
-        : [index]
+      prev.includes(index) ? prev.filter((item) => item !== index) : [index]
     );
   };
 
   return (
-    <section id="faq" className="relative py-20 overflow-hidden" style={{ backgroundColor: colors.white }}>
-      {/* Fondo con un patrón geométrico de "galería" */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-60">
+    <section
+      id="faq"
+      className="relative py-20 overflow-hidden"
+      style={{ backgroundColor: colors.white }}
+    >
+      {/* Fondo geométrico */}
+      <div className="absolute top-0 left-0 w-full h-full opacity-60 pointer-events-none">
         {backgroundShapes.map((shape, index) => (
           <motion.div
             key={index}
@@ -110,7 +114,7 @@ export default function FAQ() {
           />
         ))}
       </div>
-      
+
       <div className="relative container mx-auto px-4 max-w-2xl">
         <div className="text-center mb-12">
           <h2
@@ -153,7 +157,7 @@ export default function FAQ() {
                   />
                 </motion.div>
               </div>
-              
+
               <AnimatePresence>
                 {openItems.includes(index) && (
                   <motion.div

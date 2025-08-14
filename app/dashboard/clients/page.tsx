@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -113,36 +113,6 @@ export default function ClientsPage() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  // Opcional: si quieres seguir usando fetch para actualizar los datos en vivo, puedes descomentar esta función y el useEffect
-  /*
-  const fetchClients = async () => {
-    try {
-      setLoading(true)
-      const params = new URLSearchParams()
-      if (searchTerm) params.append('search', searchTerm)
-      if (statusFilter !== 'all') params.append('status', statusFilter)
-      if (typeFilter !== 'all') params.append('type', typeFilter)
-
-      const response = await fetch(`/api/clients?${params.toString()}`)
-      if (response.ok) {
-        const data = await response.json()
-        setClients(data.clients || [])
-      } else {
-        console.error('Error fetching clients')
-      }
-    } catch (error) {
-      console.error("Error fetching clients:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchClients()
-  }, [searchTerm, statusFilter, typeFilter])
-  */
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -192,22 +162,9 @@ export default function ClientsPage() {
     }
   };
 
-  const handleDelete = async (clientId: string) => {
+  const handleDelete = (clientId: string) => {
     if (confirm("¿Estás seguro de que quieres eliminar este cliente?")) {
-      try {
-        // Si usas API real, puedes hacer la llamada aquí. Sino solo actualizamos el estado.
-        // const response = await fetch(`/api/clients/${clientId}`, { method: "DELETE" })
-        // if (response.ok) {
-        //   fetchClients()
-        // } else {
-        //   const error = await response.json()
-        //   alert(error.error || "Error al eliminar cliente")
-        // }
-        setClients((prev) => prev.filter((c) => c.id !== clientId));
-      } catch (error) {
-        console.error("Error deleting client:", error);
-        alert("Error de conexión");
-      }
+      setClients((prev) => prev.filter((c) => c.id !== clientId));
     }
   };
 
@@ -228,32 +185,12 @@ export default function ClientsPage() {
   const commercialClients = clients.filter((c) => c.type === "commercial");
   const totalRevenue = clients.reduce((sum, c) => sum + c.totalSpent, 0);
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="animate-pulse">
-              <div className="h-24 bg-gray-200 rounded"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Gestión de Clientes
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900">Gestión de Clientes</h1>
           <p className="text-gray-600 mt-1">
             Administra tus clientes y su información
           </p>
@@ -269,85 +206,62 @@ export default function ClientsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-purple-600">
-                {clients.length}
-              </p>
-              <p className="text-sm text-gray-600">Total Clientes</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">
-                {activeClients.length}
-              </p>
-              <p className="text-sm text-gray-600">Activos</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">
-                {commercialClients.length}
-              </p>
-              <p className="text-sm text-gray-600">Comerciales</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-yellow-600">
-                ${totalRevenue.toLocaleString("es-CL")}
-              </p>
-              <p className="text-sm text-gray-600">Facturación Total</p>
-            </div>
-          </CardContent>
-        </Card>
+        <Card><CardContent className="p-6 text-center">
+          <p className="text-2xl font-bold text-purple-600">{clients.length}</p>
+          <p className="text-sm text-gray-600">Total Clientes</p>
+        </CardContent></Card>
+
+        <Card><CardContent className="p-6 text-center">
+          <p className="text-2xl font-bold text-green-600">{activeClients.length}</p>
+          <p className="text-sm text-gray-600">Activos</p>
+        </CardContent></Card>
+
+        <Card><CardContent className="p-6 text-center">
+          <p className="text-2xl font-bold text-blue-600">{commercialClients.length}</p>
+          <p className="text-sm text-gray-600">Comerciales</p>
+        </CardContent></Card>
+
+        <Card><CardContent className="p-6 text-center">
+          <p className="text-2xl font-bold text-yellow-600">
+            ${totalRevenue.toLocaleString("es-CL")}
+          </p>
+          <p className="text-sm text-gray-600">Facturación Total</p>
+        </CardContent></Card>
       </div>
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Buscar por nombre, email o teléfono..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-40">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="active">Activos</SelectItem>
-                <SelectItem value="inactive">Inactivos</SelectItem>
-                <SelectItem value="pending">Pendientes</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-full md:w-40">
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="residential">Residencial</SelectItem>
-                <SelectItem value="commercial">Comercial</SelectItem>
-              </SelectContent>
-            </Select>
+        <CardContent className="p-6 flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Buscar por nombre, email o teléfono..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full md:w-40">
+              <SelectValue placeholder="Estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="active">Activos</SelectItem>
+              <SelectItem value="inactive">Inactivos</SelectItem>
+              <SelectItem value="pending">Pendientes</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-full md:w-40">
+              <SelectValue placeholder="Tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="residential">Residencial</SelectItem>
+              <SelectItem value="commercial">Comercial</SelectItem>
+            </SelectContent>
+          </Select>
         </CardContent>
       </Card>
 
@@ -370,31 +284,16 @@ export default function ClientsPage() {
                       setShowForm(true);
                     }}
                   >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Editar
+                    <Edit className="mr-2 h-4 w-4" /> Editar
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleDelete(client.id)}>
-                    <Trash2 className="mr-2 h-4 w-4 text-red-600" />
-                    Eliminar
+                    <Trash2 className="mr-2 h-4 w-4 text-red-600" /> Eliminar
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </CardHeader>
-            <CardContent className="pt-0">
-              <p className="flex items-center gap-2 text-sm text-gray-700">
-                <Mail className="h-4 w-4 text-gray-400" />
-                {client.email}
-              </p>
-              <p className="flex items-center gap-2 text-sm text-gray-700">
-                <Phone className="h-4 w-4 text-gray-400" />
-                {client.phone}
-              </p>
-              <p className="flex items-center gap-2 text-sm text-gray-700">
-                <MapPin className="h-4 w-4 text-gray-400" />
-                {client.address}
-              </p>
-
-              <div className="flex gap-2 mt-4">
+            <CardContent className="pt-0 space-y-2">
+              <div className="flex gap-2 mt-2">
                 <Badge className={getStatusColor(client.status)}>
                   {getStatusLabel(client.status)}
                 </Badge>
@@ -402,6 +301,29 @@ export default function ClientsPage() {
                   {getTypeLabel(client.type)}
                 </Badge>
               </div>
+              <p className="flex items-center text-sm text-gray-700">
+                <Mail className="h-4 w-4 mr-2 text-gray-400" /> {client.email}
+              </p>
+              <p className="flex items-center text-sm text-gray-700">
+                <Phone className="h-4 w-4 mr-2 text-gray-400" /> {client.phone}
+              </p>
+              <p className="flex items-center text-sm text-gray-700">
+                <MapPin className="h-4 w-4 mr-2 text-gray-400" /> {client.address}
+              </p>
+              {client.company && (
+                <p className="flex items-center text-sm text-gray-700">
+                  <Building className="h-4 w-4 mr-2 text-gray-400" /> {client.company}
+                </p>
+              )}
+              {client.contactPerson && (
+                <p className="flex items-center text-sm text-gray-700">
+                  <Users className="h-4 w-4 mr-2 text-gray-400" /> {client.contactPerson}
+                </p>
+              )}
+              <p className="flex items-center text-sm text-gray-700">
+                <Calendar className="h-4 w-4 mr-2 text-gray-400" /> Último servicio:{" "}
+                {new Date(client.lastService).toLocaleDateString("es-CL")}
+              </p>
             </CardContent>
           </Card>
         ))}
@@ -417,14 +339,12 @@ export default function ClientsPage() {
           }}
           onSubmit={(data: ClientData) => {
             if (selectedClient) {
-              // Editar cliente existente, actualizar con data (preservar id, status, etc)
               setClients((prev) =>
                 prev.map((c) =>
                   c.id === selectedClient.id ? { ...c, ...data } : c
                 )
               );
             } else {
-              // Nuevo cliente: crear uno nuevo con id y campos por defecto
               const newClient: Client = {
                 id: crypto.randomUUID(),
                 status: "active",
@@ -434,12 +354,10 @@ export default function ClientsPage() {
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 ...data,
-                email: data.email ?? "", // si viene undefined, poner string vacío
+                email: data.email ?? "",
               };
-
               setClients((prev) => [...prev, newClient]);
             }
-
             setShowForm(false);
             setSelectedClient(null);
           }}

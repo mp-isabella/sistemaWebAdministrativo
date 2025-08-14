@@ -15,7 +15,7 @@ import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import { motion, useAnimation, useInView, Variants } from "framer-motion";
 import Image from "next/image";
 
-// Paleta de colores unificada
+// Paleta de colores
 const colors = {
   dark: "#002D71",
   medium: "#014C90",
@@ -26,36 +26,21 @@ const colors = {
   lightGray: "#6B7280",
 };
 
-// Animación de entrada para la sección
+// Animación
 const cardVariants: Variants = {
   hidden: { opacity: 0, scale: 0.95 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: {
-      duration: 0.6,
-      ease: "easeOut",
-    },
+    transition: { duration: 0.6, ease: "easeOut" },
   },
 };
 
-// Datos para la selección dinámica de Región y Comuna
+// Regiones y comunas
 const regionesYComunas = {
-  "Región Metropolitana": [
-    "Santiago",
-    "Providencia",
-    "Ñuñoa",
-    "Las Condes",
-    "Vitacura",
-  ],
+  "Región Metropolitana": ["Santiago", "Providencia", "Ñuñoa", "Las Condes", "Vitacura"],
   "Región de Ñuble": ["Chillán", "Coihueco", "San Carlos", "Quillón"],
-  "Región de Valparaíso": [
-    "Valparaíso",
-    "Viña del Mar",
-    "Concón",
-    "Quilpué",
-    "Villa Alemana",
-  ],
+  "Región de Valparaíso": ["Valparaíso", "Viña del Mar", "Concón", "Quilpué", "Villa Alemana"],
 };
 
 export default function SeccionContactoOp2(): React.JSX.Element {
@@ -67,27 +52,21 @@ export default function SeccionContactoOp2(): React.JSX.Element {
     comuna: "",
     direccion: "",
     service: "",
-    date: "",
     message: "",
   });
 
-  // Estado para la animación de scroll
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const controls = useAnimation();
 
   useEffect(() => {
-    if (isInView) {
-      controls.start("visible");
-    }
+    if (isInView) controls.start("visible");
   }, [controls, isInView]);
 
-  // Manejador para los cambios del formulario
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Manejador para el cambio de región, reinicia la comuna
   const handleRegionChange = (value: string) => {
     setFormData((prev) => ({ ...prev, region: value, comuna: "" }));
   };
@@ -102,25 +81,14 @@ export default function SeccionContactoOp2(): React.JSX.Element {
     : [];
 
   return (
-    <section
-      id="contacto"
-      className="relative py-20 px-4 md:px-8 lg:px-16"
-      style={{ backgroundColor: colors.white }}
-    >
+    <section id="contacto" className="relative py-20 px-4 md:px-8 lg:px-16" style={{ backgroundColor: colors.white }}>
       <div className="container mx-auto">
         <div className="text-center mb-8">
-          <h2
-            className="text-4xl md:text-5xl font-extrabold leading-tight mb-4"
-            style={{ color: colors.dark }}
-          >
+          <h2 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4" style={{ color: colors.dark }}>
             Contáctanos
           </h2>
-          <p
-            className="text-lg max-w-3xl mx-auto leading-relaxed font-medium"
-            style={{ color: colors.medium }}
-          >
-            Estamos aquí para resolver tus dudas y ayudarte con tus proyectos.
-            Envíanos un mensaje o visítanos.
+          <p className="text-lg max-w-3xl mx-auto leading-relaxed font-medium" style={{ color: colors.medium }}>
+            Estamos aquí para resolver tus dudas y ayudarte con tus proyectos. Envíanos un mensaje o visítanos.
           </p>
         </div>
 
@@ -131,16 +99,13 @@ export default function SeccionContactoOp2(): React.JSX.Element {
           initial="hidden"
           animate={controls}
         >
-          {/* Columna Izquierda: Información de Contacto y Medios de Pago */}
-          <div
-            className="p-8 md:p-12 text-white flex flex-col justify-between"
-            style={{ backgroundColor: colors.dark }}
-          >
+          {/* Columna Izquierda */}
+          <div className="p-8 md:p-12 text-white flex flex-col justify-between" style={{ backgroundColor: colors.dark }}>
             <div>
               <h3 className="text-2xl font-bold mb-6">Información</h3>
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
-                  <Phone size={24} className="flex-shrink-0" />
+                  <Phone size={24} />
                   <div>
                     <p className="font-semibold text-lg">Teléfono</p>
                     <p className="opacity-80">Santiago: +56942008410</p>
@@ -148,17 +113,17 @@ export default function SeccionContactoOp2(): React.JSX.Element {
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <Mail size={24} className="flex-shrink-0" />
+                  <Mail size={24} />
                   <div>
                     <p className="font-semibold text-lg">Correo</p>
                     <p className="opacity-80">amesticaltda@gmail.com</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <Clock size={24} className="flex-shrink-0" />
+                  <Clock size={24} />
                   <div>
                     <p className="font-semibold text-lg">Horario</p>
-                    <p className="opacity-80">Lunes a viernes: 8:00 - 20:00 </p>
+                    <p className="opacity-80">Lunes a viernes: 8:00 - 20:00</p>
                     <p className="opacity-80">Sábado: 9:00 - 19:00</p>
                   </div>
                 </div>
@@ -167,183 +132,72 @@ export default function SeccionContactoOp2(): React.JSX.Element {
 
             <div className="mt-8 pt-6 border-t border-white border-opacity-30">
               <h3 className="text-2xl font-bold mb-4">Medios de Pago</h3>
-              <Image
-                src="/logos/mediosdepago.png"
-                alt="Medios de pago disponibles"
-                width={200}
-                height={100}
-                className="w-full h-auto rounded-lg"
-              />
+              <Image src="/logos/mediosdepago.png" alt="Medios de pago disponibles" width={200} height={100} className="w-full h-auto rounded-lg" />
             </div>
           </div>
 
-          {/* Columna Derecha: Formulario y Mapas */}
+          {/* Columna Derecha */}
           <div className="lg:col-span-2 p-8 md:p-12 bg-white">
-            <h3
-              className="text-3xl font-bold mb-8"
-              style={{ color: colors.dark }}
-            >
+            <h3 className="text-3xl font-bold mb-8" style={{ color: colors.dark }}>
               Agenda un Servicio
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Formulario */}
               <form onSubmit={handleSubmit} className="md:col-span-1 space-y-4">
-                {/* Campos individuales */}
-                <Input
-                  placeholder="Tu nombre completo"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  required
-                />
-                <Input
-                  placeholder="tu@email.com"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  required
-                />
+                <Input placeholder="Tu nombre completo" value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} required />
+                <Input placeholder="tu@email.com" type="email" value={formData.email} onChange={(e) => handleInputChange("email", e.target.value)} required />
 
-                {/* Campos en dos columnas */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    placeholder="+56 9 1234 5678"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    required
-                  />
-                  <Input
-                    placeholder="Dirección"
-                    value={formData.direccion}
-                    onChange={(e) =>
-                      handleInputChange("direccion", e.target.value)
-                    }
-                  />
+                  <Input placeholder="+56 9 1234 5678" type="tel" value={formData.phone} onChange={(e) => handleInputChange("phone", e.target.value)} required />
+                  <Input placeholder="Dirección" value={formData.direccion} onChange={(e) => handleInputChange("direccion", e.target.value)} />
 
-                  {/* Región */}
-                  <Select
-                    onValueChange={handleRegionChange}
-                    value={formData.region}
-                    required
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Región" />
-                    </SelectTrigger>
+                  <Select onValueChange={handleRegionChange} value={formData.region} required>
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Región" /></SelectTrigger>
                     <SelectContent>
                       {Object.keys(regionesYComunas).map((region) => (
-                        <SelectItem key={region} value={region}>
-                          {region}
-                        </SelectItem>
+                        <SelectItem key={region} value={region}>{region}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
 
-                  {/* Comuna */}
-                  <Select
-                    onValueChange={(value) =>
-                      handleInputChange("comuna", value)
-                    }
-                    value={formData.comuna}
-                    disabled={!formData.region}
-                    required
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Comuna" />
-                    </SelectTrigger>
+                  <Select onValueChange={(value) => handleInputChange("comuna", value)} value={formData.comuna} disabled={!formData.region} required>
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Comuna" /></SelectTrigger>
                     <SelectContent>
-                      {comunasDisponibles.length > 0 ? (
-                        comunasDisponibles.map((comuna) => (
-                          <SelectItem key={comuna} value={comuna}>
-                            {comuna}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <div className="p-2 text-sm text-gray-500">
-                          Selecciona una región primero
-                        </div>
-                      )}
+                      {comunasDisponibles.length > 0
+                        ? comunasDisponibles.map((comuna) => <SelectItem key={comuna} value={comuna}>{comuna}</SelectItem>)
+                        : <div className="p-2 text-sm text-gray-500">Selecciona una región primero</div>}
                     </SelectContent>
                   </Select>
 
-                  {/* Servicio y Fecha al lado derecho */}
-                  <Select
-                    onValueChange={(value) =>
-                      handleInputChange("service", value)
-                    }
-                    value={formData.service}
-                    required
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Seleccione servicio" />
-                    </SelectTrigger>
+                  <Select onValueChange={(value) => handleInputChange("service", value)} value={formData.service} required>
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Seleccione servicio" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="deteccion">
-                        Detección de fugas
-                      </SelectItem>
-                      <SelectItem value="reparacion_instalacion">
-                        Reparación e instalación
-                      </SelectItem>
-                      <SelectItem value="mantencion_preventiva">
-                        Mantención preventiva
-                      </SelectItem>
+                      <SelectItem value="deteccion">Detección de fugas</SelectItem>
+                      <SelectItem value="reparacion_instalacion">Reparación e instalación</SelectItem>
+                      <SelectItem value="mantencion_preventiva">Mantención preventiva</SelectItem>
                     </SelectContent>
                   </Select>
-
-                  <Input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => handleInputChange("date", e.target.value)}
-                    className="w-full"
-                  />
                 </div>
 
-                {/* Mensaje */}
-                <Textarea
-                  placeholder="Cuéntanos sobre la fuga o problema que tienes..."
-                  value={formData.message}
-                  onChange={(e) => handleInputChange("message", e.target.value)}
-                  required
-                  className="min-h-[120px]"
-                />
+                <Textarea placeholder="Cuéntanos sobre la fuga o problema que tienes..." value={formData.message} onChange={(e) => handleInputChange("message", e.target.value)} required className="min-h-[120px]" />
 
                 <div className="flex justify-center">
-                  <Button
-                    type="submit"
-                    className="min-w-min font-semibold text-lg py-3 px-8 rounded-full transition-colors"
-                    style={{
-                      backgroundColor: colors.highlight,
-                      color: colors.white,
-                    }}
-                  >
-                    Enviar Solicitud
+                  <Button type="submit" className="min-w-min font-semibold text-lg py-3 px-8 rounded-full transition-colors" style={{ backgroundColor: colors.highlight, color: colors.white }}>
+                    Enviar
                   </Button>
                 </div>
               </form>
 
-              {/* Mapas de Ubicación */}
-              <div className="space-y-6 md:col-span-1">
-                <div className="rounded-lg shadow-md overflow-hidden">
-                  <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3697.7707675832953!2d-70.58032842379454!3d-33.44164099706208!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9662cfac5031be41%3A0xf4a12621448d42df!2sHamburgo%201398%2C%207790236%20%C3%91u%C3%B1oa%2C%20Regi%C3%B3n%20Metropolitana!5e1!3m2!1sen!2scl!4v1754536247038!5m2!1sen!2scl" 
-                    className="w-full h-[250px]"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="Mapa de la oficina en Ñuñoa"
-                  ></iframe>
-                </div>
-                <div className="rounded-lg shadow-md overflow-hidden">
-                  <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3556.3665169833644!2d-71.83462282365821!3d-36.62685266714297!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x966ed6eade46d19d%3A0xaa904d2bd2b607fd!2sC.%20Balmaceda%201375%2C%207380000%20Coihueco%2C%20%C3%91uble!5e1!3m2!1sen!2scl!4v1754536349284!5m2!1sen!2scl" 
-                    className="w-full h-[250px]"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="Mapa de la oficina en Coihueco"
-                  ></iframe>
-                </div>
+              {/* Mapa */}
+              <div className="md:col-span-1">
+                <iframe
+                  title="Ubicación Améstica Ltda"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.8052313622957!2d-72.10503182389217!3d-36.60117978006206!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9669ca3a802ba3e5%3A0xf3f01ec189bb0d41!2sAm%C3%A9stica%20Ltda!5e0!3m2!1ses!2scl!4v1691234567890!5m2!1ses!2scl"
+                  width="100%"
+                  height="100%"
+                  className="rounded-xl w-full h-full border-0"
+                  loading="lazy"
+                ></iframe>
               </div>
             </div>
           </div>
