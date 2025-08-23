@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
     const where: any = {}
 
     // Filtros por rol
-    if (session.user.role === "operador") {
-      where.assignedToId = session.user.id
+    if (session.user.role.toLowerCase() === "tecnico") {
+      where.technicianId = session.user.id
     }
 
     if (status && status !== "all") {
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (technicianId) {
-      where.assignedToId = technicianId
+      where.technicianId = technicianId
     }
 
     if (startDate && endDate) {
@@ -49,9 +49,8 @@ export async function GET(request: NextRequest) {
       include: {
         client: true,
         service: true,
-        assignedTo: true,
-        createdBy: true,
-        images: true
+        technician: true,
+        createdBy: true
       },
       orderBy: { createdAt: "desc" }
     })
@@ -71,11 +70,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    if (!["admin", "secretaria"].includes(session.user.role)) {
+    if (!["admin", "secretaria"].includes(session.user.role.toLowerCase())) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
-    const { title, description, clientId, serviceId, assignedToId, scheduledAt, priority } = await request.json()
+    const { title, description, clientId, serviceId, technicianId, scheduledAt, priority } = await request.json()
 
     const newJob = await prisma.job.create({
       data: {
@@ -83,7 +82,7 @@ export async function POST(request: NextRequest) {
         description,
         clientId,
         serviceId,
-        assignedToId,
+        technicianId,
         createdById: session.user.id,
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
         priority: priority || "MEDIUM"
@@ -91,7 +90,7 @@ export async function POST(request: NextRequest) {
       include: {
         client: true,
         service: true,
-        assignedTo: true,
+        technician: true,
         createdBy: true
       }
     })

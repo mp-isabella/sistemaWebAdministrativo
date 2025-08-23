@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -12,12 +12,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
 
     const { status, observations, images, signature } = await request.json()
-    const jobId = params.id
+    const { id: jobId } = await params
 
     // Verificar que el usuario puede actualizar este trabajo
     const job = await prisma.job.findUnique({
       where: { id: jobId },
-      include: { assignedTo: true },
+      include: { technician: true },
     })
 
     if (!job) {
@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
 
     // Solo el técnico asignado o admin puede actualizar
-    if (session.user.role !== "admin" && job.assignedToId !== session.user.id) {
+    if (session.user.role !== "admin" && job.technicianId !== session.user.id) {
       return NextResponse.json({ error: "Sin permisos para actualizar este trabajo" }, { status: 403 })
     }
 
@@ -36,22 +36,10 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         status,
         ...(status === "COMPLETED" && { completedAt: new Date() }),
         ...(observations && { description: observations }),
+        ...(images && images.length > 0 && { images }),
+        ...(signature && { signature }),
       },
     })
-
-    // Guardar imágenes si existen
-    if (images && images.length > 0) {
-      await Promise.all(
-        images.map((imageUrl: string) =>
-          prisma.image.create({
-            data: {
-              url: imageUrl,
-              jobId: jobId,
-            },
-          }),
-        ),
-      )
-    }
 
     return NextResponse.json({ success: true, job: updatedJob })
   } catch (error) {

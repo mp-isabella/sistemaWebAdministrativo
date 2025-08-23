@@ -19,44 +19,44 @@ const colors = {
 // Preguntas frecuentes
 const faqs = [
   {
-    question: "¿Cómo saber si tengo una fuga si no hay señales visibles?",
+    question: "¿Cómo saber si tengo una fuga de agua en mi casa?",
     answer:
-      "Las fugas ocultas pueden identificarse por aumentos inusuales en la cuenta del agua, baja presión o sonidos constantes en las tuberías. Contamos con equipos que detectan fugas sin necesidad de romper superficies.",
+      "Algunas señales comunes son:\n• Aumento inesperado en la cuenta del agua.\n• Humedad o manchas en muros, techos o pisos.\n• Ruidos de agua corriendo cuando todas las llaves están cerradas.\n• Disminución en la presión del agua.",
   },
   {
-    question: "¿Qué tecnología utilizan para garantizar una detección precisa?",
+    question: "¿Qué debo hacer si sospecho que tengo una fuga?",
     answer:
-      "Usamos herramientas de ultrasonido, termografía infrarroja y correladores electrónicos, que localizan con precisión milimétrica las fugas sin intervención destructiva.",
+      "Primero, cierre la llave de paso para evitar mayores pérdidas y contacte a un especialista en detección de fugas para confirmar y reparar el problema.",
   },
   {
-    question: "¿Ofrecen informes técnicos después de la detección?",
+    question: "¿Qué pasa si no reparo una fuga de agua?",
     answer:
-      "Sí. Entregamos un informe detallado con evidencias fotográficas, ubicación exacta del problema y recomendaciones técnicas para su solución.",
+      "Una fuga no atendida puede provocar:\n• Aumento considerable en la cuenta de agua.\n• Daños estructurales en la vivienda (humedad, hongos, corrosión).\n• Riesgo eléctrico por filtraciones de agua.",
   },
   {
-    question: "¿Qué hago si tengo una fuga pero aún no sé dónde?",
+    question: "¿Cómo se detectan las fugas de agua ocultas?",
     answer:
-      "No te preocupes. Nuestra visita incluye diagnóstico profesional. Evaluamos el sistema completo hasta encontrar el origen exacto sin daños innecesarios.",
+      "Existen diferentes métodos según el tipo de instalación:\n• Equipos de escucha acústica.\n• Gas trazador.\n• Cámaras termográficas.\n• Videoinspección de tuberías.",
   },
   {
-    question: "¿Cuánto cuesta el servicio de detección de fugas?",
+    question: "¿Las fugas de agua siempre requieren romper muros o pisos?",
     answer:
-      "El costo varía según el tipo de inmueble y dificultad del acceso. Sin embargo, el diagnóstico inicial y el presupuesto son completamente gratuitos y sin compromiso.",
+      "No siempre. Hoy existen tecnologías de detección no invasivas que permiten ubicar con precisión la fuga y minimizar roturas innecesarias.",
   },
   {
-    question: "¿La detección de fugas incluye la reparación del daño?",
+    question: "¿Cuál es la diferencia entre una fuga visible y una oculta?",
     answer:
-      "Sí. Una vez identificada la fuga, ofrecemos un servicio integral que incluye reparación, materiales y restauración de lo intervenido si así lo deseas.",
+      "Visible: cuando el agua se aprecia a simple vista (ej. llave, WC, cañería expuesta).\nOculta: está dentro de muros, pisos o subterráneos, y requiere equipos especializados para su detección.",
   },
   {
-    question: "¿Cuánto demora la reparación una vez encontrada la fuga?",
+    question: "¿Puedo detectar una fuga yo mismo?",
     answer:
-      "En la mayoría de los casos, la reparación puede realizarse el mismo día. Si se requieren materiales especiales, agendamos en las siguientes 24 a 48 horas.",
+      "Puedes hacer pruebas simples como cerrar todas las llaves y revisar si el medidor sigue marcando consumo. Sin embargo, para fugas ocultas se recomienda la inspección profesional.",
   },
   {
-    question: "¿Pueden ayudar en casos de filtraciones en piscinas o calefacción?",
+    question: "¿Una fuga pequeña es realmente peligrosa?",
     answer:
-      "Absolutamente. Detectamos pérdidas en piscinas, sistemas de calefacción por radiadores o loza radiante, y filtraciones en redes de riego o alcantarillado.",
+      "Sí. Incluso una fuga del tamaño de una gota puede desperdiciar cientos de litros de agua al mes y causar daños en la infraestructura de tu hogar.",
   },
 ];
 
@@ -84,7 +84,7 @@ export default function FAQ() {
   return (
     <section
       id="faq"
-      className="relative py-20 overflow-hidden"
+      className="section-full-height relative py-24 overflow-hidden"
       style={{ backgroundColor: colors.white }}
     >
       {/* Fondo geométrico */}
@@ -121,7 +121,7 @@ export default function FAQ() {
             className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight"
             style={{ color: colors.dark }}
           >
-            Preguntas Frecuentes
+            Preguntas frecuentes sobre fugas de agua
           </h2>
           <p
             className="text-lg max-w-3xl mx-auto leading-relaxed font-medium"
@@ -167,9 +167,13 @@ export default function FAQ() {
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
-                    <p className="text-base leading-relaxed" style={{ color: colors.medium }}>
-                      {faq.answer}
-                    </p>
+                    <div className="text-base leading-relaxed" style={{ color: colors.medium }}>
+                      {faq.answer.split('\n').map((line, lineIndex) => (
+                        <p key={lineIndex} className={lineIndex > 0 ? "mt-2" : ""}>
+                          {line}
+                        </p>
+                      ))}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>

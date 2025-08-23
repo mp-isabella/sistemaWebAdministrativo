@@ -1,41 +1,40 @@
 "use client"
 
-import { ReactNode, useEffect } from "react"
+import { ReactNode, useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
 interface RoleRedirectProps {
   children: ReactNode
+  allowedRoles?: string[]
 }
 
-export function RoleRedirect({ children }: RoleRedirectProps) {
+export function RoleRedirect({ children, allowedRoles }: RoleRedirectProps) {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.role) {
-      const userRole = session.user.role
+    if (status === "loading") return
 
-      switch (userRole) {
-        case "admin":
-          router.push("/dashboard/admin")
-          break
-        case "secretaria":
-          router.push("/dashboard/schedule")
-          break
-        case "operador":
-          router.push("/dashboard/my-jobs")
-          break
-        default:
-          router.push("/dashboard")
-          break
-      }
-    } else if (status === "unauthenticated") {
-      router.push("/login")
+    if (status === "unauthenticated") {
+      router.replace("/login")
+      return
     }
-  }, [session, status, router])
 
-  if (status === "loading") {
+    if (status === "authenticated") {
+      const role = session?.user?.role?.toLowerCase()
+      if (allowedRoles && !allowedRoles.includes(role || "")) {
+        // Redirigir si el rol no tiene permiso
+        if (role === "tecnico") router.replace("/dashboard/my-jobs")
+        else router.replace("/dashboard")
+        return
+      }
+      setReady(true)
+    }
+  }, [status, session, allowedRoles, router])
+
+  if (status === "loading" || !ready) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -46,10 +45,5 @@ export function RoleRedirect({ children }: RoleRedirectProps) {
     )
   }
 
-  // Solo muestra el contenido si el usuario está autenticado
-  if (status === "authenticated") {
-    return <>{children}</>
-  }
-
-  return null
+  return <>{children}</>
 }

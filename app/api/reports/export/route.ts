@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
         doc.moveDown()
       }
 
-      if (job.images.length > 0) {
+      if (job.images && job.images.length > 0) {
         doc.text(`Evidencias: ${job.images.length} imagen(es)`)
         doc.moveDown()
       }

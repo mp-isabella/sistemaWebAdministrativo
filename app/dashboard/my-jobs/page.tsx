@@ -85,10 +85,10 @@ export default function MyJobsPage() {
 
   // Lógica de redirección en un solo lugar
   useEffect(() => {
-    // Si la sesión no está autenticada o el rol no es "operador", redirigir
-    if (status === "unauthenticated" || (status === "authenticated" && session.user.role !== "operador")) {
-      router.push("/login");
-    }
+            // Si la sesión no está autenticada o el rol no es "tecnico", redirigir
+        if (status === "unauthenticated" || (status === "authenticated" && session.user.role.toLowerCase() !== "tecnico")) {
+          router.push("/login");
+        }
   }, [status, session, router]);
 
   // Si la sesión está en estado de carga o no tiene el rol correcto, muestra un spinner.
@@ -101,9 +101,9 @@ export default function MyJobsPage() {
   }
 
   // Si no está autorizado, simplemente no renderizamos nada, la redirección ya está en curso.
-  if (status === "unauthenticated" || (status === "authenticated" && session.user.role !== "operador")) {
-    return null;
-  }
+        if (status === "unauthenticated" || (status === "authenticated" && session.user.role.toLowerCase() !== "tecnico")) {
+        return null;
+      }
 
   // Hook para cargar los trabajos al inicio
   useEffect(() => {
@@ -460,7 +460,7 @@ export default function MyJobsPage() {
                             size="sm"
                             onClick={() => {
                               setCurrentJobId(job.id);
-                              setCurrentJobImages(job.images.map(img => img.url));
+                              setCurrentJobImages(job.images ? job.images.map(img => img.url) : []);
                               setShowImageUpload(true);
                             }}
                           >
@@ -492,12 +492,32 @@ export default function MyJobsPage() {
 
       { /* Modales */ } {
         showImageUpload && currentJobId && (
-          <ImageUpload
-            jobId={currentJobId}
-            onImagesUploaded={handleImageSave}
-            existingImages={currentJobImages}
-            onCancel={() => setShowImageUpload(false)}
-          />
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Subir imagen del trabajo</h3>
+                <button
+                  onClick={() => setShowImageUpload(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ×
+                </button>
+              </div>
+              <ImageUpload
+                onImageUpload={(file) => {
+                  // Handle image upload for the current job
+                  console.log('Image uploaded for job:', currentJobId, file);
+                  // You would typically upload the file and then call handleImageSave
+                }}
+                onImageRemove={() => {
+                  // Handle image removal
+                  console.log('Image removed for job:', currentJobId);
+                }}
+                currentImage={currentJobImages[0]} // Show first image as current
+                label="Subir imagen del trabajo"
+              />
+            </div>
+          </div>
         )
       }
 

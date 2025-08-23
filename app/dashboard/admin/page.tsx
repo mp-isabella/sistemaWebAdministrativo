@@ -9,30 +9,9 @@ export default function AdminPage() {
   const adminModules = [
     {
       title: "Gestión de Usuarios",
-      description: "Administrar roles, permisos y accesos del sistema",
+      description: "Administrar roles, permisos y accesos al sistema",
       icon: Users,
       color: "bg-blue-100 text-blue-600",
-      status: "active",
-    },
-    {
-      title: "Configuración del Sistema",
-      description: "Parámetros generales y configuraciones técnicas",
-      icon: Settings,
-      color: "bg-gray-100 text-gray-600",
-      status: "active",
-    },
-    {
-      title: "Base de Datos",
-      description: "Respaldos, mantenimiento y optimización",
-      icon: Database,
-      color: "bg-green-100 text-green-600",
-      status: "active",
-    },
-    {
-      title: "Seguridad",
-      description: "Logs de acceso, auditoría y políticas de seguridad",
-      icon: Shield,
-      color: "bg-red-100 text-red-600",
       status: "active",
     },
     {
@@ -40,27 +19,6 @@ export default function AdminPage() {
       description: "Configurar alertas y notificaciones del sistema",
       icon: Bell,
       color: "bg-yellow-100 text-yellow-600",
-      status: "active",
-    },
-    {
-      title: "Personalización",
-      description: "Temas, colores y personalización de la interfaz",
-      icon: Palette,
-      color: "bg-purple-100 text-purple-600",
-      status: "beta",
-    },
-    {
-      title: "Integraciones",
-      description: "APIs externas y servicios de terceros",
-      icon: Globe,
-      color: "bg-indigo-100 text-indigo-600",
-      status: "coming_soon",
-    },
-    {
-      title: "Licencias",
-      description: "Gestión de licencias y suscripciones",
-      icon: Key,
-      color: "bg-orange-100 text-orange-600",
       status: "active",
     },
   ]
@@ -105,45 +63,8 @@ export default function AdminPage() {
         </Button>
       </div>
 
-      {/* System Status */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-l-4 border-l-green-500">
-          <CardContent className="p-6">
-            <div className="text-center">
-              <div className="w-3 h-3 bg-green-500 rounded-full mx-auto mb-2"></div>
-              <p className="text-sm font-medium text-gray-600">Estado del Sistema</p>
-              <p className="text-lg font-bold text-green-600">Operativo</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">99.9%</p>
-              <p className="text-sm text-gray-600">Uptime</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">2.1GB</p>
-              <p className="text-sm text-gray-600">Uso de BD</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">15</p>
-              <p className="text-sm text-gray-600">Usuarios Activos</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Admin Modules */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-12">
         {adminModules.map((module, index) => (
           <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="pb-4">

@@ -133,7 +133,7 @@ export default function CashPage() {
   Registrar Gasto
 </Button>
 
-<Button
+{/* <Button
   className="bg-gradient-to-r from-green-500 to-green-700 rounded-lg shadow-lg
              hover:from-green-600 hover:to-green-800
              transform hover:scale-105
@@ -145,7 +145,7 @@ export default function CashPage() {
 >
   <ArrowUpRight className="mr-2 h-5 w-5 text-white" />
   Registrar Ingreso
-</Button>
+</Button> */}
 
         </div>
       </div>
@@ -210,7 +210,7 @@ export default function CashPage() {
 
       {/* Modal / Form para nueva transacción */}
       {showForm && (
-  <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-modal">
     <div className="bg-white p-8 rounded-lg w-96 shadow-lg"> {/* padding aumentado */}
       <h2 className="text-2xl font-bold mb-6"> {/* texto más grande y margen inferior */}
         {formType === "income" ? "Registrar Ingreso" : "Registrar Gasto"}

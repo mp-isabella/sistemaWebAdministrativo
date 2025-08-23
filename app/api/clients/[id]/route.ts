@@ -1,11 +1,11 @@
-/* import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -14,15 +14,17 @@ export async function GET(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
+    const { id } = await params
     const client = await prisma.client.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         jobs: {
           include: {
             service: {
               select: {
                 name: true,
-                category: true
+                category: true,
+                price: true
               }
             },
             technician: {
@@ -49,12 +51,10 @@ export async function GET(
     const clientWithStats = {
       ...client,
       totalServices: client._count.jobs,
-      totalSpent: client.jobs.reduce((sum, job) => sum + (job.total || 0), 0),
-      completedJobs: client.jobs.filter(job => job.status === 'completed').length,
-      pendingJobs: client.jobs.filter(job => ['pending', 'in_progress'].includes(job.status)).length,
-      averageRating: client.jobs.length > 0 
-        ? client.jobs.reduce((sum, job) => sum + (job.rating || 0), 0) / client.jobs.length 
-        : 0
+      totalSpent: client.jobs.reduce((sum, job) => sum + (job.service?.price || 0), 0),
+      completedJobs: client.jobs.filter(job => job.status === 'COMPLETED').length,
+      pendingJobs: client.jobs.filter(job => ['PENDING', 'IN_PROGRESS'].includes(job.status)).length,
+      averageRating: 0 // No hay campo rating en el schema
     }
 
     return NextResponse.json(clientWithStats)
@@ -70,7 +70,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -85,12 +85,12 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { name, email, phone, address, type, rut, company, contactPerson, status } = body
+    const { name, email, phone, address, rut, company, notes } = body
 
     // Validaciones
-    if (!name || !phone || !address || !type) {
+    if (!name || !phone || !address) {
       return NextResponse.json(
-        { error: 'Campos requeridos: nombre, teléfono, dirección, tipo' },
+        { error: 'Campos requeridos: nombre, teléfono, dirección' },
         { status: 400 }
       )
     }
@@ -102,9 +102,10 @@ export async function PUT(
       )
     }
 
+    const { id } = await params
     // Verificar que el cliente existe
     const existingClient = await prisma.client.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!existingClient) {
@@ -126,17 +127,15 @@ export async function PUT(
     }
 
     const updatedClient = await prisma.client.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         email: email || null,
         phone,
         address,
-        type,
         rut: rut || null,
         company: company || null,
-        contactPerson: contactPerson || null,
-        status: status || 'active'
+        notes: notes || null
       }
     })
 
@@ -153,7 +152,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -167,9 +166,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
     }
 
+    const { id } = await params
     // Verificar que el cliente existe
     const existingClient = await prisma.client.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -192,7 +192,7 @@ export async function DELETE(
     }
 
     await prisma.client.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ message: 'Cliente eliminado correctamente' })
@@ -204,4 +204,4 @@ export async function DELETE(
       { status: 500 }
     )
   }
-} */
+}

@@ -60,8 +60,8 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
     { value: 'priority', label: 'Por Prioridad' }
   ]
 
-  const statusOptions = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']
-  const priorityOptions = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
+  const statusOptions: string[] = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']
+  const priorityOptions: string[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -125,7 +125,7 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-modal p-4">
       <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle className="flex items-center space-x-2">
@@ -291,7 +291,7 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
                         <div key={status} className="flex items-center space-x-2">
                           <Checkbox
                             id={`status-${status}`}
-                            checked={formData.filters.status.includes(status)}
+                            checked={(formData.filters.status as string[]).includes(status)}
                             onCheckedChange={(checked) => handleFilterChange('status', status, !!checked)}
                           />
                           <Label htmlFor={`status-${status}`}>{status}</Label>
@@ -307,7 +307,7 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
                         <div key={priority} className="flex items-center space-x-2">
                           <Checkbox
                             id={`priority-${priority}`}
-                            checked={formData.filters.priority.includes(priority)}
+                            checked={(formData.filters.priority as string[]).includes(priority)}
                             onCheckedChange={(checked) => handleFilterChange('priority', priority, !!checked)}
                           />
                           <Label htmlFor={`priority-${priority}`}>{priority}</Label>

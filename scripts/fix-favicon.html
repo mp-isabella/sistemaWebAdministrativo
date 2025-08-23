@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Favicon - Amestica</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #0284c7;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix Favicon - Amestica</h1>
+        <p>Este script ayudará a solucionar el problema del favicon en la pestaña del navegador.</p>
+        
+        <button onclick="clearCache()">🧹 Limpiar Cache</button>
+        <button onclick="reloadPage()">🔄 Recargar Página</button>
+        <button onclick="checkFavicon()">👁️ Verificar Favicon</button>
+        
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'success') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        function clearCache() {
+            try {
+                // Limpiar Service Worker
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                        for(let registration of registrations) {
+                            registration.unregister();
+                        }
+                        showStatus('✅ Service Worker desregistrado correctamente');
+                    });
+                }
+                
+                // Limpiar cache del navegador
+                if ('caches' in window) {
+                    caches.keys().then(function(names) {
+                        for (let name of names) {
+                            caches.delete(name);
+                        }
+                        showStatus('✅ Cache del navegador limpiado');
+                    });
+                }
+                
+                // Limpiar localStorage y sessionStorage
+                localStorage.clear();
+                sessionStorage.clear();
+                showStatus('✅ Storage local limpiado');
+                
+            } catch (error) {
+                showStatus('❌ Error al limpiar cache: ' + error.message, 'error');
+            }
+        }
+
+        function reloadPage() {
+            window.location.reload(true);
+        }
+
+        function checkFavicon() {
+            const favicon = document.querySelector('link[rel="icon"]') || 
+                           document.querySelector('link[rel="shortcut icon"]');
+            
+            if (favicon) {
+                showStatus('✅ Favicon encontrado: ' + favicon.href);
+            } else {
+                showStatus('❌ No se encontró favicon configurado', 'error');
+            }
+        }
+
+        // Verificar favicon al cargar la página
+        window.addEventListener('load', function() {
+            setTimeout(checkFavicon, 1000);
+        });
+    </script>
+</body>
+</html>

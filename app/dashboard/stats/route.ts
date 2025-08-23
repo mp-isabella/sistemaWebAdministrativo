@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Filtros por rol
-    if (session.user.role === "operador") {
+    if (session.user.role.toLowerCase() === "tecnico") {
       where.assignedToId = session.user.id
     } else if (technicianId) {
       where.assignedToId = technicianId

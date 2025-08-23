@@ -27,23 +27,17 @@ export async function GET(request: NextRequest) {
         AND: [
           search ? {
             OR: [
-              { name: { contains: search, mode: "insensitive" } },
-              { email: { contains: search, mode: "insensitive" } },
-              { phone: { contains: search, mode: "insensitive" } }
+              { name: { contains: search } },
+              { email: { contains: search } },
+              { phone: { contains: search } }
             ]
           } : {},
-          role ? { role } : {},
+          role ? { roleId: role } : {},
           status ? { status } : {}
         ]
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
+      include: {
         role: true,
-        status: true,
-        createdAt: true,
         _count: {
           select: {
             assignedJobs: true
@@ -59,9 +53,9 @@ export async function GET(request: NextRequest) {
       active: workers.filter(w => w.status === "active").length,
       inactive: workers.filter(w => w.status === "inactive").length,
       byRole: {
-        admin: workers.filter(w => w.role === "admin").length,
-        secretaria: workers.filter(w => w.role === "secretaria").length,
-        operador: workers.filter(w => w.role === "operador").length
+        admin: workers.filter(w => w.role.name.toLowerCase() === "admin").length,
+        secretaria: workers.filter(w => w.role.name.toLowerCase() === "secretaria").length,
+        tecnico: workers.filter(w => w.role.name.toLowerCase() === "tecnico").length
       }
     }
 

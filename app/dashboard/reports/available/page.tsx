@@ -128,15 +128,17 @@ export default function AvailableReportsPage() {
 
       if (response.ok) {
         const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `${reportId}-${new Date().toISOString().split('T')[0]}.${format}`
-        document.body.appendChild(a)
-        a.click()
-        window.URL.revokeObjectURL(url)
-        document.body.removeChild(a)
-        showNotification('success', 'Reporte descargado exitosamente')
+        if (typeof window !== 'undefined') {
+          const url = window.URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `${reportId}-${new Date().toISOString().split('T')[0]}.${format}`
+          document.body.appendChild(a)
+          a.click()
+          window.URL.revokeObjectURL(url)
+          document.body.removeChild(a)
+          showNotification('success', 'Reporte descargado exitosamente')
+        }
       } else {
         showNotification('error', 'Error al generar el reporte')
       }
@@ -149,7 +151,9 @@ export default function AvailableReportsPage() {
   }
 
   const viewReport = (reportId: string) => {
-    window.open(`/dashboard/reports/view/${reportId}`, '_blank')
+    if (typeof window !== 'undefined') {
+      window.open(`/dashboard/reports/view/${reportId}`, '_blank')
+    }
   }
 
   const getFrequencyColor = (frequency: string) => {

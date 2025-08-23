@@ -11,7 +11,6 @@ export async function GET(req: NextRequest) {
     where: {
       name: {
         contains: query,
-        mode: "insensitive",
       },
     },
     take: 5,
@@ -26,7 +25,6 @@ export async function GET(req: NextRequest) {
     where: {
       title: {
         contains: query,
-        mode: "insensitive",
       },
     },
     take: 5,

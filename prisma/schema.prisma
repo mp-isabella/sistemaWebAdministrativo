@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 enum Priority {
@@ -100,7 +100,7 @@ model Job {
   completedAt DateTime?
   address     String?
   notes       String?
-  images      String[]
+  images      String?     // Cambiado de String[] a String para compatibilidad con SQLite
   signature   String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt

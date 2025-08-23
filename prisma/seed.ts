@@ -20,10 +20,10 @@ async function main() {
     create: { name: "SECRETARIA" },
   });
 
-  const operadorRole = await prisma.role.upsert({
-    where: { name: "OPERADOR" },
+  const tecnicoRole = await prisma.role.upsert({
+    where: { name: "TECNICO" },
     update: {},
-    create: { name: "OPERADOR" },
+    create: { name: "TECNICO" },
   });
 
   // Crear servicios
@@ -81,18 +81,18 @@ async function main() {
     },
   });
 
-  const operadorPassword = await bcrypt.hash("operador123", 12);
-  const operadorUser = await prisma.user.upsert({
-    where: { email: "operador@amestica.cl" },
+  const tecnicoPassword = await bcrypt.hash("tecnico123", 12);
+  const tecnicoUser = await prisma.user.upsert({
+    where: { email: "tecnico@amestica.cl" },
     update: {},
     create: {
-      email: "operador@amestica.cl",
-      name: "Juan Operador",
-      password: operadorPassword,
+      email: "tecnico@amestica.cl",
+      name: "Juan Técnico",
+      password: tecnicoPassword,
       phone: "555123456",
       address: "Taller",
       role: {
-        connect: { id: operadorRole.id },
+        connect: { id: tecnicoRole.id },
       },
     },
   });
@@ -178,7 +178,7 @@ async function main() {
         priority: JobPriority.HIGH,
         client: { connect: { id: createdClients[0].id } },
         service: { connect: { id: detectionService.id } },
-        technician: { connect: { id: operadorUser.id } },
+        technician: { connect: { id: tecnicoUser.id } },
         createdBy: { connect: { id: secretariaUser.id } },
         scheduledAt: new Date("2024-01-16T09:00:00Z"),
       },
@@ -189,7 +189,7 @@ async function main() {
         priority: JobPriority.MEDIUM,
         client: { connect: { id: createdClients[1].id } },
         service: { connect: { id: repairService.id } },
-        technician: { connect: { id: operadorUser.id } },
+        technician: { connect: { id: tecnicoUser.id } },
         createdBy: { connect: { id: secretariaUser.id } },
         scheduledAt: new Date("2024-01-14T10:00:00Z"),
         completedAt: new Date("2024-01-14T16:30:00Z"),
@@ -215,7 +215,7 @@ async function main() {
   console.log("\n📋 Usuarios creados:");
   console.log("👨‍💼 Admin: admin@amestica.cl / admin123");
   console.log("👩‍💼 Secretaria: secretaria@amestica.cl / secretaria123");
-   console.log("🔧 Operador: operador@amestica.cl / operador123")
+   console.log("🔧 Técnico: tecnico@amestica.cl / tecnico123")
 }
 main()
   .catch((e) => {

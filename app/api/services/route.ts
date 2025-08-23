@@ -49,7 +49,8 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         description,
-        price: parseFloat(price)
+        price: parseFloat(price),
+        createdById: session.user.id
       }
     })
 

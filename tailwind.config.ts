@@ -94,11 +94,47 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        // Keyframes optimizados para móvil
+        "fadeIn": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        "slideUp": {
+          from: { transform: "translateY(20px)", opacity: "0" },
+          to: { transform: "translateY(0)", opacity: "1" },
+        },
+        "scaleIn": {
+          from: { transform: "scale(0.95)", opacity: "0" },
+          to: { transform: "scale(1)", opacity: "1" },
+        },
       },
 
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        // Animaciones optimizadas para móvil
+        "fade-in-mobile": "fadeIn 0.2s ease-out",
+        "slide-up-mobile": "slideUp 0.3s ease-out",
+        "scale-in-mobile": "scaleIn 0.2s ease-out",
+      },
+      
+      // Breakpoints optimizados para móvil
+      screens: {
+        'xs': '475px',
+        'sm': '640px',
+        'md': '768px',
+        'lg': '1024px',
+        'xl': '1280px',
+        '2xl': '1536px',
+      },
+      
+      // Espaciado optimizado para móvil
+      spacing: {
+        'mobile-xs': '0.25rem',
+        'mobile-sm': '0.5rem',
+        'mobile-md': '0.75rem',
+        'mobile-lg': '1rem',
+        'mobile-xl': '1.5rem',
       },
     },
   },
