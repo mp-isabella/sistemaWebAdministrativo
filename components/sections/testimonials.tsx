@@ -158,7 +158,7 @@ export default function Testimonials() {
                       ))}
                     </div>
                     <blockquote className="text-base font-light italic leading-relaxed mb-4 mobile-text" style={{ color: colors.gray }}>
-                      "{testimonial.text}"
+                      &quot;{testimonial.text}&quot;
                     </blockquote>
                     <div className="border-t pt-4 border-gray-200">
                       <h4 className="font-bold text-base mobile-heading" style={{ color: colors.dark }}>
@@ -245,7 +245,7 @@ export default function Testimonials() {
                               ))}
                             </div>
                             <blockquote className="text-lg font-light italic leading-relaxed mb-6" style={{ color: colors.gray }}>
-                              "{testimonial.text}"
+                              &quot;{testimonial.text}&quot;
                             </blockquote>
                           </div>
                           <div className="border-t pt-6 border-gray-200">
@@ -363,7 +363,7 @@ export default function Testimonials() {
                           ))}
                         </div>
                         <blockquote className="text-lg font-light italic leading-relaxed mb-6" style={{ color: colors.gray }}>
-                          "{testimonial.text}"
+                          &quot;{testimonial.text}&quot;
                         </blockquote>
                       </div>
                       <div className="border-t pt-6 border-gray-200">

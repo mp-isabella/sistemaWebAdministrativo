@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
@@ -83,43 +83,11 @@ export default function MyJobsPage() {
     string | undefined
   > (undefined);
 
-  // Lógica de redirección en un solo lugar
-  useEffect(() => {
-            // Si la sesión no está autenticada o el rol no es "tecnico", redirigir
-        if (status === "unauthenticated" || (status === "authenticated" && session.user.role.toLowerCase() !== "tecnico")) {
-          router.push("/login");
-        }
-  }, [status, session, router]);
-
-  // Si la sesión está en estado de carga o no tiene el rol correcto, muestra un spinner.
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  // Si no está autorizado, simplemente no renderizamos nada, la redirección ya está en curso.
-        if (status === "unauthenticated" || (status === "authenticated" && session.user.role.toLowerCase() !== "tecnico")) {
-        return null;
-      }
-
-  // Hook para cargar los trabajos al inicio
-  useEffect(() => {
-    fetchMyJobs();
-  }, []);
-
-  // Hook para filtrar los trabajos cada vez que cambian los filtros
-  useEffect(() => {
-    filterJobs();
-  }, [jobs, statusFilter, searchTerm]);
-
   // =========================================================================
   // FUNCIONES DE LÓGICA
   // =========================================================================
 
-  const fetchMyJobs = async () => {
+  const fetchMyJobs = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -140,9 +108,9 @@ export default function MyJobsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const filterJobs = () => {
+  const filterJobs = useCallback(() => {
     let filtered = jobs.filter((job) => {
       const statusMatch =
         statusFilter === "all" || job.status === statusFilter;
@@ -154,7 +122,45 @@ export default function MyJobsPage() {
       return statusMatch && searchMatch;
     });
     setFilteredJobs(filtered);
-  };
+  }, [jobs, statusFilter, searchTerm]);
+
+  // Hook para cargar los trabajos al inicio
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.role?.toLowerCase() === "tecnico") {
+      fetchMyJobs();
+    }
+  }, [status, session, fetchMyJobs]);
+
+  // Hook para filtrar los trabajos cada vez que cambian los filtros
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.role?.toLowerCase() === "tecnico") {
+      filterJobs();
+    }
+  }, [filterJobs, status, session]);
+
+  // Lógica de redirección en un solo lugar
+  useEffect(() => {
+    // Si la sesión no está autenticada o el rol no es "tecnico", redirigir
+    if (status === "unauthenticated" || (status === "authenticated" && session?.user?.role?.toLowerCase() !== "tecnico")) {
+      router.push("/login");
+    }
+  }, [status, session, router]);
+
+  // Si la sesión está en estado de carga, muestra un spinner.
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Si no está autorizado, simplemente no renderizamos nada, la redirección ya está en curso.
+  if (status === "unauthenticated" || (status === "authenticated" && session?.user?.role?.toLowerCase() !== "tecnico")) {
+    return null;
+  }
+
+
 
   const handleUpdateJobStatus = async (jobId: string, newStatus: string) => {
     try {

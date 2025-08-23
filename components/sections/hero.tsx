@@ -359,7 +359,7 @@ export default function Hero() {
 
         <div className="mt-12 text-center">
           <h2 className="text-2xl lg:text-2xl md:text-2xl font-extrabold text-white">
-            Cobertura en regiones: Metropolitana, Valparaíso, O'Higgins, Maule, Ñuble y Bío Bío
+            Cobertura en regiones: Metropolitana, Valparaíso, O&apos;Higgins, Maule, Ñuble y Bío Bío
           </h2>
         </div>
       </div>
