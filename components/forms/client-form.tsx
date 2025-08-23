@@ -121,7 +121,7 @@ export default function ClientForm({ client, onSubmit, onCancel, loading = false
                 <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
                 <Select value={formData.type} onValueChange={(value) => handleChange("type", value)}>
                   <SelectTrigger className={`pl-10 ${errors.type ? "border-red-500" : ""}`}>
-                    <SelectValue placeholder="Seleccionar tipo" />
+                    <SelectValue placeholder="Seleccionar tipo" className="flex-1 min-w-0 overflow-hidden text-ellipsis" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="individual">Persona Natural</SelectItem>

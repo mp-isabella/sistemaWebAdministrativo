@@ -365,7 +365,7 @@ export default function Contact(): React.JSX.Element {
 
                     {/* Nombre y Email */}
                     <div className="grid grid-cols-1 gap-4">
-                      <div>
+                      <div className="space-y-2">
                         <label
                           htmlFor="nombre"
                           className="block text-sm font-medium text-gray-700"
@@ -380,10 +380,10 @@ export default function Contact(): React.JSX.Element {
                           onChange={handleChange}
                           placeholder="Nombre completo"
                           required
-                          className="text-gray-900"
+                          className="text-gray-900 h-10"
                         />
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <label
                           htmlFor="email"
                           className="block text-sm font-medium text-gray-700"
@@ -398,14 +398,14 @@ export default function Contact(): React.JSX.Element {
                           onChange={handleChange}
                           placeholder="correo@ejemplo.com"
                           required
-                          className="text-gray-900"
+                          className="text-gray-900 h-10"
                         />
                       </div>
                     </div>
 
                     {/* Teléfono y Servicio */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                      <div>
+                      <div className="space-y-2">
                         <label
                           htmlFor="telefono"
                           className="block text-sm font-medium text-gray-700"
@@ -420,13 +420,13 @@ export default function Contact(): React.JSX.Element {
                           onChange={handleChange}
                           placeholder="+56 9 1234 5678"
                           required
-                          className="text-gray-900"
+                          className="text-gray-900 h-10"
                         />
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <label
                           htmlFor="servicio"
-                          className="block text-sm font-medium text-gray-700 mb-2"
+                          className="block text-sm font-medium text-gray-700"
                         >
                           Tipo de servicio *
                         </label>
@@ -437,8 +437,8 @@ export default function Contact(): React.JSX.Element {
                           value={formData.servicio}
                           required
                         >
-                          <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2.5 rounded-lg justify-between">
-                            <SelectValue placeholder="Seleccione servicio" className="text-gray-600 font-medium" />
+                          <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 h-10 rounded-lg flex items-center justify-between">
+                            <SelectValue placeholder="Seleccione servicio" className="text-gray-600 font-medium text-left flex-1 min-w-0 overflow-hidden text-ellipsis" />
                           </SelectTrigger>
                           <SelectContent className="w-full" position="popper" side="bottom" sideOffset={4}>
                             <SelectItem
@@ -466,7 +466,7 @@ export default function Contact(): React.JSX.Element {
 
                     {/* Región y Comuna */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                      <div>
+                      <div className="space-y-2">
                         <label
                           htmlFor="region"
                           className="block text-sm font-medium text-gray-700"
@@ -478,8 +478,8 @@ export default function Contact(): React.JSX.Element {
                           value={formData.region}
                           required
                         >
-                          <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2">
-                            <SelectValue placeholder="Región" />
+                          <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 h-10 rounded-lg flex items-center justify-between">
+                            <SelectValue placeholder="Región" className="text-gray-600 font-medium text-left flex-1 min-w-0 overflow-hidden text-ellipsis" />
                           </SelectTrigger>
                           <SelectContent className="w-full" position="popper" side="bottom" sideOffset={4}>
                             {Object.keys(regionesYComunas).map((region) => (
@@ -495,7 +495,7 @@ export default function Contact(): React.JSX.Element {
                         </Select>
                       </div>
 
-                      <div>
+                      <div className="space-y-2">
                         <label
                           htmlFor="comuna"
                           className="block text-sm font-medium text-gray-700"
@@ -510,8 +510,8 @@ export default function Contact(): React.JSX.Element {
                           disabled={!formData.region}
                           required
                         >
-                          <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2">
-                            <SelectValue placeholder="Comuna" />
+                          <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 h-10 rounded-lg flex items-center justify-between">
+                            <SelectValue placeholder="Comuna" className="text-gray-600 font-medium text-left flex-1 min-w-0 overflow-hidden text-ellipsis" />
                           </SelectTrigger>
                           <SelectContent className="w-full" position="popper" side="bottom" sideOffset={4}>
                             {comunasDisponibles.length > 0 ? (
@@ -536,7 +536,7 @@ export default function Contact(): React.JSX.Element {
 
                     {/* Dirección y Mensaje */}
                     <div className="grid grid-cols-1 gap-4 mt-4">
-                      <div>
+                      <div className="space-y-2">
                         <label
                           htmlFor="direccion"
                           className="block text-sm font-medium text-gray-700"
@@ -551,7 +551,7 @@ export default function Contact(): React.JSX.Element {
                           onChange={handleChange}
                           placeholder="Calle, Número"
                           required
-                          className="text-gray-900"
+                          className="text-gray-900 h-10"
                         />
                       </div>
 

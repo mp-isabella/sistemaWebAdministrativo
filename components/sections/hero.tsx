@@ -154,7 +154,7 @@ export default function Hero() {
   // Preload de imágenes para mejor calidad
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
     const preloadImages = () => {
       heroTexts.forEach((text, i) => {
         const img = new window.Image();
@@ -245,9 +245,8 @@ export default function Hero() {
         {heroTexts.map((text, i) => (
           <div
             key={text.img}
-            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-in-out ${
-              i === index ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-in-out ${i === index ? 'opacity-100' : 'opacity-0'
+              }`}
             style={{
               backgroundImage: `url(${text.img})`,
               filter: "brightness(0.95) contrast(1.05)",
@@ -266,11 +265,10 @@ export default function Hero() {
           <button
             key={i}
             onClick={() => setIndex(i)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              i === index 
-                ? 'bg-white scale-125' 
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${i === index
+                ? 'bg-white scale-125'
                 : 'bg-white/50 hover:bg-white/75'
-            }`}
+              }`}
             aria-label={`Ir a imagen ${i + 1}`}
           />
         ))}
@@ -316,13 +314,13 @@ export default function Hero() {
           {/* Formulario */}
           <div className="w-full flex justify-center lg:justify-end mt-2 lg:mt-0">
             <Card className="rounded-3xl shadow-2xl bg-white p-4 max-w-md w-full">
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-3">
                 <h1 className="text-xl md:text-2xl font-bold text-[#002D71] text-center">
                   ¡Obtén una <span className="text-orange-500">cotización ahora!</span>
                 </h1>
               </CardHeader>
               <CardContent className="pt-0">
-                <form onSubmit={handleSubmit} className="space-y-3">
+                <form onSubmit={handleSubmit} className="space-y-1">
                   <InputSection
                     formData={formData}
                     handleChange={(e) => handleInputChange(e.target.name as keyof FormData, e.target.value)}
@@ -333,9 +331,8 @@ export default function Hero() {
 
                   {statusMessage && (
                     <div
-                      className={`mt-2 text-center font-semibold ${
-                        statusMessage.type === "success" ? "text-green-600" : "text-red-600"
-                      }`}
+                      className={`mt-2 text-center font-semibold ${statusMessage.type === "success" ? "text-green-600" : "text-red-600"
+                        }`}
                     >
                       {statusMessage.text}
                     </div>
@@ -345,7 +342,7 @@ export default function Hero() {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="mt-3 bg-orange-500 hover:bg-[#e1550f] text-white text-lg font-semibold py-3 px-8 rounded-full transition-colors cursor-pointer"
+                      className="mt-2 bg-orange-500 hover:bg-[#e1550f] text-white text-lg font-semibold py-2 px-8 rounded-full transition-colors cursor-pointer"
                       onMouseDown={(e: React.MouseEvent) => e.preventDefault()}
                     >
                       {isSubmitting ? "Enviando..." : "Enviar Solicitud"}
@@ -454,47 +451,73 @@ function InputSection({ formData, handleChange, handleInputChange, handleRegionC
   return (
     <>
       {/* Nombre y Email */}
-      <div className="grid grid-cols-1 gap-3">
-        <div>
+      <div className="grid grid-cols-1 gap-2">
+        <div className="space-y-1">
           <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">Nombre *</label>
-          <Input id="nombre" name="nombre" type="text" value={formData.nombre} onChange={handleChange} placeholder="Nombre completo" required className="text-gray-900" />
+          <Input id="nombre" name="nombre" type="text" value={formData.nombre} onChange={handleChange} placeholder="Nombre completo" required className="text-gray-900 h-9" />
         </div>
-        <div>
+        <div className="space-y-1">
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email *</label>
-          <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="correo@ejemplo.com" required className="text-gray-900" />
+          <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="correo@ejemplo.com" required className="text-gray-900 h-9" />
         </div>
       </div>
 
       {/* Teléfono y Servicio */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-        <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
+        <div className="space-y-1">
           <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">Teléfono *</label>
-          <Input id="telefono" name="telefono" type="tel" value={formData.telefono} onChange={handleChange} placeholder="+56 9 1234 5678" required className="text-gray-900" />
+          <Input id="telefono" name="telefono" type="tel" value={formData.telefono} onChange={handleChange} placeholder="+56 9 1234 5678" required className="text-gray-900 h-9" />
         </div>
-        <div>
-          <label htmlFor="servicio" className="block text-sm font-medium text-gray-700 mb-2">Tipo de servicio *</label>
-          <Select onValueChange={(value: string) => handleInputChange("servicio", value)} value={formData.servicio} required>
-            <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2.5 rounded-lg justify-between">
-              <SelectValue placeholder="Seleccione servicio" className="text-gray-600 font-medium" />
-            </SelectTrigger>
-            <SelectContent className="w-full">
-              <SelectItem value="deteccion_fugas" className="text-gray-900">Detección de fugas de agua</SelectItem>
-              <SelectItem value="destape_alcantarillado" className="text-gray-900">Destape de alcantarillado</SelectItem>
-              <SelectItem value="videoinspeccion" className="text-gray-900">Videoinspección de ductos</SelectItem>
+        <div className="space-y-1">
+          <label
+            htmlFor="servicio"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Tipo de servicio *
+          </label>
+          <Select
+            onValueChange={(value: string) =>
+              handleInputChange("servicio", value)
+            }
+            value={formData.servicio}
+            required
+          >
+                         <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 pl-2 pr-3 h-9 rounded-lg" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+               <SelectValue placeholder="Seleccione servicio" className="text-gray-600 font-medium" style={{ flex: 1, textAlign: 'left', width: '100%', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }} />
+             </SelectTrigger>
+            <SelectContent className="w-full" position="popper" side="bottom" sideOffset={4}>
+              <SelectItem
+                value="deteccion_fugas"
+                className="text-gray-900"
+              >
+                Detección de fugas de agua
+              </SelectItem>
+              <SelectItem
+                value="destape_alcantarillado"
+                className="text-gray-900"
+              >
+              Destape de alcantarillado
+              </SelectItem>
+              <SelectItem
+                value="videoinspeccion"
+                className="text-gray-900"
+              >
+                Videoinspección de ductos
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
       {/* Región y Comuna */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-        <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
+        <div className="space-y-1">
           <label htmlFor="region" className="block text-sm font-medium text-gray-700">Región *</label>
           <Select onValueChange={handleRegionChange} value={formData.region} required>
-            <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2 text-left">
-              <SelectValue placeholder="Región" />
-            </SelectTrigger>
-            <SelectContent className="w-full">
+                         <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 pl-2 pr-3 h-9 rounded-lg" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+               <SelectValue placeholder="Región" className="text-gray-600 font-medium" style={{ flex: 1, textAlign: 'left', width: '100%', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }} />
+             </SelectTrigger>
+            <SelectContent className="w-full" position="popper" side="bottom" sideOffset={4}>
               {Object.keys(regionesYComunas).map((region) => (
                 <SelectItem key={region} value={region} className="text-gray-900">{region}</SelectItem>
               ))}
@@ -502,13 +525,13 @@ function InputSection({ formData, handleChange, handleInputChange, handleRegionC
           </Select>
         </div>
 
-        <div>
+        <div className="space-y-1">
           <label htmlFor="comuna" className="block text-sm font-medium text-gray-700">Comuna *</label>
           <Select onValueChange={(value: string) => handleInputChange("comuna", value)} value={formData.comuna} disabled={!formData.region} required>
-            <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2 text-left">
-              <SelectValue placeholder="Comuna" />
-            </SelectTrigger>
-            <SelectContent className="w-full">
+                         <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 pl-2 pr-3 h-9 rounded-lg" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+               <SelectValue placeholder="Comuna" className="text-gray-600 font-medium" style={{ flex: 1, textAlign: 'left', width: '100%', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }} />
+             </SelectTrigger>
+            <SelectContent className="w-full" position="popper" side="bottom" sideOffset={4}>
               {comunasDisponibles.length > 0
                 ? comunasDisponibles.map((comuna) => <SelectItem key={comuna} value={comuna} className="text-gray-900">{comuna}</SelectItem>)
                 : <div className="p-2 text-sm text-gray-500">Selecciona una región primero</div>}
@@ -518,14 +541,14 @@ function InputSection({ formData, handleChange, handleInputChange, handleRegionC
       </div>
 
       {/* Dirección y Mensaje */}
-      <div className="grid grid-cols-1 gap-3 mt-3">
-        <div>
+      <div className="grid grid-cols-1 gap-2 mt-1">
+        <div className="space-y-1">
           <label htmlFor="direccion" className="block text-sm font-medium text-gray-700">Dirección *</label>
-          <Input id="direccion" name="direccion" type="text" value={formData.direccion} onChange={handleChange} placeholder="Calle, Número" required className="text-gray-900" />
+          <Input id="direccion" name="direccion" type="text" value={formData.direccion} onChange={handleChange} placeholder="Calle, Número" required className="text-gray-900 h-9" />
         </div>
-        <div>
+        <div className="space-y-1">
           <label htmlFor="mensaje" className="block text-sm font-medium text-gray-700">Mensaje</label>
-          <Textarea id="mensaje" name="mensaje" value={formData.mensaje} onChange={handleChange} placeholder="Explique su requerimiento" rows={3} className="text-gray-900" />
+          <Textarea id="mensaje" name="mensaje" value={formData.mensaje} onChange={handleChange} placeholder="Explique su requerimiento" rows={2} className="text-gray-900" />
         </div>
       </div>
     </>

@@ -168,7 +168,7 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
                 <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
                 <Select value={formData.role} onValueChange={(value) => handleChange("role", value)}>
                   <SelectTrigger className={`pl-10 ${errors.role ? "border-red-500" : ""}`}>
-                    <SelectValue placeholder="Seleccionar rol" />
+                    <SelectValue placeholder="Seleccionar rol" className="flex-1 min-w-0 overflow-hidden text-ellipsis" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="admin">Administrador</SelectItem>
@@ -191,7 +191,7 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
               <Label htmlFor="status">Estado</Label>
               <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar estado" />
+                  <SelectValue placeholder="Seleccionar estado" className="flex-1 min-w-0 overflow-hidden text-ellipsis" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">Activo</SelectItem>

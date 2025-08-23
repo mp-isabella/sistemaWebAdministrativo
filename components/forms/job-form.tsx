@@ -165,7 +165,7 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
                 <Select value={formData.clientId} onValueChange={(value) => handleChange("clientId", value)}>
                   <SelectTrigger className={`pl-10 ${errors.clientId ? "border-red-500" : ""}`}>
-                    <SelectValue placeholder="Seleccionar cliente" />
+                    <SelectValue placeholder="Seleccionar cliente" className="flex-1 min-w-0 overflow-hidden text-ellipsis" />
                   </SelectTrigger>
                   <SelectContent>
                     {clients.map((client: any) => (
