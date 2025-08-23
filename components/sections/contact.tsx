@@ -426,7 +426,7 @@ export default function Contact(): React.JSX.Element {
                       <div>
                         <label
                           htmlFor="servicio"
-                          className="block text-sm font-medium text-gray-700"
+                          className="block text-sm font-medium text-gray-700 mb-2"
                         >
                           Tipo de servicio *
                         </label>
@@ -437,10 +437,10 @@ export default function Contact(): React.JSX.Element {
                           value={formData.servicio}
                           required
                         >
-                          <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2 justify-start">
-                            <SelectValue placeholder="Seleccione servicio" />
+                          <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2.5 rounded-lg justify-between">
+                            <SelectValue placeholder="Seleccione servicio" className="text-gray-600 font-medium" />
                           </SelectTrigger>
-                          <SelectContent className="w-full">
+                          <SelectContent className="w-full" position="popper" side="bottom" sideOffset={4}>
                             <SelectItem
                               value="deteccion_fugas"
                               className="text-gray-900"
@@ -481,7 +481,7 @@ export default function Contact(): React.JSX.Element {
                           <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2">
                             <SelectValue placeholder="Región" />
                           </SelectTrigger>
-                          <SelectContent className="w-full">
+                          <SelectContent className="w-full" position="popper" side="bottom" sideOffset={4}>
                             {Object.keys(regionesYComunas).map((region) => (
                               <SelectItem
                                 key={region}
@@ -513,7 +513,7 @@ export default function Contact(): React.JSX.Element {
                           <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2">
                             <SelectValue placeholder="Comuna" />
                           </SelectTrigger>
-                          <SelectContent className="w-full">
+                          <SelectContent className="w-full" position="popper" side="bottom" sideOffset={4}>
                             {comunasDisponibles.length > 0 ? (
                               comunasDisponibles.map((comuna) => (
                                 <SelectItem

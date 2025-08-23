@@ -1,10 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
+/**
+ * Componente de Servicios optimizado para móvil
+ * 
+ * Mejoras implementadas:
+ * - Detección móvil segura sin problemas de hidratación
+ * - Prevención de doble tap en dispositivos móviles
+ * - Animaciones optimizadas para rendimiento móvil
+ * - Gestión mejorada del modal con prevención de scroll
+ * - Indicadores visuales de estado de procesamiento
+ * - Clases CSS específicas para touch optimization
+ */
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { X, Droplets, Search, Camera, Shield, ArrowRight } from "lucide-react";
+import { useMobileCardInteraction } from "@/hooks/use-mobile-card-interaction";
 
 const colors = {
   transparent: "transparent",
@@ -56,20 +69,139 @@ const heroTexts: Service[] = [
   },
 ];
 
+// Animaciones optimizadas para móvil
 const fadeInVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      duration: 0.6, 
+      ease: "easeOut",
+      staggerChildren: 0.1
+    } 
+  },
+};
+
+// Animaciones específicas para móvil
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: { 
+      duration: 0.4, 
+      ease: "easeOut"
+    } 
+  },
+};
+
+// Animaciones del modal optimizadas para móvil
+const modalVariants: Variants = {
+  hidden: { 
+    opacity: 0,
+    scale: 0.9,
+    y: 20
+  },
+  visible: { 
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { 
+      duration: 0.3, 
+      ease: "easeOut"
+    } 
+  },
+  exit: { 
+    opacity: 0,
+    scale: 0.9,
+    y: 20,
+    transition: { 
+      duration: 0.2, 
+      ease: "easeIn"
+    } 
+  }
 };
 
 export default function Services() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState<Service | null>(null);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  
+  // Hook personalizado para interacciones móviles
+  const { 
+    isMobile, 
+    isMounted, 
+    handleCardInteraction, 
+    handleHover, 
+    handleModal,
+    isProcessing 
+  } = useMobileCardInteraction({
+    preventDoubleTap: true,
+    tapDelay: 300,
+    enableHover: true
+  });
 
-  const handleCardClick = (item: Service) => {
-    setModalData(item);
-    setModalOpen(true);
+  const handleCardClick = (item: Service, event: React.MouseEvent) => {
+    // Prevenir comportamiento por defecto y propagación del evento
+    event.preventDefault();
+    event.stopPropagation();
+    
+    handleCardInteraction(() => {
+      if (modalOpen) return;
+      
+      // Guardar posición actual del scroll
+      setScrollPosition(window.scrollY);
+      
+      setModalData(item);
+      setModalOpen(true);
+      handleModal(true);
+    });
   };
+
+  const handleCloseModal = (event?: React.MouseEvent) => {
+    // Prevenir comportamiento por defecto si hay evento
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    setModalOpen(false);
+    handleModal(false);
+    
+    // Restaurar posición del scroll después de cerrar el modal
+    setTimeout(() => {
+      window.scrollTo(0, scrollPosition);
+      setModalData(null);
+    }, 100);
+  };
+
+  // Efecto para mantener la posición del scroll cuando el modal está abierto
+  useEffect(() => {
+    if (modalOpen) {
+      // Prevenir scroll cuando el modal está abierto
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollPosition}px`;
+      document.body.style.width = '100%';
+    } else {
+      // Restaurar scroll cuando el modal se cierra
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+    }
+
+    // Cleanup al desmontar
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+    };
+  }, [modalOpen, scrollPosition]);
 
   return (
     <section
@@ -100,7 +232,7 @@ export default function Services() {
         variants={fadeInVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true }}
+        viewport={{ once: true, margin: "-100px" }}
       >
         {/* Títulos */}
         <div className="text-center mb-6 mt-4">
@@ -118,21 +250,27 @@ export default function Services() {
           {heroTexts.map((item, idx) => {
             const IconComponent = item.icon;
             return (
-              <div
+              <motion.div
                 key={idx}
                 className="group relative h-full"
-                onMouseEnter={() => setHoveredCard(idx)}
-                onMouseLeave={() => setHoveredCard(null)}
+                variants={cardVariants}
+                onMouseEnter={() => handleHover(true, () => setHoveredCard(idx))}
+                onMouseLeave={() => handleHover(false, () => setHoveredCard(null))}
+                whileHover={!isMobile ? { y: -10 } : {}}
+                whileTap={isMobile ? { scale: 0.98 } : {}}
+                style={{ pointerEvents: isProcessing ? 'none' : 'auto' }}
               >
                 <Card
-                  className="cursor-pointer overflow-hidden rounded-[3rem] shadow-xl transition-all duration-300 ease-in-out border-2 h-full flex flex-col"
+                  className={`cursor-pointer overflow-hidden rounded-[3rem] shadow-xl transition-all duration-300 ease-in-out border-2 h-full flex flex-col touch-optimized ${
+                    isProcessing ? 'pointer-events-none' : ''
+                  }`}
                   style={{
                     backgroundColor: "rgba(255, 255, 255, 0.05)",
                     backdropFilter: "blur(10px)",
                     borderColor: hoveredCard === idx ? colors.highlight : "transparent",
-                    transform: hoveredCard === idx ? "translateY(-10px)" : "translateY(0)",
+                    transform: hoveredCard === idx && !isMobile ? "translateY(-10px)" : "translateY(0)",
                   }}
-                  onClick={() => handleCardClick(item)}
+                  onClick={(event) => handleCardClick(item, event)}
                 >
                   <CardContent className="p-0 flex flex-col h-full">
                     {/* CAMBIO AQUÍ: de h-52 a h-64 */}
@@ -170,7 +308,10 @@ export default function Services() {
                       <div className="inline-flex items-center gap-2 text-sm font-bold mt-auto text-white">
                         <span>Ver más detalles</span>
                         <motion.div
-                          animate={{ x: hoveredCard === idx ? 5 : 0 }}
+                          animate={{ 
+                            x: hoveredCard === idx && !isMobile ? 5 : 0,
+                            opacity: isProcessing ? 0.5 : 1
+                          }}
                           transition={{ duration: 0.2 }}
                         >
                           <ArrowRight size={16} />
@@ -179,40 +320,49 @@ export default function Services() {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
+              </motion.div>
             );
           })}
         </div>
       </motion.div>
 
-      {/* Modal */}
-      <AnimatePresence>
+      {/* Modal optimizado para móvil */}
+      <AnimatePresence mode="wait">
         {modalOpen && modalData && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: isMobile ? 0.2 : 0.3 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 lg:p-8"
             style={{
-              background: `rgba(0,0,0,0.6)`,
+              background: `rgba(0,0,0,0.8)`,
               backdropFilter: "blur(10px)",
             }}
-            onClick={() => setModalOpen(false)}
+            onClick={handleCloseModal}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
           >
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              className="max-w-2xl w-full max-h-[80vh] bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className={`max-w-2xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col ${
+                isMobile ? 'max-h-[90vh] mx-4' : 'max-h-[80vh]'
+              }`}
               onClick={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
             >
               <div
                 className="relative p-4 md:p-6 text-center flex-shrink-0"
                 style={{ background: `linear-gradient(135deg, ${colors.strong}, ${colors.medium})` }}
               >
                 <button
-                  className="absolute top-3 right-3 p-2 rounded-full transition-all duration-300 hover:scale-110 bg-white bg-opacity-20 hover:bg-opacity-30"
-                  onClick={() => setModalOpen(false)}
+                  className="absolute top-3 right-3 p-2 rounded-full transition-all duration-300 hover:scale-110 bg-white bg-opacity-20 hover:bg-opacity-30 touch-optimized"
+                  onClick={(event) => handleCloseModal(event)}
+                  aria-label="Cerrar modal"
                 >
                   <X className="w-5 h-5 text-white" />
                 </button>
@@ -234,7 +384,9 @@ export default function Services() {
               </div>
 
               <div className="p-4 md:p-6 flex-grow overflow-y-auto">
-                <div className="relative h-56 md:h-80 w-full rounded-xl overflow-hidden mb-4 bg-gray-100">
+                <div className={`relative w-full rounded-xl overflow-hidden mb-4 bg-gray-100 ${
+                  isMobile ? 'h-48' : 'h-56 md:h-80'
+                }`}>
                   <Image
                     src={modalData.img || "/placeholder.svg"}
                     alt={modalData.title}

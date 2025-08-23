@@ -465,33 +465,36 @@ function InputSection({ formData, handleChange, handleInputChange, handleRegionC
         </div>
       </div>
 
-      {/* Teléfono, Servicio, Región y Comuna */}
+      {/* Teléfono y Servicio */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
         <div>
           <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">Teléfono *</label>
           <Input id="telefono" name="telefono" type="tel" value={formData.telefono} onChange={handleChange} placeholder="+56 9 1234 5678" required className="text-gray-900" />
         </div>
         <div>
-          <label htmlFor="servicio" className="block text-sm font-medium text-gray-700">Tipo de servicio *</label>
+          <label htmlFor="servicio" className="block text-sm font-medium text-gray-700 mb-2">Tipo de servicio *</label>
           <Select onValueChange={(value: string) => handleInputChange("servicio", value)} value={formData.servicio} required>
-            <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2">
-              <SelectValue placeholder="Seleccione servicio" />
+            <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2.5 rounded-lg justify-between">
+              <SelectValue placeholder="Seleccione servicio" className="text-gray-600 font-medium" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-full">
               <SelectItem value="deteccion_fugas" className="text-gray-900">Detección de fugas de agua</SelectItem>
               <SelectItem value="destape_alcantarillado" className="text-gray-900">Destape de alcantarillado</SelectItem>
               <SelectItem value="videoinspeccion" className="text-gray-900">Videoinspección de ductos</SelectItem>
             </SelectContent>
           </Select>
         </div>
+      </div>
 
+      {/* Región y Comuna */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
         <div>
           <label htmlFor="region" className="block text-sm font-medium text-gray-700">Región *</label>
           <Select onValueChange={handleRegionChange} value={formData.region} required>
-            <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2">
+            <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2 text-left">
               <SelectValue placeholder="Región" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-full">
               {Object.keys(regionesYComunas).map((region) => (
                 <SelectItem key={region} value={region} className="text-gray-900">{region}</SelectItem>
               ))}
@@ -502,10 +505,10 @@ function InputSection({ formData, handleChange, handleInputChange, handleRegionC
         <div>
           <label htmlFor="comuna" className="block text-sm font-medium text-gray-700">Comuna *</label>
           <Select onValueChange={(value: string) => handleInputChange("comuna", value)} value={formData.comuna} disabled={!formData.region} required>
-            <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200">
+            <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 py-2 text-left">
               <SelectValue placeholder="Comuna" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-full">
               {comunasDisponibles.length > 0
                 ? comunasDisponibles.map((comuna) => <SelectItem key={comuna} value={comuna} className="text-gray-900">{comuna}</SelectItem>)
                 : <div className="p-2 text-sm text-gray-500">Selecciona una región primero</div>}

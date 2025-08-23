@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, ZoomIn, ArrowLeft, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -48,42 +48,46 @@ export default function Gallery() {
   const [imagesLoaded, setImagesLoaded] = useState<Set<string>>(new Set());
   const [modalLoading, setModalLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [modalKey, setModalKey] = useState(0); // Key para forzar re-render
+  const [imageReady, setImageReady] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
 
-  // Preload agresivo de imágenes para carga inicial rápida
+  // Preload optimizado de imágenes para carga inicial rápida
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Preload inmediato de todas las imágenes
+      // Preload optimizado - más agresivo en móvil
       galleryItems.forEach((item, index) => {
-        // Crear múltiples instancias para asegurar carga
-        const img1 = new window.Image();
-        const img2 = new window.Image();
+        const img = new window.Image();
         
-        img1.onload = () => {
+        img.onload = () => {
           setImagesLoaded(prev => {
             const newSet = new Set(prev).add(item.src);
-            // Si todas las imágenes están cargadas, ocultar loading inicial
+            // Ocultar loading inicial más rápido en móvil
             if (newSet.size === galleryItems.length) {
-              setTimeout(() => setInitialLoading(false), 200);
+              const hideTime = isMobile ? 100 : 200;
+              setTimeout(() => setInitialLoading(false), hideTime);
             }
             return newSet;
           });
         };
         
         // Cargar con prioridad alta
-        img1.src = item.src;
-        img2.src = item.src;
+        img.src = item.src;
         
-        // Forzar carga con fetch
-        fetch(item.src, { 
-          method: 'GET',
-          cache: 'force-cache'
-        }).catch(() => {
-          // Fallback si fetch falla
-          console.warn(`Failed to preload: ${item.src}`);
-        });
+        // Preload adicional solo si no es móvil para ahorrar datos
+        if (!isMobile) {
+          fetch(item.src, { 
+            method: 'GET',
+            cache: 'force-cache'
+          }).catch(() => {
+            // Fallback silencioso
+          });
+        }
       });
     }
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth !== undefined) {
@@ -100,9 +104,58 @@ export default function Gallery() {
       return () => window.removeEventListener('resize', checkMobile);
     }
   }, []);
+  
+  // Efecto para manejar el scroll cuando el modal está abierto
+  useEffect(() => {
+    if (selectedImage) {
+      // Prevenir scroll cuando el modal está abierto
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollPosition}px`;
+      document.body.style.width = '100%';
+      
+      // Agregar listener para tecla Escape
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          handleCloseModal();
+        }
+      };
+      
+      document.addEventListener('keydown', handleEscape);
+      
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+      };
+    } else {
+      // Restaurar scroll cuando el modal se cierra
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+    }
+
+    // Cleanup al desmontar
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+    };
+  }, [selectedImage, scrollPosition]);
 
   const handleNext = () => setActiveIndex((prev) => (prev + 1) % galleryItems.length);
   const handlePrev = () => setActiveIndex((prev) => (prev - 1 + galleryItems.length) % galleryItems.length);
+
+  // Función optimizada para abrir modal
+  const handleOpenModal = (imageSrc: string) => {
+    setSelectedImage(imageSrc);
+    setImageReady(false);
+  };
+
+  // Función simple para cerrar modal
+  const handleCloseModal = () => {
+    setSelectedImage(null);
+  };
 
   const imagesToDisplay = [
     galleryItems[(activeIndex - 1 + galleryItems.length) % galleryItems.length],
@@ -175,51 +228,85 @@ export default function Gallery() {
               key={`${item.src}-${index}`}
               className={`relative group cursor-pointer overflow-hidden rounded-xl md:rounded-[1.5rem] shadow-lg md:shadow-xl mobile-image-optimized
               ${index === 1 
-                ? 'w-full md:w-[55%] lg:w-[45%] shadow-xl md:shadow-2xl aspect-[4/5] md:aspect-[9/10] transition-all duration-300 md:duration-500 ease-in-out' 
-                : 'w-[15%] md:w-[20%] lg:w-[25%] xl:w-[30%] opacity-30 md:opacity-50 hidden md:block aspect-[3/4] transition-all duration-300 md:duration-500 ease-in-out'
+                ? 'w-full md:w-[55%] lg:w-[45%] shadow-xl md:shadow-2xl aspect-[4/5] md:aspect-[9/10]' 
+                : 'w-[15%] md:w-[20%] lg:w-[25%] xl:w-[30%] opacity-30 md:opacity-50 hidden md:block aspect-[3/4]'
               }
               `}
               onClick={() => {
                 if (index === 1) {
-                  setModalLoading(true);
-                  setSelectedImage(item.src);
-                  // La imagen ya está pre-cargada, así que el loading será muy rápido
-                  setTimeout(() => setModalLoading(false), 100);
+                  handleOpenModal(item.src);
                 } else if (index === 0) {
                   handlePrev();
                 } else {
                   handleNext();
                 }
               }}
-              whileHover={{ scale: index === 1 ? 1.01 : 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              whileHover={{ 
+                scale: index === 1 ? 1.03 : 1.05,
+                y: index === 1 ? -8 : -5,
+                transition: { duration: 0.3, ease: "easeOut" }
+              }}
+              whileTap={{ 
+                scale: index === 1 ? 0.97 : 0.95,
+                y: index === 1 ? -2 : 0,
+                transition: { duration: 0.1, ease: "easeIn" }
+              }}
+              transition={{ 
+                duration: isMobile ? 0.2 : 0.4, 
+                ease: "easeOut",
+                type: "spring",
+                stiffness: 300,
+                damping: 20
+              }}
             >
               <Image
                 src={item.src}
                 alt={item.alt}
                 fill
-                className="object-cover transition-transform duration-300 md:duration-500 group-hover:scale-105"
+                className="object-cover transition-all duration-500 ease-out group-hover:scale-110 pointer-events-none"
                 sizes={item.sizes}
                 priority={index === 1}
-                quality={isMobile ? 50 : 65}
+                quality={isMobile ? 85 : 95}
                 placeholder="blur"
                 blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                 loading="eager"
                 fetchPriority={index === 1 ? "high" : "auto"}
+                style={{
+                  filter: "brightness(1.05) contrast(1.1) saturate(1.1)",
+                }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent transition-opacity duration-200 md:duration-300 opacity-0 group-hover:opacity-100 flex flex-col justify-end p-3 md:p-6">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-all duration-500 ease-out opacity-0 group-hover:opacity-100 flex flex-col justify-end p-3 md:p-6">
                 <motion.div 
-                  initial={{ y: 10, opacity: 0 }} 
+                  initial={{ y: 20, opacity: 0 }} 
                   animate={{ y: 0, opacity: 1 }} 
-                  transition={{ duration: 0.3 }} 
+                  transition={{ 
+                    duration: 0.4, 
+                    ease: "easeOut",
+                    delay: 0.1
+                  }} 
                   className="flex flex-col gap-1 md:gap-2"
                 >
                   <div className="flex items-center gap-1 md:gap-2 text-white font-semibold text-sm md:text-base" style={{ color: colors.highlight }}>
-                    <ZoomIn size={isMobile ? 14 : 18} /> Ver más
+                    <motion.div
+                      animate={{ 
+                        scale: [1, 1.1, 1],
+                        rotate: [0, 5, 0]
+                      }}
+                      transition={{ 
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <ZoomIn size={isMobile ? 14 : 18} />
+                    </motion.div>
+                    Ver más
                   </div>
                 </motion.div>
               </div>
+              
+              {/* Efecto de brillo en hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 ease-out transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%]" />
             </motion.div>
           ))}
         </div>
@@ -241,56 +328,35 @@ export default function Gallery() {
         </div>
       </div>
 
-      {/* Modal optimizado para móvil */}
-      <AnimatePresence>
-        {selectedImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-4"
-            style={{ backgroundColor: "rgba(0,0,0,0.95)" }}
-            onClick={() => setSelectedImage(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="relative w-full h-full max-w-4xl md:max-w-6xl max-h-[95vh] md:max-h-[90vh]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <motion.button
-                className="absolute top-2 right-2 md:top-4 md:right-4 z-50 p-2 md:p-3 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all"
+      {/* Modal ultra simple */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-[80vh]">
+            {imageReady && (
+              <button
+                className="absolute top-4 right-4 w-12 h-12 md:w-14 md:h-14 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center text-black font-bold text-2xl md:text-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 z-10"
                 onClick={() => setSelectedImage(null)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
               >
-                <X className="w-4 h-4 md:w-6 md:h-6 text-white" />
-              </motion.button>
-              
-              <div className="relative w-full h-full overflow-hidden rounded-lg md:rounded-3xl shadow-2xl bg-black">
-                {modalLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center z-10">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-                  </div>
-                )}
-                <Image
-                  src={selectedImage}
-                  alt="Imagen en vista ampliada"
-                  fill
-                  className="object-contain"
-                  quality={90}
-                  priority
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-                  placeholder="blur"
-                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXwGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-                />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                ✕
+              </button>
+            )}
+            
+            <img
+              src={selectedImage}
+              alt="Imagen ampliada"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+              onLoad={() => setImageReady(true)}
+              style={{
+                filter: "brightness(1.05) contrast(1.1) saturate(1.1)",
+              }}
+            />
+          </div>
+        </div>
+      )}
     </section>
   );
 }

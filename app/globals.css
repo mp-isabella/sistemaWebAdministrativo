@@ -199,519 +199,72 @@ button[class*="w-16 h-16"]:focus-visible {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  
-  /* Optimización de scroll */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 #f1f5f9;
-  }
-  
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: #f1f5f9;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-  }
 }
 
-/* Estilos responsivos para secciones con viewport height */
-@layer components {
-  .section-full-height {
-    min-height: 100vh;
-  }
-
-  .section-half-height {
-    min-height: 50vh;
-  }
-
-  /* Z-index hierarchy para evitar conflictos */
-  .z-sidebar {
-    z-index: 60 !important;
-  }
-
-  .z-header {
-    z-index: 55 !important;
-  }
-
-  .z-dropdown {
-    z-index: 45 !important;
-  }
-
-  .z-modal {
-    z-index: 100 !important;
-  }
-
-  /* Asegurar que los selects no interfieran con la sidebar */
-  [data-radix-popper-content-wrapper] {
-    z-index: 45 !important;
-  }
-
-  /* Asegurar que la sidebar siempre esté por encima */
-  .dashboard-sidebar {
-    z-index: 60 !important;
-    position: relative;
-  }
-
-  /* Asegurar que los dropdowns del header no interfieran */
-  .header-dropdown {
-    z-index: 45 !important;
-  }
+/* Scrollbar profesional y estable */
+html {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
-/* Optimizaciones para imágenes */
-@layer utilities {
-  .image-quality-high {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-  }
-
-  .image-transition-smooth {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .image-hover-scale {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .image-hover-scale:hover {
-    transform: scale(1.05);
-  }
-
-  .image-loading-skeleton {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: loading 1.5s infinite;
-  }
-
-  @keyframes loading {
-    0% {
-      background-position: 200% 0;
-    }
-    100% {
-      background-position: -200% 0;
-    }
-  }
-
-  .image-backdrop-blur {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-
-  .image-sharp {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
-  }
-
-  /* Optimizaciones para hero images */
-  .hero-image-transition {
-    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1), 
-                transform 1s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .hero-image-active {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  .hero-image-inactive {
-    opacity: 0;
-    transform: scale(1.02);
-  }
-
-  /* Optimizaciones para galería */
-  .gallery-image-hover {
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .gallery-image-hover:hover {
-    transform: scale(1.02) translateY(-2px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  }
-
-  /* Optimizaciones para modales */
-  .modal-backdrop {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-
-  .modal-image-container {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Optimizaciones para responsive */
-  @media (max-width: 768px) {
-    .image-quality-high {
-      image-rendering: auto;
-    }
-  }
-
-  /* Optimizaciones para performance */
-  .image-lazy-load {
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-  }
-
-  .image-lazy-load.loaded {
-    opacity: 1;
-  }
-
-  /* Optimizaciones para accesibilidad */
-  .image-focus-visible:focus-visible {
-    outline: 2px solid #3b82f6;
-    outline-offset: 2px;
-  }
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
-/* Optimizaciones específicas para Next.js Image */
-@layer components {
-  .next-image-optimized {
-    @apply image-quality-high image-transition-smooth;
-  }
-
-  .next-image-gallery {
-    @apply image-quality-high gallery-image-hover;
-  }
-
-  .next-image-hero {
-    @apply image-quality-high hero-image-transition;
-  }
-
-  .next-image-modal {
-    @apply image-quality-high modal-image-container;
-  }
+body {
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
-/* Optimizaciones para rendimiento */
-@layer utilities {
-  .slow-connection img {
-    image-rendering: auto;
-    transition: none !important;
-  }
-
-  .slow-connection * {
-    animation-duration: 0.1s !important;
-    transition-duration: 0.1s !important;
-  }
-
-  /* Optimizaciones para carga rápida */
-  .fast-load {
-    will-change: transform;
-    transform: translateZ(0);
-  }
-
-  /* Optimizaciones para imágenes críticas */
-  .critical-image {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-  }
-
-  /* Optimizaciones específicas para móvil */
-  .fast-loading img {
-    image-rendering: auto;
-    transition: none !important;
-  }
-
-  .fast-loading * {
-    animation-duration: 0.1s !important;
-    transition-duration: 0.1s !important;
-  }
-
-  /* Optimizaciones para conexiones lentas */
-  .slow-connection .gallery-image {
-    quality: 60;
-    priority: false;
-  }
-
-  /* Optimizaciones para touch */
-  .touch-optimized {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  /* Optimizaciones para scroll en móvil */
-  .mobile-scroll-optimized {
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-  }
-
-  /* Optimizaciones para imágenes en móvil */
-  .mobile-image-optimized {
-    image-rendering: auto;
-    backface-visibility: hidden;
-    transform: translateZ(0);
-  }
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
-/* Optimizaciones móviles globales */
-@layer utilities {
-  /* Prevenir zoom en inputs en iOS */
-  @media (max-width: 768px) {
-    input[type="text"],
-    input[type="email"],
-    input[type="tel"],
-    input[type="password"],
-    textarea,
-    select {
-      font-size: 16px !important;
-    }
-  }
-
-  /* Optimizar scroll en móvil */
-  @media (max-width: 768px) {
-    html {
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-    }
-    
-    body {
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-  }
-
-  /* Mejorar rendimiento de animaciones en móvil */
-  @media (max-width: 768px) {
-    *:not(.animate-marquee):not(.animate-marquee-mobile):not(.banner-marquee) {
-      animation-duration: 0.2s !important;
-      transition-duration: 0.2s !important;
-    }
-    
-    .animate-slow {
-      animation-duration: 0.3s !important;
-    }
-    
-    .transition-slow {
-      transition-duration: 0.3s !important;
-    }
-  }
-
-  /* Optimizar imágenes para móvil */
-  .mobile-optimized-image {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-  }
-
-  @media (max-width: 768px) {
-    .mobile-optimized-image {
-      image-rendering: optimizeSpeed;
-    }
-  }
-
-  /* Optimizaciones específicas para banners y marquee */
-  .banner-marquee {
-    animation-timing-function: linear;
-    will-change: transform;
-  }
-
-  /* Responsive unificado (≤1024px) */
-  @media (max-width: 1024px) {
-    .banner-marquee {
-      animation-duration: 120s !important;
-    }
-    
-    .animate-marquee {
-      animation-duration: 120s !important;
-    }
-  }
-
-  /* Pausar animaciones solo en hover para desktop */
-  @media (hover: hover) {
-    .banner-marquee:hover {
-      animation-play-state: paused;
-    }
-  }
-
-  /* Optimizaciones para conexiones lentas */
-  @media (prefers-reduced-motion: reduce) {
-    .banner-marquee {
-      animation-play-state: paused !important;
-    }
-  }
-
-  /* Optimizaciones para dispositivos de gama baja */
-  .low-end-device .banner-marquee {
-    animation-duration: 120s !important;
-  }
-
-  /* Asegurar que las animaciones de banner funcionen en móvil */
-  @media (max-width: 768px) {
-    .animate-marquee-mobile {
-      animation-play-state: running !important;
-      animation-timing-function: linear !important;
-      animation-duration: 140s !important;
-    }
-    
-    .banner-marquee {
-      animation-play-state: running !important;
-    }
-  }
-
-  /* Mejorar legibilidad en móvil */
-  @media (max-width: 768px) {
-    .mobile-text {
-      line-height: 1.5;
-      letter-spacing: 0.025em;
-    }
-    
-    .mobile-heading {
-      line-height: 1.2;
-      letter-spacing: -0.025em;
-    }
-  }
-
-  /* Optimizar botones para móvil */
-  @media (max-width: 768px) {
-    .mobile-button {
-      min-height: 44px;
-      min-width: 44px;
-      padding: 12px 16px;
-    }
-    
-    .mobile-touch-target {
-      min-height: 44px;
-      min-width: 44px;
-    }
-  }
-
-  /* Mejorar navegación móvil */
-  @media (max-width: 768px) {
-    .mobile-nav-item {
-      padding: 12px 16px;
-      margin: 4px 0;
-      border-radius: 8px;
-    }
-    
-    .mobile-nav-item:active {
-      background-color: rgba(0, 0, 0, 0.1);
-    }
-  }
-
-  /* Optimizar formularios móviles */
-  @media (max-width: 768px) {
-    .mobile-form {
-      padding: 16px;
-    }
-    
-    .mobile-form-group {
-      margin-bottom: 16px;
-    }
-    
-    .mobile-input {
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-  }
-
-  /* Mejorar galería móvil */
-  @media (max-width: 768px) {
-    .mobile-gallery {
-      gap: 8px;
-    }
-    
-    .mobile-gallery-item {
-      border-radius: 8px;
-      overflow: hidden;
-    }
-  }
-
-  /* Optimizar modales móviles */
-  @media (max-width: 768px) {
-    .mobile-modal {
-      padding: 16px;
-      border-radius: 12px;
-    }
-    
-    .mobile-modal-content {
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-  }
-
-  /* Mejorar accesibilidad móvil */
-  @media (max-width: 768px) {
-    .mobile-focus {
-      outline: 2px solid #3b82f6;
-      outline-offset: 2px;
-    }
-    
-    .mobile-skip-link {
-      position: absolute;
-      top: -40px;
-      left: 6px;
-      background: #000;
-      color: #fff;
-      padding: 8px;
-      text-decoration: none;
-      border-radius: 4px;
-      z-index: 1000;
-    }
-    
-    .mobile-skip-link:focus {
-      top: 6px;
-    }
-  }
+/* Prevenir cambios de layout en selectores */
+* {
+  box-sizing: border-box;
 }
 
-/* Variables CSS para optimizaciones móviles */
-:root {
-  --mobile-spacing-xs: 0.25rem;
-  --mobile-spacing-sm: 0.5rem;
-  --mobile-spacing-md: 0.75rem;
-  --mobile-spacing-lg: 1rem;
-  --mobile-spacing-xl: 1.5rem;
-  
-  --mobile-font-xs: 0.75rem;
-  --mobile-font-sm: 0.875rem;
-  --mobile-font-base: 1rem;
-  --mobile-font-lg: 1.125rem;
-  --mobile-font-xl: 1.25rem;
-  
-  --mobile-animation-fast: 0.15s;
-  --mobile-animation-normal: 0.2s;
-  --mobile-animation-slow: 0.3s;
+/* Asegurar que los selectores no causen cambios de layout */
+[data-radix-popper-content-wrapper] {
+  position: fixed !important;
 }
 
-/* Clases utilitarias para móvil */
-.mobile-container {
-  padding-left: var(--mobile-spacing-md);
-  padding-right: var(--mobile-spacing-md);
+/* Mantener layout estable en formularios */
+form {
+  width: 100%;
+  max-width: 100%;
 }
 
-.mobile-text-sm {
-  font-size: var(--mobile-font-sm);
+/* Prevenir overflow en contenedores de selectores */
+.SelectContent {
+  max-height: 200px;
+  overflow-y: auto;
 }
 
-.mobile-text-base {
-  font-size: var(--mobile-font-base);
+/* Estilos para el scrollbar interno de los selectores */
+.SelectContent::-webkit-scrollbar {
+  width: 6px;
 }
 
-.mobile-text-lg {
-  font-size: var(--mobile-font-lg);
+.SelectContent::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
 }
 
-.mobile-animate-fast {
-  animation-duration: var(--mobile-animation-fast);
-  transition-duration: var(--mobile-animation-fast);
+.SelectContent::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
 }
 
-.mobile-animate-normal {
-  animation-duration: var(--mobile-animation-normal);
-  transition-duration: var(--mobile-animation-normal);
+.SelectContent::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
-.mobile-animate-slow {
-  animation-duration: var(--mobile-animation-slow);
-  transition-duration: var(--mobile-animation-slow);
+/* Estilos básicos para selectores en móvil */
+@media (max-width: 768px) {
+  [data-radix-select-content] {
+    z-index: 9999 !important;
+  }
 }
