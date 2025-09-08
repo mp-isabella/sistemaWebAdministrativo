@@ -142,7 +142,7 @@ export default function MyJobsPage() {
   const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
-    if (session?.user?.id) {
+    if ((session?.user as any)?.id) {
       fetchJobs()
     }
   }, [session])

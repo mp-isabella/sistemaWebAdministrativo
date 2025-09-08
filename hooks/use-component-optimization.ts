@@ -101,7 +101,9 @@ export const useComponentOptimization = (options: ComponentOptimizationOptions =
     );
 
     observerRef.current = observer;
-    observer.observe(componentRef.current);
+    if (observer && componentRef.current) {
+      observer.observe(componentRef.current);
+    }
 
     return () => {
       if (observer) {

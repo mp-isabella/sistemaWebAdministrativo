@@ -9,7 +9,7 @@ async function main() {
   const companies = [
     {
       name: 'Amestica',
-      type: 'AMESTICA',
+      type: 'AMESTICA' as const,
       logo: '/amestica.png',
       primaryColor: '#1e40af',
       secondaryColor: '#f97316',
@@ -21,7 +21,7 @@ async function main() {
     },
     {
       name: 'Multifugas',
-      type: 'MULTIFUGAS',
+      type: 'MULTIFUGAS' as const,
       logo: '/multifugas.png',
       primaryColor: '#1e40af',
       secondaryColor: '#f97316',
@@ -33,7 +33,7 @@ async function main() {
     },
     {
       name: 'Servifugas',
-      type: 'SERVIFUGAS',
+      type: 'SERVIFUGAS' as const,
       logo: '/servifugas.png',
       primaryColor: '#059669',
       secondaryColor: '#1e40af',

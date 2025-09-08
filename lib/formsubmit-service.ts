@@ -74,20 +74,8 @@ Améstica Ltda. - Servicios Profesionales
     formData.append('_replyto', data.email);
     formData.append('_captcha', 'false');
     
-    // Enviar el contenido completo como mensaje
+    // Enviar solo el contenido completo como mensaje
     formData.append('message', emailContent);
-    
-    // También enviar campos individuales para mejor procesamiento
-    formData.append('nombre', data.nombre);
-    formData.append('email', data.email);
-    formData.append('telefono', data.telefono);
-    formData.append('region', data.region);
-    formData.append('comuna', data.comuna);
-    formData.append('direccion', data.direccion);
-    formData.append('servicio', serviceName);
-    if (data.mensaje && data.mensaje.trim()) {
-      formData.append('mensaje_cliente', data.mensaje);
-    }
 
     const response = await fetch('https://formsubmit.co/ajax/mpriquelme.dev@gmail.com', {
       method: 'POST',

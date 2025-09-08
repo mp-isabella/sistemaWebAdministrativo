@@ -163,6 +163,25 @@ async function main() {
     createdClients.push(createdClient);
   }
 
+  // Crear empresa de ejemplo
+  console.log("🏢 Creando empresa...");
+  const company = await prisma.company.upsert({
+    where: { name: "Amestica" },
+    update: {},
+    create: {
+      name: "Amestica",
+      type: "AMESTICA",
+      logo: "/amestica.png",
+      primaryColor: "#1e40af",
+      secondaryColor: "#f97316",
+      address: "Av. Providencia 1234, Providencia, Santiago",
+      phone: "+56 2 2345 6789",
+      email: "contacto@amestica.cl",
+      website: "https://amestica.cl",
+      taxId: "76.123.456-7"
+    }
+  });
+
   // Crear trabajos de ejemplo
   console.log("💼 Creando trabajos...");
   const detectionService = await prisma.service.findFirst({ where: { name: "Detección de Fugas" } });
@@ -179,6 +198,7 @@ async function main() {
         client: { connect: { id: createdClients[0].id } },
         service: { connect: { id: detectionService.id } },
         technician: { connect: { id: tecnicoUser.id } },
+        company: { connect: { id: company.id } },
         createdBy: { connect: { id: secretariaUser.id } },
         scheduledAt: new Date("2024-01-16T09:00:00Z"),
       },
@@ -190,6 +210,7 @@ async function main() {
         client: { connect: { id: createdClients[1].id } },
         service: { connect: { id: repairService.id } },
         technician: { connect: { id: tecnicoUser.id } },
+        company: { connect: { id: company.id } },
         createdBy: { connect: { id: secretariaUser.id } },
         scheduledAt: new Date("2024-01-14T10:00:00Z"),
         completedAt: new Date("2024-01-14T16:30:00Z"),
@@ -201,6 +222,7 @@ async function main() {
         priority: JobPriority.LOW,
         client: { connect: { id: createdClients[2].id } },
         service: { connect: { id: maintenanceService.id } },
+        company: { connect: { id: company.id } },
         createdBy: { connect: { id: secretariaUser.id } },
         scheduledAt: new Date("2024-01-18T14:00:00Z"),
       },

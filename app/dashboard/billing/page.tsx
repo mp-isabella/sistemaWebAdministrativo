@@ -153,7 +153,7 @@ export default function BillingPage() {
   }
 
   const totals = calculateTotals()
-  const userRole = session?.user?.role?.toLowerCase()
+  const userRole = (session?.user as any)?.role?.toLowerCase()
 
   const handleViewInvoice = (invoice: Invoice) => {
     setSelectedInvoice(invoice)

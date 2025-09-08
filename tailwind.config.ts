@@ -248,7 +248,7 @@ const config: Config = {
     require('@tailwindcss/typography'),
     require('@tailwindcss/aspect-ratio'),
     // Plugin personalizado para utilidades responsivas
-    function({ addUtilities, theme }) {
+    function({ addUtilities, theme }: any) {
       const responsiveUtilities = {
         '.mobile-only': {
           display: 'block',

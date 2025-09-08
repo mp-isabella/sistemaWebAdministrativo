@@ -105,7 +105,7 @@ export default function PendingPaymentsPage() {
     )
   }
 
-  if (status === "unauthenticated" || !['admin', 'secretaria'].includes(session?.user?.role?.toLowerCase() || '')) {
+  if (status === "unauthenticated" || !['admin', 'secretaria'].includes((session?.user as any)?.role?.toLowerCase() || '')) {
     return (
       <div className="dashboard-container">
         <div className="dashboard-content">

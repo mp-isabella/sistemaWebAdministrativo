@@ -176,10 +176,10 @@ export default function LiquidationPreview({
         technician: technician,
         periodStart: data.periodStart,
         periodEnd: data.periodEnd,
-        totalEarnings: totalEarnings,
-        totalDeductions: totalDeductions,
-        totalAdvances: totalAdvances,
-        netAmount: netAmount,
+        totalEarnings: totals.totalEarnings,
+        totalDeductions: totals.totalDeductions,
+        totalAdvances: totals.totalAdvances,
+        netAmount: totals.netSalary,
         items: data.items
       }
       

@@ -24,7 +24,7 @@ export function RoleRedirect({ children, allowedRoles }: RoleRedirectProps) {
     }
 
     if (status === "authenticated" && session) {
-      const role = session?.user?.role
+      const role = (session?.user as any)?.role
       console.log("👤 Usuario autenticado con rol:", role)
       
       if (allowedRoles && !allowedRoles.includes(role || "")) {

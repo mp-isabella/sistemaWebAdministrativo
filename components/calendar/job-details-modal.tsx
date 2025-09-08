@@ -61,10 +61,10 @@ export function JobDetailsModal({ job, onClose, onJobUpdate }: JobDetailsModalPr
   })
   
   // Verificar permisos del usuario
-  const userRole = session?.user?.role?.toLowerCase() || ""
-  const canAssignTechnician = ["admin", "secretaria"].includes(userRole)
+  const userRole = (session?.user as any)?.role?.toLowerCase() || ""
+  const canAssignTechnician = ["admin", "secretaria"].includes(userRole)      
   const isTechnician = userRole === "tecnico"
-  const isCurrentTechnician = job?.technician?.id === session?.user?.id
+  const isCurrentTechnician = job?.technician?.id === (session?.user as any)?.id
   
   if (!job) return null
 

@@ -200,7 +200,7 @@ export const generateMonthlyCashReport = (data: MonthlyReportData) => {
         4: { cellWidth: 25, halign: 'right', fontStyle: 'bold' },
         5: { cellWidth: 25, halign: 'center' }
       },
-      didDrawPage: function (data) {
+      didDrawPage: function (data: any) {
         // Agregar número de página
         const pageCount = doc.getNumberOfPages()
         doc.setFontSize(PDF_CONFIG.fonts.small.size)

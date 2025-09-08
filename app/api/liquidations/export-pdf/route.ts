@@ -494,7 +494,7 @@ export async function GET(
     const technicianName = liquidation.technician?.name || 'tecnico'
     const fileName = `liquidacion-${technicianName.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toLowerCase()}-${formatDate(liquidation.periodStart)}.pdf`
     
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(pdfBuffer as any, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${fileName}"`

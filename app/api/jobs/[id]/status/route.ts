@@ -58,7 +58,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           // Crear transacción de ingreso automática
           await prisma.cashTransaction.create({
             data: {
-              amount: updatedJob.service.price,
+              amount: updatedJob.service.price || 0,
               type: 'INCOME',
               description: `Pago por servicio: ${updatedJob.service.name} - ${updatedJob.client.name}`,
               category: 'servicios',

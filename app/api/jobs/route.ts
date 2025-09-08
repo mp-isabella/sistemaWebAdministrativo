@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session) {
+    if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session) {
+    if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
@@ -228,7 +228,7 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session) {
+    if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
@@ -390,7 +390,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session) {
+    if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
