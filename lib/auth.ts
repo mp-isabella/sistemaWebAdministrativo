@@ -62,14 +62,14 @@ export const authOptions = {
     }),
   ],
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
     maxAge: 60 * 60, // 1 hora
   },
   jwt: {
     maxAge: 60 * 60, // 1 hora
   },
   callbacks: {
-    async jwt({ token, user }: any) {
+    async jwt({ token, user }: { token: any; user: any }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -77,7 +77,7 @@ export const authOptions = {
       }
       return token;
     },
-    async session({ session, token }: any) {
+    async session({ session, token }: { session: any; token: any }) {
       if (session.user && token.sub && token.role) {
         session.user.id = token.sub;
         session.user.role = token.role;
