@@ -13,7 +13,7 @@ export async function GET(
     }
 
     // Verificar permisos: solo admin y secretaria pueden ver cotizaciones
-    if (!session.user.role || !["admin", "secretaria"].includes(session.user.role.toLowerCase())) {
+    if (!(session.user as any).role || !["admin", "secretaria"].includes((session.user as any).role.toLowerCase())) {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 
@@ -91,7 +91,7 @@ export async function POST(
     }
 
     // Verificar permisos: solo admin y secretaria pueden crear cotizaciones
-    if (!session.user.role || !["admin", "secretaria"].includes(session.user.role.toLowerCase())) {
+    if (!(session.user as any).role || !["admin", "secretaria"].includes((session.user as any).role.toLowerCase())) {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 

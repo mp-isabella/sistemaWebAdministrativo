@@ -12,7 +12,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    if (session.user.role !== "admin") {
+    if ((session.user as any).role !== "admin") {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
@@ -55,7 +55,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    if (session.user.role !== "admin") {
+    if ((session.user as any).role !== "admin") {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 

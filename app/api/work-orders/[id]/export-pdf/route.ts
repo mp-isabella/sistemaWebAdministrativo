@@ -17,7 +17,7 @@ export async function GET(
     }
 
     // Solo admin y secretaria pueden exportar PDFs
-    if (!["admin", "secretaria"].includes(session.user.role.toLowerCase())) {
+    if (!["admin", "secretaria"].includes((session.user as any).role.toLowerCase())) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 

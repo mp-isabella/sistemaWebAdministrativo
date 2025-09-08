@@ -13,7 +13,7 @@ export async function GET(
     }
 
     // Verificar permisos: solo admin puede ver liquidaciones
-    if (!session.user.role || session.user.role.toLowerCase() !== "admin") {
+    if (!(session.user as any).role || (session.user as any).role.toLowerCase() !== "admin") {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 
@@ -78,7 +78,7 @@ export async function PUT(
     }
 
     // Verificar permisos: solo admin puede editar liquidaciones
-    if (!session.user.role || session.user.role.toLowerCase() !== "admin") {
+    if (!(session.user as any).role || (session.user as any).role.toLowerCase() !== "admin") {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 
@@ -213,7 +213,7 @@ export async function DELETE(
     }
 
     // Verificar permisos: solo admin puede eliminar liquidaciones
-    if (!session.user.role || session.user.role.toLowerCase() !== "admin") {
+    if (!(session.user as any).role || (session.user as any).role.toLowerCase() !== "admin") {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 

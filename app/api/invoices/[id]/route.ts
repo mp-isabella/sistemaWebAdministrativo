@@ -66,7 +66,8 @@ export async function PUT(
     }
 
     // Verificar permisos: solo admin puede editar facturas
-    if (!session.user.role || session.user.role.toLowerCase() !== "admin") {
+    const userRole = (session.user as any).role;
+    if (!userRole || userRole.toLowerCase() !== "admin") {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 
@@ -156,7 +157,8 @@ export async function DELETE(
     }
 
     // Verificar permisos: solo admin puede eliminar facturas
-    if (!session.user.role || session.user.role.toLowerCase() !== "admin") {
+    const userRole = (session.user as any).role;
+    if (!userRole || userRole.toLowerCase() !== "admin") {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 

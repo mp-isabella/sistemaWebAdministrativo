@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    if (!["admin", "secretaria"].includes(session.user.role)) {
+    if (!["admin", "secretaria"].includes((session.user as any).role)) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 

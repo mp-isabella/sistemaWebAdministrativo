@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verificar permisos: solo admin y secretaria pueden exportar cotizaciones
-    if (!session.user.role || !["admin", "secretaria"].includes(session.user.role.toLowerCase())) {
+    if (!(session.user as any).role || !["admin", "secretaria"].includes((session.user as any).role.toLowerCase())) {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 

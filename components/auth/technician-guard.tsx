@@ -29,7 +29,7 @@ export function TechnicianGuard({ children, fallback }: TechnicianGuardProps) {
     }
 
     // Verificar que el usuario sea técnico
-    if (session.user.role.toLowerCase() !== "tecnico") {
+    if ((session.user as any).role.toLowerCase() !== "tecnico") {
       setIsAuthorized(false)
       setIsLoading(false)
       return

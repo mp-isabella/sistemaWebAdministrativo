@@ -32,7 +32,7 @@ export async function GET(
     }
 
     // Verificar permisos para técnicos
-    if (session.user.role.toLowerCase() === "tecnico" && workOrder.technicianId !== session.user.id) {
+    if ((session.user as any).role.toLowerCase() === "tecnico" && workOrder.technicianId !== session.user.id) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
@@ -55,7 +55,7 @@ export async function PUT(
     }
 
     // Permitir que admin, secretaria y técnicos asignados actualicen órdenes de trabajo
-    if (!["admin", "secretaria", "tecnico"].includes(session.user.role.toLowerCase())) {
+    if (!["admin", "secretaria", "tecnico"].includes((session.user as any).role.toLowerCase())) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
@@ -89,7 +89,7 @@ export async function PUT(
     }
 
     // Verificar permisos para técnicos
-    if (session.user.role.toLowerCase() === "tecnico" && existingWorkOrder.technicianId !== session.user.id) {
+    if ((session.user as any).role.toLowerCase() === "tecnico" && existingWorkOrder.technicianId !== session.user.id) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
@@ -180,7 +180,7 @@ export async function DELETE(
     }
 
     // Solo admin y secretaria pueden eliminar órdenes de trabajo
-    if (!["admin", "secretaria"].includes(session.user.role.toLowerCase())) {
+    if (!["admin", "secretaria"].includes((session.user as any).role.toLowerCase())) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 

@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
 
     // Solo el técnico asignado o admin puede actualizar
-    if (session.user.role !== "admin" && job.technicianId !== session.user.id) {
+    if ((session.user as any).role !== "admin" && job.technicianId !== session.user.id) {
       return NextResponse.json({ error: "Sin permisos para actualizar este trabajo" }, { status: 403 })
     }
 

@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Admin, secretaria y técnicos pueden ver trabajadores
-    if (!["admin", "secretaria", "tecnico"].includes(session.user.role.toLowerCase())) {
+    if (!["admin", "secretaria", "tecnico"].includes((session.user as any).role.toLowerCase())) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Solo admin puede crear trabajadores
-    if (session.user.role !== "admin") {
+    if ((session.user as any).role !== "admin") {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
@@ -130,7 +130,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Solo admin puede actualizar trabajadores
-    if (session.user.role !== "admin") {
+    if ((session.user as any).role !== "admin") {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 

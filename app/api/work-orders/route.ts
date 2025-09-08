@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const where: any = {}
 
     // Filtros por rol
-    if (session.user.role.toLowerCase() === "tecnico") {
+    if ((session.user as any).role.toLowerCase() === "tecnico") {
       where.technicianId = session.user.id
     }
 
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Permitir que admin, secretaria y técnicos creen órdenes de trabajo
-    if (!["admin", "secretaria", "tecnico"].includes(session.user.role.toLowerCase())) {
+    if (!["admin", "secretaria", "tecnico"].includes((session.user as any).role.toLowerCase())) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 

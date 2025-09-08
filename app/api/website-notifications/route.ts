@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
 // GET - Obtener todas las notificaciones del sitio web
@@ -13,7 +13,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Solo admin y secretaria pueden ver las notificaciones
-    if (session.user.role !== 'admin' && session.user.role !== 'secretaria') {
+    const userRole = (session.user as any).role;
+    if (userRole !== 'admin' && userRole !== 'secretaria') {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
     }
 

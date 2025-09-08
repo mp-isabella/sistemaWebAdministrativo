@@ -31,7 +31,7 @@ export async function GET(
     }
 
     // Verificar permisos
-    const userRole = session.user.role.toLowerCase()
+    const userRole = (session.user as any).role.toLowerCase()
     
     // Los técnicos solo pueden ver sus propios trabajos
     if (userRole === "tecnico" && job.technicianId !== session.user.id) {
@@ -57,7 +57,7 @@ export async function PUT(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    if (!["admin", "secretaria"].includes(session.user.role.toLowerCase())) {
+    if (!["admin", "secretaria"].includes((session.user as any).role.toLowerCase())) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
@@ -131,7 +131,7 @@ export async function PATCH(
     }
 
     // Verificar permisos
-    const userRole = session.user.role.toLowerCase()
+    const userRole = (session.user as any).role.toLowerCase()
     
     // Los técnicos solo pueden actualizar sus propios trabajos
     if (userRole === "tecnico" && existingJob.technicianId !== session.user.id) {
@@ -177,7 +177,7 @@ export async function DELETE(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    if (!["admin", "secretaria"].includes(session.user.role.toLowerCase())) {
+    if (!["admin", "secretaria"].includes((session.user as any).role.toLowerCase())) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 

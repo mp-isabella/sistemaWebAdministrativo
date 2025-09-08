@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const where: any = {}
 
     // Filtros por rol
-    if (session.user.role.toLowerCase() === "tecnico") {
+    if ((session.user as any).role.toLowerCase() === "tecnico") {
       where.technicianId = session.user.id
     }
 
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Permitir que admin, secretaria y técnicos creen trabajos
-    if (!["admin", "secretaria", "tecnico"].includes(session.user.role.toLowerCase())) {
+    if (!["admin", "secretaria", "tecnico"].includes((session.user as any).role.toLowerCase())) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
@@ -235,7 +235,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json()
     
     // Verificar permisos específicos para cambios de técnico
-    const userRole = session.user.role.toLowerCase()
+    const userRole = (session.user as any).role.toLowerCase()
     const isChangingTechnician = body.technicianId !== undefined
     
     // Solo admin y secretaria pueden cambiar técnicos
@@ -395,7 +395,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Solo admin y secretaria pueden eliminar trabajos
-    if (!["admin", "secretaria"].includes(session.user.role.toLowerCase())) {
+    if (!["admin", "secretaria"].includes((session.user as any).role.toLowerCase())) {
       return NextResponse.json({ error: "Sin permisos para eliminar trabajos" }, { status: 403 })
     }
 

@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Solo admin puede crear empresas
-    if (session.user.role.toLowerCase() !== "admin") {
+    if ((session.user as any).role.toLowerCase() !== "admin") {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 

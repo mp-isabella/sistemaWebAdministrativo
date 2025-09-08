@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
 // PUT - Marcar notificación como leída
@@ -16,7 +16,8 @@ export async function PUT(
     }
 
     // Solo admin y secretaria pueden marcar notificaciones como leídas
-    if (session.user.role !== 'admin' && session.user.role !== 'secretaria') {
+    const userRole = (session.user as any).role;
+    if (userRole !== 'admin' && userRole !== 'secretaria') {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
     }
 
@@ -56,7 +57,8 @@ export async function DELETE(
     }
 
     // Solo admin puede eliminar notificaciones
-    if (session.user.role !== 'admin') {
+    const userRole = (session.user as any).role;
+    if (userRole !== 'admin') {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
     }
 

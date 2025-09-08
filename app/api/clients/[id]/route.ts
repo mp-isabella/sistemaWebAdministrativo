@@ -86,7 +86,7 @@ export async function PUT(
     console.log('👤 Usuario autenticado:', session.user?.name, 'Rol:', session.user?.role);
 
     // Verificar permisos (admin o secretaria)
-    if (!['admin', 'secretaria'].includes(session.user.role)) {
+    if (!['admin', 'secretaria'].includes((session.user as any).role)) {
       console.log('❌ Sin permisos para actualizar cliente');
       return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
     }
@@ -207,7 +207,7 @@ export async function DELETE(
     }
 
     // Solo admin puede eliminar clientes
-    if (session.user.role !== 'admin') {
+    if ((session.user as any).role !== 'admin') {
       return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
     }
 

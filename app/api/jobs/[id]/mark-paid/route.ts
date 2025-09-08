@@ -12,7 +12,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     // Solo admin y secretaria pueden marcar como pagado
-    if (!['admin', 'secretaria'].includes(session.user.role?.toLowerCase() || '')) {
+    if (!['admin', 'secretaria'].includes((session.user as any).role?.toLowerCase() || '')) {
       return NextResponse.json({ error: "Sin permisos para marcar como pagado" }, { status: 403 })
     }
 

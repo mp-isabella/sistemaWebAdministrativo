@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Solo admin puede ver todos los trabajadores
-    if (session.user.role !== "admin") {
+    if ((session.user as any).role !== "admin") {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session || session.user.role !== "admin") {
+    if (!session || (session.user as any).role !== "admin") {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 

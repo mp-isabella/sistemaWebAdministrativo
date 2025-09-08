@@ -80,12 +80,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    console.log('User role:', session.user.role)
+    console.log('User role:', (session.user as any).role)
     console.log('User email:', session.user.email)
     console.log('Session user object:', session.user)
     
     // Verificar permisos: permitir todos los roles por ahora para testing
-    console.log('User role:', session.user.role)
+    console.log('User role:', (session.user as any).role)
     console.log('User email:', session.user.email)
 
     const body = await request.json()

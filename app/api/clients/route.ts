@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Admin y secretaria pueden crear clientes
-    if (!["admin", "secretaria"].includes(session.user.role)) {
+    if (!["admin", "secretaria"].includes((session.user as any).role)) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
