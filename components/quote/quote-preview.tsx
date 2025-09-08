@@ -226,7 +226,7 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
       }
       
       // Forzar el reflow del documento
-      printWindow.document.body.offsetHeight
+      void printWindow.document.body.offsetHeight
       
       // Esperar un poco más para asegurar que todo esté estable
       await new Promise(resolve => setTimeout(resolve, 1000))

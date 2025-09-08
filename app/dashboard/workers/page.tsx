@@ -282,7 +282,7 @@ export default function WorkersPage() {
 
   // Función para filtrar trabajadores
   const filterWorkers = () => {
-    let filtered = workers.filter((worker) => {
+    const filtered = workers.filter((worker) => {
       // Filtrar por término de búsqueda
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();

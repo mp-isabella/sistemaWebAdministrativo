@@ -31,8 +31,7 @@ import {
   AlertCircle,
   TrendingUp,
 } from "lucide-react";
-import ClientForm from "@/components/forms/client-form";
-import { ClientData } from "@/components/forms/client-form";
+import ClientForm, { ClientData } from "@/components/forms/client-form";
 
 interface Client {
   id: string;
@@ -256,7 +255,7 @@ export default function ClientsPage() {
 
   // Función optimizada para filtrar clientes
   const filterClients = useCallback(() => {
-    let filtered = clients.filter((client) => {
+    const filtered = clients.filter((client) => {
       // Filtrar por término de búsqueda
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();

@@ -270,7 +270,7 @@ export default function AgendaPage() {
 
   // Función optimizada para filtrar y agrupar los trabajos por fecha
   const filterJobs = useCallback(() => {
-    let filtered = jobs.filter((job) => {
+    const filtered = jobs.filter((job) => {
       // Filtrar por fecha (solo si se selecciona una fecha específica)
       if (selectedDate && selectedDate !== '') {
         const jobDate = getLocalDateString(job.scheduledAt);

@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const year = searchParams.get('year')
     const month = searchParams.get('month')
 
-    let whereClause: any = {}
+    const whereClause: any = {}
     
     if (year && month) {
       // Filtrar por mes y año específicos

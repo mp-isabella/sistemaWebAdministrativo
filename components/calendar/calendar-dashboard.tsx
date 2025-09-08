@@ -52,7 +52,7 @@ export function CalendarDashboard() {
       
       if (data.success) {
         // Mapear técnicos
-        let mappedTechnicians = data.technicians?.map((tech: any) => ({
+        const mappedTechnicians = data.technicians?.map((tech: any) => ({
           id: tech.id,
           name: tech.name,
           avatar: tech.avatar || null,
