@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
+import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
@@ -39,7 +39,41 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         ...(images && images.length > 0 && { images }),
         ...(signature && { signature }),
       },
+      include: {
+        service: true,
+        client: true,
+        technician: true
+      }
     })
+
+    // Si el trabajo se completó, crear automáticamente una transacción de ingreso
+    if (status === "COMPLETED") {
+      try {
+        // Obtener el usuario que está realizando la acción
+        const user = await prisma.user.findUnique({
+          where: { email: session.user.email! }
+        })
+
+        if (user) {
+          // Crear transacción de ingreso automática
+          await prisma.cashTransaction.create({
+            data: {
+              amount: updatedJob.service.price,
+              type: 'INCOME',
+              description: `Pago por servicio: ${updatedJob.service.name} - ${updatedJob.client.name}`,
+              category: 'servicios',
+              paymentMethod: 'efectivo', // Por defecto, se puede cambiar después
+              reference: `Trabajo #${updatedJob.id}`,
+              date: new Date(),
+              createdById: user.id
+            }
+          })
+        }
+      } catch (error) {
+        console.error('Error creating automatic income transaction:', error)
+        // No fallamos la actualización del trabajo si hay error en la transacción
+      }
+    }
 
     return NextResponse.json({ success: true, job: updatedJob })
   } catch (error) {

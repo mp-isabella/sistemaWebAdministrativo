@@ -1,0 +1,85 @@
+/* ===== EFECTOS SUTILES PARA DASHBOARD ===== */
+
+/* Sobrescribir efectos de sombra para ser más sutiles */
+.unified-card {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+}
+
+.unified-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04) !important;
+}
+
+.stat-card {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Botones con efectos sutiles */
+.btn-primary {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08) !important;
+  transform: scale(1.02) !important;
+}
+
+.btn-outline {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.btn-outline:hover {
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08) !important;
+  transform: scale(1.02) !important;
+}
+
+/* Efectos de hover más sutiles */
+.hover\:shadow-sm:hover {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.hover\:shadow-md:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Transformaciones sutiles */
+.hover\:-translate-y-1:hover {
+  transform: translateY(-0.25rem) !important;
+}
+
+.hover\:scale-102:hover {
+  transform: scale(1.02) !important;
+}
+
+/* Gradientes más suaves para iconos */
+.stat-icon {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+}
+
+/* Efectos de transición más suaves */
+* {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Bordes más sutiles */
+.border-gray-100 {
+  border-color: rgba(243, 244, 246, 0.5) !important;
+}
+
+.border-gray-200 {
+  border-color: rgba(229, 231, 235, 0.5) !important;
+}
+
+/* Fondo más claro para las tarjetas */
+.unified-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+}

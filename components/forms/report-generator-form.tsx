@@ -25,7 +25,6 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
     groupBy: '',
     filters: {
       status: [],
-      priority: [],
       technician: [],
       client: [],
       service: []
@@ -56,12 +55,11 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
     { value: 'technician', label: 'Por Técnico' },
     { value: 'client', label: 'Por Cliente' },
     { value: 'service', label: 'Por Servicio' },
-    { value: 'status', label: 'Por Estado' },
-    { value: 'priority', label: 'Por Prioridad' }
+    { value: 'status', label: 'Por Estado' }
   ]
 
   const statusOptions: string[] = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']
-  const priorityOptions: string[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
+  
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -300,21 +298,7 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
                     </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <Label>Prioridad</Label>
-                    <div className="space-y-2">
-                      {priorityOptions.map((priority) => (
-                        <div key={priority} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`priority-${priority}`}
-                            checked={(formData.filters.priority as string[]).includes(priority)}
-                            onCheckedChange={(checked) => handleFilterChange('priority', priority, !!checked)}
-                          />
-                          <Label htmlFor={`priority-${priority}`}>{priority}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+
                 </div>
               </Card>
             )}

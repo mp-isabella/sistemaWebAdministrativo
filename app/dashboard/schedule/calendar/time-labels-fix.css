@@ -1,0 +1,973 @@
+/* ===== CORRECCIÓN COMPLETA PARA ALINEACIÓN DE COLUMNAS DEL HORARIO ===== */
+
+/* 1. CORREGIR LA COLUMNA DE TIEMPO PRINCIPAL */
+.calendar-grid .w-22 {
+  /* Ancho fijo y no flexible - REDUCIDO */
+  min-width: 5.5rem !important;
+  max-width: 5.5rem !important;
+  width: 5.5rem !important;
+  flex-shrink: 0 !important;
+  
+  /* Prevenir desbordamiento */
+  overflow: hidden !important;
+  
+  /* Asegurar que esté en la posición correcta */
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* 2. CORREGIR CADA CELDA DE TIEMPO - TAMAÑO REDUCIDO */
+.calendar-grid .w-22 .h-14 {
+  /* Layout básico */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  
+  /* Dimensiones exactas - REDUCIDAS */
+  height: 3.5rem !important;
+  min-height: 3.5rem !important;
+  max-height: 3.5rem !important;
+  width: 100% !important;
+  
+  /* Márgenes y padding - REDUCIDOS */
+  margin: 0 !important;
+  padding: 0.25rem !important;
+  
+  /* PREVENIR CONCATENACIÓN */
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  
+  /* Bordes */
+  border-bottom: 1px solid #e5e7eb !important;
+  
+  /* Fondo */
+  background-color: #f9fafb !important;
+}
+
+/* 3. CORREGIR EL TEXTO DENTRO DE LAS CELDAS - TAMAÑO REDUCIDO */
+.calendar-grid .w-22 .h-14 .time-text {
+  /* Layout del texto */
+  display: block !important;
+  width: 100% !important;
+  text-align: center !important;
+  
+  /* Estilo del texto - TAMAÑO REDUCIDO */
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+  line-height: 1.25rem !important;
+  
+  /* PREVENIR CONCATENACIÓN */
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  
+  /* Asegurar que cada label sea independiente */
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* 4. CORREGIR LAS COLUMNAS DE TÉCNICOS - TAMAÑO REDUCIDO */
+.calendar-grid .technician-column,
+.calendar-grid [class*="border-r"] {
+  /* Asegurar que estén alineadas con la columna de tiempo */
+  position: relative !important;
+  
+  /* Prevenir desbordamiento */
+  overflow: hidden !important;
+  
+  /* Bordes consistentes */
+  border-right: 1px solid #e5e7eb !important;
+  
+  /* Ancho mínimo reducido */
+  min-width: 140px !important;
+}
+
+/* 5. CORREGIR LAS FILAS DE TIEMPO EN LAS COLUMNAS DE TÉCNICOS - TAMAÑO REDUCIDO */
+.calendar-grid [class*="border-r"] .h-14 {
+  /* Alineación perfecta con las celdas de tiempo - TAMAÑO REDUCIDO */
+  height: 3.5rem !important;
+  min-height: 3.5rem !important;
+  max-height: 3.5rem !important;
+  
+  /* Layout */
+  position: relative !important;
+  
+  /* Bordes consistentes */
+  border-bottom: 1px solid #e5e7eb !important;
+  
+  /* Fondo */
+  background-color: white !important;
+}
+
+/* 6. CORREGIR EL CONTENEDOR PRINCIPAL DEL GRID */
+.calendar-grid .flex {
+  /* Asegurar que las columnas estén alineadas */
+  display: flex !important;
+  align-items: flex-start !important;
+  
+  /* Prevenir desbordamiento */
+  overflow: hidden !important;
+  
+  /* Sin gaps entre columnas */
+  gap: 0 !important;
+}
+
+/* 7. CORRECCIÓN ESPECÍFICA PARA PREVENIR DESALINEACIÓN - TAMAÑO REDUCIDO */
+.calendar-grid .w-22,
+.calendar-grid [class*="border-r"] {
+  /* Asegurar que todas las columnas tengan la misma altura base - REDUCIDA */
+  min-height: calc(12 * 3.5rem) !important; /* 12 horas × 3.5rem cada una */
+  
+  /* Asegurar que estén en la misma línea base */
+  align-self: flex-start !important;
+}
+
+/* 8. CORRECCIÓN PARA EL HEADER DE TÉCNICOS - TAMAÑO REDUCIDO */
+.calendar-grid .bg-white.p-4.text-center {
+  /* Asegurar que el header esté alineado con las columnas */
+  border-bottom: 1px solid #e5e7eb !important;
+  
+  /* Altura consistente - REDUCIDA */
+  min-height: 80px !important;
+  padding: 1rem !important;
+  
+  /* Alineación */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* 9. CORRECCIÓN PARA LA LÍNEA DE TIEMPO ACTUAL - TAMAÑO REDUCIDO */
+.calendar-grid .absolute.z-10.h-1 {
+  /* Asegurar que la línea esté alineada con las columnas - REDUCIDO */
+  left: 5.5rem !important; /* Ancho de la columna de tiempo reducido */
+  
+  /* Z-index alto para estar por encima */
+  z-index: 100 !important;
+}
+
+/* 10. OVERRIDE FINAL PARA PREVENIR CONFLICTOS */
+.calendar-grid * {
+  /* Asegurar que no haya estilos que causen desalineación */
+  box-sizing: border-box !important;
+}
+
+/* 11. CORRECCIÓN PARA RESPONSIVIDAD - TAMAÑOS REDUCIDOS */
+@media (max-width: 768px) {
+  .calendar-grid .w-22 {
+    min-width: 5rem !important;
+    max-width: 5rem !important;
+    width: 5rem !important;
+  }
+  
+  .calendar-grid .absolute.z-10.h-1 {
+    left: 5rem !important;
+  }
+  
+  .calendar-grid .w-22 .h-14,
+  .calendar-grid [class*="border-r"] .h-14 {
+    height: 3rem !important;
+    min-height: 3rem !important;
+    max-height: 3rem !important;
+  }
+  
+  .calendar-grid .w-22,
+  .calendar-grid [class*="border-r"] {
+    min-height: calc(12 * 3rem) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-grid .w-22 {
+    min-width: 4.5rem !important;
+    max-width: 4.5rem !important;
+    width: 4.5rem !important;
+  }
+  
+  .calendar-grid .absolute.z-10.h-1 {
+    left: 4.5rem !important;
+  }
+  
+  .calendar-grid .w-22 .h-14,
+  .calendar-grid [class*="border-r"] .h-14 {
+    height: 2.5rem !important;
+    min-height: 2.5rem !important;
+    max-height: 2.5rem !important;
+  }
+  
+  .calendar-grid .w-22,
+  .calendar-grid [class*="border-r"] {
+    min-height: calc(12 * 2.5rem) !important;
+  }
+}
+
+/* 12. CORRECCIÓN PARA SCROLL HORIZONTAL */
+.calendar-grid .overflow-x-auto {
+  /* Asegurar que el scroll no rompa la alineación */
+  scroll-behavior: smooth !important;
+  
+  /* Prevenir saltos */
+  scroll-snap-type: x mandatory !important;
+}
+
+.calendar-grid [class*="border-r"] {
+  /* Asegurar que las columnas se mantengan alineadas durante el scroll */
+  scroll-snap-align: start !important;
+}
+
+/* ===== CORRECCIÓN ESPECÍFICA PARA LA LÍNEA VERTICAL ===== */
+
+/* 13. CORREGIR LA LÍNEA VERTICAL PRINCIPAL */
+.calendar-grid .w-22 {
+  /* Asegurar que la línea derecha esté perfectamente alineada */
+  border-right: 2px solid #d1d5db !important;
+  box-shadow: 1px 0 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 14. CORREGIR LAS LÍNEAS HORIZONTALES */
+.calendar-grid .w-22 .h-14,
+.calendar-grid [class*="border-r"] .h-14 {
+  /* Asegurar que las líneas horizontales estén perfectamente alineadas */
+  border-bottom: 1px solid #e5e7eb !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 15. CORREGIR LA LÍNEA DEL HEADER */
+.calendar-grid .bg-white.p-4.text-center {
+  /* Línea inferior del header perfectamente alineada */
+  border-bottom: 2px solid #d1d5db !important;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 16. CORREGIR LAS LÍNEAS ENTRE COLUMNAS DE TÉCNICOS */
+.calendar-grid [class*="border-r"] {
+  /* Líneas verticales entre columnas de técnicos */
+  border-right: 1px solid #e5e7eb !important;
+  box-shadow: 1px 0 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 17. CORRECCIÓN PARA LA ÚLTIMA COLUMNA */
+.calendar-grid [class*="border-r"]:last-child {
+  /* Eliminar borde derecho de la última columna */
+  border-right: none !important;
+  box-shadow: none !important;
+}
+
+/* 18. CORRECCIÓN PARA LA LÍNEA DE TIEMPO ACTUAL */
+.calendar-grid .absolute.z-10.h-1 {
+  /* Línea de tiempo actual perfectamente alineada */
+  height: 3px !important;
+  background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3) !important;
+  border-radius: 2px !important;
+}
+
+/* 19. CORRECCIÓN PARA EL INDICADOR DE TIEMPO */
+.calendar-grid .absolute.z-10.h-1 .w-4.h-3 {
+  /* Indicador circular de tiempo actual */
+  background: #ef4444 !important;
+  border: 2px solid white !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ===== CORRECCIÓN ESPECÍFICA PARA ALINEACIÓN DEL HEADER ===== */
+
+/* 20. CORREGIR EL HEADER DE LA COLUMNA DE TIEMPO */
+.calendar-grid .w-22 .bg-white.p-4.text-center {
+  /* Asegurar que el header esté perfectamente alineado */
+  height: 80px !important;
+  min-height: 80px !important;
+  max-height: 80px !important;
+  
+  /* Layout */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  /* Márgenes y padding */
+  margin: 0 !important;
+  padding: 1rem !important;
+  
+  /* Bordes */
+  border-bottom: 2px solid #d1d5db !important;
+  
+  /* Fondo */
+  background-color: white !important;
+}
+
+/* 21. CORREGIR LA PRIMERA CELDA DE TIEMPO */
+.calendar-grid .w-22 .h-14:first-of-type {
+  /* Asegurar que la primera celda esté perfectamente alineada con el header */
+  border-top: none !important;
+  margin-top: 0 !important;
+  padding-top: 0.25rem !important;
+}
+
+/* 22. CORREGIR LA ALINEACIÓN PERFECTA ENTRE HEADER Y CELDAS */
+.calendar-grid .w-22 {
+  /* Asegurar que no haya espacios extra entre elementos */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  
+  /* Prevenir espacios automáticos */
+  gap: 0 !important;
+}
+
+/* 23. CORREGIR EL ESPACIO ENTRE HEADER Y PRIMERA CELDA */
+.calendar-grid .w-22 > * {
+  /* Asegurar que no haya márgenes automáticos */
+  margin: 0 !important;
+}
+
+/* 24. CORRECCIÓN ESPECÍFICA PARA EL HEADER DE TÉCNICOS */
+.calendar-grid .bg-white.p-4.text-center {
+  /* Asegurar que el header de técnicos esté perfectamente alineado */
+  height: 80px !important;
+  min-height: 80px !important;
+  max-height: 80px !important;
+  
+  /* Layout */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  /* Márgenes y padding */
+  margin: 0 !important;
+  padding: 1rem !important;
+  
+  /* Bordes */
+  border-bottom: 2px solid #d1d5db !important;
+  
+  /* Fondo */
+  background-color: white !important;
+}
+
+/* ===== CORRECCIÓN ESPECÍFICA PARA LA LÍNEA ROJA DEL TIEMPO ACTUAL ===== */
+
+/* 25. CORRECCIÓN PERFECTA PARA LA LÍNEA ROJA */
+.calendar-grid .absolute.z-10.h-1 {
+  /* Posición perfecta - comenzar después de la columna de horarios */
+  left: 5.5rem !important; /* w-22 = 5.5rem */
+  right: 0 !important;
+  
+  /* Estilo de la línea */
+  height: 3px !important;
+  background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3) !important;
+  border-radius: 2px !important;
+  
+  /* Z-index y transiciones */
+  z-index: 100 !important;
+  transition: top 0.3s ease-in-out !important;
+  
+  /* Asegurar que esté por encima de todo */
+  pointer-events: none !important;
+}
+
+/* 26. CORRECCIÓN PARA EL INDICADOR CIRCULAR */
+.calendar-grid .absolute.z-10.h-1 .w-4.h-3 {
+  /* Indicador circular de tiempo actual */
+  background: #ef4444 !important;
+  border: 2px solid white !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 50% !important;
+  
+  /* Posición del indicador - alineado con la línea */
+  position: absolute !important;
+  left: -8px !important;
+  top: -6px !important;
+  
+  /* Tamaño del indicador */
+  width: 16px !important;
+  height: 12px !important;
+}
+
+/* 27. CORRECCIÓN PARA RESPONSIVIDAD DE LA LÍNEA ROJA */
+@media (max-width: 768px) {
+  .calendar-grid .absolute.z-10.h-1 {
+    /* Ajustar posición para tablets */
+    left: 5rem !important; /* w-22 reducido en tablets */
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-grid .absolute.z-10.h-1 {
+    /* Ajustar posición para móviles */
+    left: 4.5rem !important; /* w-22 reducido en móviles */
+  }
+}
+
+/* 28. CORRECCIÓN PARA LA ALINEACIÓN PERFECTA */
+.calendar-grid .absolute.z-10.h-1 {
+  /* Asegurar que la línea esté perfectamente alineada con las celdas de tiempo */
+  top: var(--current-time-position) !important;
+  
+  /* Prevenir que se desborde */
+  overflow: visible !important;
+  
+  /* Asegurar que esté en el contenedor correcto */
+  position: absolute !important;
+}
+
+/* 29. CORRECCIÓN ESPECÍFICA PARA LA POSICIÓN DE LA HORA ACTUAL */
+.calendar-grid .absolute.z-10.h-1 {
+  /* Asegurar que la línea esté perfectamente alineada con la hora actual */
+  transform: translateY(-1.5px) !important; /* Centrar la línea de 3px en la celda */
+  
+  /* Asegurar que esté visible */
+  opacity: 1 !important;
+  
+  /* Sombra para mejor visibilidad */
+  filter: drop-shadow(0 2px 4px rgba(239, 68, 68, 0.3)) !important;
+}
+
+/* ===== ESTILOS PARA EL SEGUNDO CALENDARIO ===== */
+
+/* 30. SEPARADOR ENTRE CALENDARIOS */
+.calendar-grid + .w-full.h-8 {
+  /* Separador entre el primer y segundo calendario */
+  background-color: #f3f4f6 !important;
+  border-top: 1px solid #e5e7eb !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  
+  /* Layout */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  /* Espaciado */
+  height: 2rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 31. SEGUNDO CALENDARIO - MISMOS ESTILOS */
+.calendar-grid + .w-full.bg-white {
+  /* Asegurar que el segundo calendario tenga los mismos estilos */
+  background-color: white !important;
+  margin-top: 1rem !important;
+  
+  /* Layout */
+  width: 100% !important;
+  height: auto !important;
+  min-height: 100% !important;
+}
+
+/* 32. HEADER DEL SEGUNDO CALENDARIO */
+.calendar-grid + .w-full.bg-white .flex.m-0.p-0.gap-0 {
+  /* Header del segundo calendario - mismo estilo */
+  display: flex !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+}
+
+/* 33. COLUMNA DE HORARIOS DEL SEGUNDO CALENDARIO */
+.calendar-grid + .w-full.bg-white .w-22.flex-shrink-0 {
+  /* Columna de horarios del segundo calendario - mismo estilo */
+  min-width: 5.5rem !important;
+  max-width: 5.5rem !important;
+  width: 5.5rem !important;
+  flex-shrink: 0 !important;
+  
+  /* Layout */
+  display: flex !important;
+  flex-direction: column !important;
+  
+  /* Prevenir desbordamiento */
+  overflow: hidden !important;
+  
+  /* Asegurar que no haya espacios extra */
+  gap: 0 !important;
+}
+
+/* 34. HEADER DE HORARIOS DEL SEGUNDO CALENDARIO */
+.calendar-grid + .w-full.bg-white .w-22.flex-shrink-0 .bg-white.p-4.text-center {
+  /* Header de horarios del segundo calendario - mismo estilo */
+  height: 80px !important;
+  min-height: 80px !important;
+  max-height: 80px !important;
+  
+  /* Layout */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  /* Márgenes y padding */
+  margin: 0 !important;
+  padding: 1rem !important;
+  
+  /* Bordes */
+  border-bottom: 2px solid #d1d5db !important;
+  
+  /* Fondo */
+  background-color: white !important;
+  
+  /* Asegurar que no haya espacios extra */
+  flex-shrink: 0 !important;
+}
+
+/* 35. CELDAS DE TIEMPO DEL SEGUNDO CALENDARIO */
+.calendar-grid + .w-full.bg-white .w-22 .h-14 {
+  /* Celdas de tiempo del segundo calendario - mismo estilo */
+  height: 3.5rem !important;
+  min-height: 3.5rem !important;
+  max-height: 3.5rem !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0.25rem !important;
+  
+  /* Layout */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  
+  /* Bordes */
+  border-bottom: 1px solid #e5e7eb !important;
+  
+  /* Fondo */
+  background-color: #f9fafb !important;
+  
+  /* Asegurar que no haya espacios extra */
+  flex-shrink: 0 !important;
+}
+
+/* 36. LÍNEA ROJA DEL SEGUNDO CALENDARIO */
+.calendar-grid + .w-full.bg-white .absolute.z-10.h-1 {
+  /* Línea roja del segundo calendario - mismo estilo */
+  left: 5.5rem !important;
+  right: 0 !important;
+  
+  /* Estilo de la línea */
+  height: 3px !important;
+  background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3) !important;
+  border-radius: 2px !important;
+  
+  /* Z-index y transiciones */
+  z-index: 100 !important;
+  transition: top 0.3s ease-in-out !important;
+  
+  /* Asegurar que esté por encima de todo */
+  pointer-events: none !important;
+}
+
+/* 37. RESPONSIVIDAD DEL SEGUNDO CALENDARIO */
+@media (max-width: 768px) {
+  .calendar-grid + .w-full.bg-white .w-22.flex-shrink-0 {
+    min-width: 5rem !important;
+    max-width: 5rem !important;
+    width: 5rem !important;
+  }
+  
+  .calendar-grid + .w-full.bg-white .absolute.z-10.h-1 {
+    left: 5rem !important;
+  }
+  
+  .calendar-grid + .w-full.bg-white .w-22 .h-14 {
+    height: 3rem !important;
+    min-height: 3rem !important;
+    max-height: 3rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-grid + .w-full.bg-white .w-22.flex-shrink-0 {
+    min-width: 4.5rem !important;
+    max-width: 4.5rem !important;
+    width: 4.5rem !important;
+  }
+  
+  .calendar-grid + .w-full.bg-white .absolute.z-10.h-1 {
+    left: 4.5rem !important;
+  }
+  
+  .calendar-grid + .w-full.bg-white .w-22 .h-14 {
+    height: 2.5rem !important;
+    min-height: 2.5rem !important;
+    max-height: 2.5rem !important;
+  }
+}
+
+/* ===== ESTILOS PARA LOS MINI CALENDARIOS IDÉNTICOS ===== */
+
+/* 38. MINI CALENDARIO PRINCIPAL */
+.calendar-sidebar .p-4.flex-1 .mb-4 {
+  /* Contenedor del primer mini calendario */
+  margin-bottom: 1rem !important;
+  padding: 0 !important;
+}
+
+/* 39. MINI CALENDARIO DEL PRÓXIMO MES */
+.calendar-sidebar .hidden.lg\:block.mt-6 {
+  /* Contenedor del segundo mini calendario */
+  margin-top: 1.5rem !important;
+  padding: 0 !important;
+  border-top: 1px solid #e5e7eb !important;
+  padding-top: 1rem !important;
+}
+
+/* 40. HEADERS DE AMBOS MINI CALENDARIOS */
+.calendar-sidebar .flex.items-center.justify-between.mb-4 {
+  /* Header del primer mini calendario */
+  margin-bottom: 1rem !important;
+  padding: 0 !important;
+}
+
+.calendar-sidebar .hidden.lg\:block.mt-6 h4 {
+  /* Header del segundo mini calendario */
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: #374151 !important;
+  margin-bottom: 0.75rem !important;
+  text-align: center !important;
+  padding: 0 !important;
+}
+
+/* 41. GRIDS DE AMBOS MINI CALENDARIOS - IDÉNTICOS */
+.calendar-sidebar .grid.grid-cols-7.gap-1.text-center.text-xs {
+  /* Grid del primer mini calendario */
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 0.25rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+.calendar-sidebar .hidden.lg\:block.mt-6 .grid.grid-cols-7.gap-1.text-center.text-xs.w-full {
+  /* Grid del segundo mini calendario - EXACTAMENTE igual al primero */
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 0.25rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+/* 42. DÍAS DE LA SEMANA - AMBOS IDÉNTICOS */
+.calendar-sidebar .p-1.text-gray-500.font-medium.text-xs.h-6.flex.items-center.justify-center {
+  /* Días de la semana del primer mini calendario */
+  color: #6b7280 !important;
+  font-weight: 500 !important;
+  height: 1.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0.25rem !important;
+  margin: 0 !important;
+}
+
+.calendar-sidebar .hidden.lg\:block.mt-6 .p-1.text-gray-500.font-medium.text-xs.h-6.flex.items-center.justify-center {
+  /* Días de la semana del segundo mini calendario - EXACTAMENTE iguales */
+  color: #6b7280 !important;
+  font-weight: 500 !important;
+  height: 1.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0.25rem !important;
+  margin: 0 !important;
+}
+
+/* 43. CELDAS VACÍAS - AMBAS IDÉNTICAS */
+.calendar-sidebar .p-1.h-6 {
+  /* Celdas vacías del primer mini calendario */
+  height: 1.5rem !important;
+  width: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0.25rem !important;
+  margin: 0 !important;
+}
+
+.calendar-sidebar .hidden.lg\:block.mt-6 .p-1.h-6 {
+  /* Celdas vacías del segundo mini calendario - EXACTAMENTE iguales */
+  height: 1.5rem !important;
+  width: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0.25rem !important;
+  margin: 0 !important;
+}
+
+/* 44. BOTONES DE DÍAS - AMBOS IDÉNTICOS */
+.calendar-sidebar button.h-6.w-6.p-0.text-xs.font-normal.min-w-0 {
+  /* Botones de días del primer mini calendario */
+  height: 1.5rem !important;
+  width: 1.5rem !important;
+  padding: 0 !important;
+  font-size: 0.75rem !important;
+  font-weight: 400 !important;
+  min-width: 0 !important;
+  border-radius: 0.25rem !important;
+  transition: all 0.2s ease-in-out !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.calendar-sidebar .hidden.lg\:block.mt-6 button.h-6.w-6.p-0.text-xs.font-normal.min-w-0 {
+  /* Botones de días del segundo mini calendario - EXACTAMENTE iguales */
+  height: 1.5rem !important;
+  width: 1.5rem !important;
+  padding: 0 !important;
+  font-size: 0.75rem !important;
+  font-weight: 400 !important;
+  min-width: 0 !important;
+  border-radius: 0.25rem !important;
+  transition: all 0.2s ease-in-out !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* 45. ESTADOS DE LOS BOTONES - AMBOS IDÉNTICOS */
+.calendar-sidebar button.bg-primary.text-primary-foreground {
+  /* Día seleccionado - primer mini calendario */
+  background-color: #3b82f6 !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+.calendar-sidebar .hidden.lg\:block.mt-6 button.bg-primary.text-primary-foreground {
+  /* Día seleccionado - segundo mini calendario - EXACTAMENTE igual */
+  background-color: #3b82f6 !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+.calendar-sidebar button.bg-accent.text-accent-foreground.font-medium {
+  /* Día actual - primer mini calendario */
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+  font-weight: 500 !important;
+}
+
+.calendar-sidebar .hidden.lg\:block.mt-6 button.bg-accent.text-accent-foreground.font-medium {
+  /* Día actual - segundo mini calendario - EXACTAMENTE igual */
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+  font-weight: 500 !important;
+}
+
+.calendar-sidebar button.text-gray-300 {
+  /* Días de otros meses - primer mini calendario */
+  color: #d1d5db !important;
+  opacity: 0.5 !important;
+}
+
+.calendar-sidebar .hidden.lg\:block.mt-6 button.text-gray-300 {
+  /* Días de otros meses - segundo mini calendario - EXACTAMENTE igual */
+  color: #d1d5db !important;
+  opacity: 0.5 !important;
+}
+
+/* 45.1. ESTILO BASE PARA TODOS LOS BOTONES DE DÍAS - AMBOS IDÉNTICOS */
+.calendar-sidebar button.h-6.w-6.p-0.text-xs.font-normal.min-w-0 {
+  /* Estilo base para todos los botones del primer mini calendario */
+  color: #374151 !important; /* Color base oscuro para máxima legibilidad */
+  font-weight: 400 !important;
+  background: transparent !important;
+  border: none !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.calendar-sidebar .hidden.lg\:block.mt-6 button.h-6.w-6.p-0.text-xs.font-normal.min-w-0 {
+  /* Estilo base para todos los botones del segundo mini calendario - EXACTAMENTE igual */
+  color: #374151 !important; /* Color base oscuro para máxima legibilidad */
+  font-weight: 400 !important;
+  background: transparent !important;
+  border: none !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* 45.2. CORRECCIÓN ESPECÍFICA PARA EL SEGUNDO MINI CALENDARIO */
+.calendar-sidebar .hidden.lg\:block.mt-6 button {
+  /* Asegurar que todos los botones del segundo mini calendario tengan el color correcto */
+  color: #374151 !important; /* Color oscuro para máxima legibilidad */
+  font-weight: 400 !important;
+  background: transparent !important;
+}
+
+/* 45.3. CORRECCIÓN PARA DÍAS DEL PRÓXIMO MES */
+.calendar-sidebar .hidden.lg\:block.mt-6 button:not(.bg-primary):not(.bg-accent) {
+  /* Días normales del próximo mes - mismo color que el primer calendario */
+  color: #374151 !important; /* Color oscuro para máxima legibilidad */
+  background: transparent !important;
+  font-weight: 400 !important;
+}
+
+/* 45.4. CORRECCIÓN PARA DÍAS DE OTROS MESES EN EL SEGUNDO CALENDARIO */
+.calendar-sidebar .hidden.lg\:block.mt-6 button.text-gray-300 {
+  /* Días de otros meses en el segundo mini calendario */
+  color: #9ca3af !important; /* Color gris medio para días de otros meses */
+  opacity: 1 !important; /* Sin transparencia para mejor legibilidad */
+  font-weight: 400 !important;
+}
+
+/* 46. HOVER Y FOCUS - AMBOS IDÉNTICOS */
+.calendar-sidebar button:hover {
+  /* Hover del primer mini calendario */
+  background-color: #f3f4f6 !important;
+  transform: scale(1.05) !important;
+}
+
+.calendar-sidebar .hidden.lg\:block.mt-6 button:hover {
+  /* Hover del segundo mini calendario - EXACTAMENTE igual */
+  background-color: #f3f4f6 !important;
+  transform: scale(1.05) !important;
+}
+
+/* 47. RESPONSIVIDAD DE AMBOS MINI CALENDARIOS */
+@media (max-width: 1023px) {
+  .calendar-sidebar .hidden.lg\:block.mt-6 {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .calendar-sidebar .hidden.lg\:block.mt-6 {
+    display: block !important;
+  }
+}
+
+/* 48. CORRECCIÓN FINAL PARA AMBOS MINI CALENDARIOS */
+.calendar-sidebar button {
+  /* Estilo base para TODOS los botones de ambos mini calendarios */
+  color: #374151 !important; /* Color oscuro para máxima legibilidad */
+  font-weight: 400 !important;
+  background: transparent !important;
+  border: none !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* 49. CORRECCIÓN ESPECÍFICA PARA EL SEGUNDO MINI CALENDARIO */
+.calendar-sidebar .hidden.lg\:block.mt-6 button {
+  /* Asegurar que todos los botones del segundo mini calendario tengan el color correcto */
+  color: #374151 !important; /* Color oscuro para máxima legibilidad */
+  font-weight: 400 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* 50. CORRECCIÓN PARA DÍAS DEL PRÓXIMO MES EN EL SEGUNDO CALENDARIO */
+.calendar-sidebar .hidden.lg\:block.mt-6 button:not(.bg-primary):not(.bg-accent):not(.text-gray-300) {
+  /* Días normales del próximo mes - mismo color que el primer calendario */
+  color: #374151 !important; /* Color oscuro para máxima legibilidad */
+  background: transparent !important;
+  font-weight: 400 !important;
+}
+
+/* 51. CORRECCIÓN PARA DÍAS DE OTROS MESES EN AMBOS CALENDARIOS */
+.calendar-sidebar button.text-gray-300 {
+  /* Días de otros meses - primer mini calendario */
+  color: #9ca3af !important; /* Color gris medio para días de otros meses */
+  opacity: 1 !important; /* Sin transparencia para mejor legibilidad */
+  font-weight: 400 !important;
+}
+
+.calendar-sidebar .hidden.lg\:block.mt-6 button.text-gray-300 {
+  /* Días de otros meses - segundo mini calendario - EXACTAMENTE igual */
+  color: #9ca3af !important; /* Color gris medio para días de otros meses */
+  opacity: 1 !important; /* Sin transparencia para mejor legibilidad */
+  font-weight: 400 !important;
+}
+
+/* 52. CORRECCIÓN PARA EL HOVER EN AMBOS CALENDARIOS */
+.calendar-sidebar button:hover:not(.bg-primary):not(.bg-accent) {
+  /* Hover para días normales en ambos mini calendarios */
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+  transform: scale(1.05) !important;
+}
+
+/* 53. CORRECCIÓN PARA EL FOCUS EN AMBOS CALENDARIOS */
+.calendar-sidebar button:focus {
+  /* Focus para ambos mini calendarios */
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+}
+
+/* 54. CORRECCIÓN PARA LA TRANSICIÓN EN AMBOS CALENDARIOS */
+.calendar-sidebar button {
+  /* Transición suave para ambos mini calendarios */
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* 55. CORRECCIÓN FINAL PARA LA LEGIBILIDAD */
+.calendar-sidebar .hidden.lg\:block.mt-6 button {
+  /* Asegurar que el segundo mini calendario tenga la misma legibilidad */
+  text-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+/* ===== CORRECCIÓN DE POSICIONAMIENTO DE LA LÍNEA ROJA DEL TIEMPO ACTUAL ===== */
+
+/* Asegurar que la línea roja se posicione correctamente en la hora actual de Chile */
+.calendar-grid .current-time-line {
+  position: absolute !important;
+  z-index: 10 !important;
+  height: 2px !important;
+  background-color: #ef4444 !important;
+  opacity: 0.9 !important;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3) !important;
+  pointer-events: none !important;
+  transition: top 0.3s ease-in-out !important;
+  
+  /* Asegurar que la línea se extienda completamente */
+  left: 88px !important; /* Ajustado para w-22 (5.5rem = 88px) */
+  right: 0 !important;
+}
+
+/* Círculo indicador de la hora actual */
+.calendar-grid .current-time-indicator {
+  position: absolute !important;
+  left: 80px !important; /* Ajustado para w-22 */
+  width: 12px !important;
+  height: 12px !important;
+  background-color: #ef4444 !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.5) !important;
+  z-index: 11 !important;
+  pointer-events: none !important;
+}
+
+/* Ajustes para diferentes tamaños de pantalla */
+@media (max-width: 768px) {
+  .calendar-grid .current-time-line {
+    left: 72px !important; /* Ajustado para pantallas más pequeñas */
+  }
+  
+  .calendar-grid .current-time-indicator {
+    left: 64px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-grid .current-time-line {
+    left: 64px !important;
+  }
+  
+  .calendar-grid .current-time-indicator {
+    left: 56px !important;
+  }
+}
+
+/* ===== ESTILOS PARA LOS MINI CALENDARIOS IDÉNTICOS ===== */

@@ -1,0 +1,48 @@
+/* ===== ESTILOS COMPLEMENTARIOS PARA LOS FILTROS DEL CALENDARIO ===== */
+/* Este archivo complementa las clases de Tailwind CSS */
+
+/* Asegurar que los selectores tengan fondo sólido */
+.calendar-filters [data-radix-select-trigger] {
+  background-color: white !important;
+}
+
+.calendar-filters [data-radix-select-content] {
+  background-color: white !important;
+  z-index: 9999 !important;
+}
+
+/* Mejorar la apariencia de los elementos del selector */
+.calendar-filters [data-radix-select-item] {
+  transition: background-color 0.15s ease-in-out;
+}
+
+.calendar-filters [data-radix-select-item]:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.calendar-filters [data-radix-select-item][data-state="checked"] {
+  background-color: #dbeafe !important;
+}
+
+/* Estilos para el icono del selector cuando está abierto */
+.calendar-filters [data-radix-select-trigger][data-state="open"] [data-radix-select-icon] {
+  transform: rotate(180deg);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Asegurar que los filtros tengan el z-index correcto */
+.calendar-filters {
+  position: relative;
+  z-index: 10;
+}
+
+/* Estilos para el hover de los elementos del selector */
+.calendar-filters [data-radix-select-item][data-highlighted] {
+  background-color: #f1f5f9 !important;
+}
+
+/* Mejorar la apariencia del trigger del selector cuando está abierto */
+.calendar-filters [data-radix-select-trigger][data-state="open"] {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+}

@@ -47,7 +47,7 @@ const About: React.FC = () => {
   }, []);
 
   return (
-    <section id="about" className="min-h-screen flex items-center py-32 bg-white relative overflow-hidden">
+    <section id="about" className="min-h-screen flex items-center py-16 bg-white relative overflow-hidden">
       {/* Elemento decorativo */}
       <div className="absolute -top-16 -left-16 w-72 h-72 bg-extraLight rounded-full opacity-50" 
            style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 75%, 75% 100%, 0% 100%)' }}></div>
@@ -56,7 +56,7 @@ const About: React.FC = () => {
         <div className="grid lg:grid-cols-2 gap-16 items-center text-justify">
           {/* Texto */}
           <div>
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight" style={{ color: colors.dark }}>
+            <h2 id="about-title" className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight" style={{ color: colors.dark }}>
               ¿Quiénes somos?
             </h2>
             <div className="space-y-6 text-lg leading-relaxed font-normal" style={{ color: colors.medium }}>

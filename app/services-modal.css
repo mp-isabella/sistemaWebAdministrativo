@@ -1,0 +1,55 @@
+/* ===== ESTILOS ESPECÍFICOS PARA MODAL DE SERVICIOS ===== */
+
+/* Prevenir scroll del body cuando el modal está abierto */
+body.services-modal-open {
+  overflow: hidden !important;
+}
+
+/* Scrollbar personalizada para el modal */
+.services-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.services-modal-body::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.services-modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.services-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Animaciones del modal */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Aplicar animaciones */
+.services-modal-overlay {
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+.services-modal-content {
+  animation: modalSlideIn 0.3s ease-out;
+}

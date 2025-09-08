@@ -118,13 +118,9 @@ export default function ServiceForm({ service, onSubmit, onCancel, loading = fal
                     <SelectValue placeholder="Seleccionar categoría" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="deteccion">Detección de Fugas</SelectItem>
-                    <SelectItem value="destape">Destape de Alcantarillado</SelectItem>
-                    <SelectItem value="video">Video Inspección</SelectItem>
-                    <SelectItem value="reparacion">Reparación</SelectItem>
-                    <SelectItem value="mantencion">Mantención</SelectItem>
-                    <SelectItem value="instalacion">Instalación</SelectItem>
-                    <SelectItem value="otros">Otros</SelectItem>
+                    <SelectItem value="deteccion_fugas">Detección de Fugas de Agua</SelectItem>
+                    <SelectItem value="destape_alcantarillado">Destape de Alcantarillado</SelectItem>
+                    <SelectItem value="videointrospeccion">Videoinspección de Ductos</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -159,13 +155,22 @@ export default function ServiceForm({ service, onSubmit, onCancel, loading = fal
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   id="price"
-                  type="number"
-                  placeholder="50000"
-                  value={formData.price}
-                  onChange={(e) => handleChange("price", e.target.value)}
+                  type="text"
+                  placeholder="$50.000"
+                  value={formData.price ? new Intl.NumberFormat('es-CL', {
+                    style: 'currency',
+                    currency: 'CLP',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  }).format(parseFloat(formData.price)) : ''}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    // Remover símbolos de moneda y separadores de miles
+                    const cleanValue = value.replace(/[^\d]/g, '')
+                    const numValue = cleanValue === '' ? '' : cleanValue
+                    handleChange("price", numValue)
+                  }}
                   className={`pl-10 ${errors.price ? "border-red-500" : ""}`}
-                  min="0"
-                  step="1000"
                 />
               </div>
               {errors.price && (

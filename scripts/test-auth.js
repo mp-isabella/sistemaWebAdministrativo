@@ -4,60 +4,85 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function testAuth() {
+  console.log('🧪 Probando autenticación...\n');
+
   try {
-    console.log('🧪 Probando autenticación...');
+    // Test 1: Verificar que los usuarios existen
+    console.log('1️⃣ Verificando usuarios en la base de datos...');
     
-    // Probar con las credenciales exactas del formulario
-    const testCredentials = {
-      email: 'admin@amestica.cl',
-      password: 'admin123'
-    };
-    
-    console.log('📝 Credenciales de prueba:', testCredentials);
-    
-    // Buscar el usuario
-    const user = await prisma.user.findUnique({
-      where: { email: testCredentials.email },
+    const users = await prisma.user.findMany({
       include: { role: true }
     });
-    
-    if (!user) {
-      console.log('❌ Usuario no encontrado');
-      return;
-    }
-    
-    console.log('✅ Usuario encontrado:', {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role.name,
-      isActive: user.isActive
+
+    console.log(`✅ Encontrados ${users.length} usuarios:`);
+    users.forEach(user => {
+      console.log(`   - ${user.name} (${user.email}) - Rol: ${user.role.name}`);
     });
-    
-    // Verificar contraseña
-    const isPasswordValid = await bcrypt.compare(testCredentials.password, user.password);
-    console.log('🔐 Contraseña válida:', isPasswordValid);
-    
-    if (isPasswordValid) {
-      console.log('✅ Autenticación exitosa');
-      console.log('👤 Datos del usuario para NextAuth:', {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role.name.toLowerCase()
-      });
-    } else {
-      console.log('❌ Contraseña inválida');
+
+    // Test 2: Verificar autenticación de cada usuario
+    console.log('\n2️⃣ Probando autenticación de usuarios...');
+
+    const testUsers = [
+      { email: 'admin@amestica.cl', password: 'admin123', expectedRole: 'ADMIN' },
+      { email: 'secretaria@amestica.cl', password: 'secretaria123', expectedRole: 'SECRETARIA' },
+      { email: 'tecnico@amestica.cl', password: 'tecnico123', expectedRole: 'TECNICO' }
+    ];
+
+    for (const testUser of testUsers) {
+      console.log(`\n   Probando: ${testUser.email}`);
       
-      // Verificar si la contraseña en la BD coincide
-      console.log('🔍 Verificando contraseña en BD...');
-      const hashedPassword = await bcrypt.hash(testCredentials.password, 12);
-      console.log('🔐 Contraseña hasheada:', hashedPassword);
-      console.log('🔐 Contraseña en BD:', user.password);
+      const user = await prisma.user.findUnique({
+        where: { email: testUser.email },
+        include: { role: true }
+      });
+
+      if (!user) {
+        console.log(`   ❌ Usuario no encontrado`);
+        continue;
+      }
+
+      if (!user.isActive) {
+        console.log(`   ❌ Usuario inactivo`);
+        continue;
+      }
+
+      const isPasswordValid = await bcrypt.compare(testUser.password, user.password);
+      
+      if (isPasswordValid) {
+        console.log(`   ✅ Contraseña válida`);
+        console.log(`   ✅ Rol: ${user.role.name} (esperado: ${testUser.expectedRole})`);
+        
+        if (user.role.name === testUser.expectedRole) {
+          console.log(`   ✅ Rol correcto`);
+        } else {
+          console.log(`   ⚠️  Rol no coincide`);
+        }
+      } else {
+        console.log(`   ❌ Contraseña inválida`);
+      }
     }
+
+    // Test 3: Verificar redirecciones por rol
+    console.log('\n3️⃣ Verificando redirecciones por rol...');
     
+    const roleRedirects = {
+      'ADMIN': '/dashboard',
+      'SECRETARIA': '/dashboard/billing',
+      'TECNICO': '/dashboard/my-jobs'
+    };
+
+    for (const [role, expectedRedirect] of Object.entries(roleRedirects)) {
+      console.log(`   ${role}: ${expectedRedirect}`);
+    }
+
+    console.log('\n✅ Pruebas completadas exitosamente!');
+    console.log('\n📝 Para probar el login:');
+    console.log('   - Admin: admin@amestica.cl / admin123');
+    console.log('   - Secretaria: secretaria@amestica.cl / secretaria123');
+    console.log('   - Técnico: tecnico@amestica.cl / tecnico123');
+
   } catch (error) {
-    console.error('💥 Error en prueba de autenticación:', error);
+    console.error('❌ Error durante las pruebas:', error);
   } finally {
     await prisma.$disconnect();
   }

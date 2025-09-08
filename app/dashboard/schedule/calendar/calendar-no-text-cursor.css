@@ -1,0 +1,176 @@
+/* ===== ELIMINACIÓN DEL CURSOR DE TEXTO EN EL CALENDARIO ===== */
+
+/* Reglas específicas para el calendario */
+.calendar-page,
+.calendar-container,
+.calendar-header,
+.calendar-body,
+.calendar-footer,
+.calendar-sidebar,
+.calendar-grid,
+.calendar-time-slots,
+.calendar-date-picker,
+.calendar-filters,
+.calendar-controls {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+}
+
+/* Aplicar a todos los elementos del calendario */
+.calendar-page *,
+.calendar-container *,
+.calendar-header *,
+.calendar-body *,
+.calendar-footer *,
+.calendar-sidebar *,
+.calendar-grid *,
+.calendar-time-slots *,
+.calendar-date-picker *,
+.calendar-filters *,
+.calendar-controls * {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos específicos del calendario */
+.calendar-date,
+.calendar-day,
+.calendar-hour,
+.calendar-slot,
+.calendar-job,
+.calendar-technician,
+.calendar-status,
+.calendar-priority,
+.calendar-client,
+.calendar-service,
+.calendar-company {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Botones y controles del calendario */
+.calendar-button,
+.calendar-btn,
+.calendar-control,
+.calendar-filter,
+.calendar-select,
+.calendar-option {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos de navegación del calendario */
+.calendar-nav,
+.calendar-navigation,
+.calendar-prev,
+.calendar-next,
+.calendar-today,
+.calendar-view-switcher {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos de información del calendario */
+.calendar-info,
+.calendar-details,
+.calendar-summary,
+.calendar-stats,
+.calendar-metrics {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos de estado del calendario */
+.calendar-status-badge,
+.calendar-priority-badge,
+.calendar-technician-badge,
+.calendar-client-badge {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos de tiempo del calendario */
+.calendar-time,
+.calendar-hour-label,
+.calendar-minute-label,
+.calendar-duration {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos de fecha del calendario */
+.calendar-date-label,
+.calendar-month-label,
+.calendar-year-label,
+.calendar-weekday-label {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Regla de respaldo para cualquier elemento del calendario */
+[class*="calendar"] {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos con atributos específicos del calendario */
+[data-calendar],
+[data-date],
+[data-time],
+[data-technician],
+[data-status],
+[data-priority] {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}

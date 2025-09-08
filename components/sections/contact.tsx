@@ -13,6 +13,10 @@ import {
 } from "@/components/ui/select";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import Image from "next/image";
+import { useFormSubmitService } from "@/hooks/use-formsubmit-service";
+import { useFormValidation, type FormData as ValidationFormData } from "@/hooks/use-form-validation";
+import { FormAlert, ValidationAlert } from "@/components/ui/form-alert";
+import { REGIONES_Y_COMUNAS } from "@/lib/regions-communes";
 
 // Paleta de colores
 const colors = {
@@ -25,81 +29,8 @@ const colors = {
   lightGray: "#6B7280",
 };
 
-// Regiones y comunas
-const regionesYComunas = {
-  "Región Metropolitana": [
-    "Santiago",
-    "Providencia",
-    "Ñuñoa",
-    "Las Condes",
-    "Vitacura",
-    "Maipú",
-    "San Miguel",
-    "La Florida",
-    "Peñalolén",
-    "La Reina",
-  ],
-  "Región de Valparaíso": [
-    "Valparaíso",
-    "Viña del Mar",
-    "Concón",
-    "Quilpué",
-    "Villa Alemana",
-    "San Antonio",
-    "Quillota",
-    "La Calera",
-    "Los Andes",
-    "San Felipe",
-  ],
-  "Región de O'Higgins": [
-    "Rancagua",
-    "San Fernando",
-    "Santa Cruz",
-    "Pichilemu",
-    "Palmilla",
-    "Chimbarongo",
-    "Nancagua",
-    "Machalí",
-    "Graneros",
-    "Doñihue",
-  ],
-  "Región del Maule": [
-    "Talca",
-    "Curicó",
-    "Constitución",
-    "Linares",
-    "San Javier",
-    "Molina",
-    "Cauquenes",
-    "Parral",
-    "San Clemente",
-    "Pelluhue",
-  ],
-  "Región de Ñuble": [
-    "Chillán",
-    "Coihueco",
-    "San Carlos",
-    "Quillón",
-    "Bulnes",
-    "Yungay",
-    "Pinto",
-    "El Carmen",
-    "San Ignacio",
-    "Pemuco",
-  ],
-  "Región del Bío Bío": [
-    "Concepción",
-    "Talcahuano",
-    "Chillán",
-    "Los Ángeles",
-    "Coronel",
-    "San Pedro de la Paz",
-    "Hualpén",
-    "Lota",
-    "Lebu",
-    "Arauco",
-  ],
-};
+// Usar el mapeo completo de regiones y comunas
+const regionesYComunas = REGIONES_Y_COMUNAS;
 
 export default function Contact(): React.JSX.Element {
   const [isMounted, setIsMounted] = useState(false);
@@ -114,8 +45,14 @@ export default function Contact(): React.JSX.Element {
     mensaje: "",
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<null | { type: string; text: string }>(null);
+  // Hook para envío de correos
+  const { sendQuoteEmail, isLoading: isSubmitting } = useFormSubmitService();
+  
+  // Hook para validación de formulario
+  const { errors, validateForm, validateSingleField, clearError, clearAllErrors } = useFormValidation();
+
+  // Estados no persistentes (se resetean en cada carga)
+  const [statusMessage, setStatusMessage] = useState<{ type: string; text: string } | null>(null);
 
   // Asegurar que el componente esté montado antes de renderizar contenido dinámico
   useEffect(() => {
@@ -127,42 +64,101 @@ export default function Contact(): React.JSX.Element {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Validar el campo en tiempo real y limpiar errores
+    if (errors[name as keyof typeof errors]) {
+      clearError(name as keyof ValidationFormData);
+    }
+    
+    // Validar el campo si tiene valor
+    if (value.trim()) {
+      validateSingleField(name as keyof ValidationFormData, value);
+    }
   };
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    
+    // Validar el campo en tiempo real y limpiar errores
+    if (errors[field]) {
+      clearError(field);
+    }
+    
+    // Validar el campo si tiene valor
+    if (value.trim()) {
+      validateSingleField(field, value);
+    }
   };
 
   const handleRegionChange = (value: string) => {
     setFormData((prev) => ({ ...prev, region: value, comuna: "" }));
+    
+    // Limpiar error de región si existe
+    if (errors.region) {
+      clearError('region');
+    }
+    
+    // Limpiar error de comuna ya que se resetea
+    if (errors.comuna) {
+      clearError('comuna');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setStatusMessage(null);
+    clearAllErrors();
+
+    // Validar el formulario antes de enviar
+    const isValid = validateForm(formData);
+    if (!isValid) {
+      setStatusMessage({ 
+        type: "error", 
+        text: "Por favor, corrige los errores en el formulario antes de enviar." 
+      });
+      setTimeout(() => setStatusMessage(null), 5000);
+      return;
+    }
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const result = await sendQuoteEmail({
+        ...formData,
+        formType: 'contact'
+      });
 
-      setStatusMessage({ type: "success", text: "¡Correo enviado con éxito!" });
-      setFormData({
-        nombre: "",
-        email: "",
-        telefono: "",
-        region: "",
-        comuna: "",
-        direccion: "",
-        servicio: "",
-        mensaje: "",
+      if (result.success) {
+        setStatusMessage({ 
+          type: "success", 
+          text: result.message 
+        });
+
+        // Limpiar formulario después del envío exitoso
+        setFormData({
+          nombre: "",
+          email: "",
+          telefono: "",
+          region: "",
+          comuna: "",
+          direccion: "",
+          servicio: "",
+          mensaje: "",
+        });
+        clearAllErrors();
+      } else {
+        setStatusMessage({ 
+          type: "error", 
+          text: result.message 
+        });
+      }
+
+      setTimeout(() => setStatusMessage(null), 5000);
+    } catch (error) {
+      console.error('Error al enviar cotización:', error);
+      setStatusMessage({ 
+        type: "error", 
+        text: "Error inesperado. Por favor, inténtalo nuevamente." 
       });
-    } catch {
-      setStatusMessage({
-        type: "error",
-        text: "Hubo un error al enviar el correo. Inténtalo nuevamente.",
-      });
-    } finally {
-      setIsSubmitting(false);
+      setTimeout(() => setStatusMessage(null), 5000);
     }
   };
 
@@ -181,6 +177,7 @@ export default function Contact(): React.JSX.Element {
         <div className="container mx-auto">
           <div className="text-center mb-8">
             <h2
+              id="contacto-title"
               className="text-4xl md:text-5xl font-extrabold leading-tight mb-4"
               style={{ color: colors.dark }}
             >
@@ -263,6 +260,7 @@ export default function Contact(): React.JSX.Element {
       <div className="container mx-auto">
         <div className="text-center mb-8">
           <h2
+            id="contacto-title"
             className="text-4xl md:text-5xl font-extrabold leading-tight mb-4"
             style={{ color: colors.dark }}
           >
@@ -351,16 +349,13 @@ export default function Contact(): React.JSX.Element {
                   </div>
 
                   <form onSubmit={handleSubmit} className="space-y-6 w-full">
-                    {statusMessage && (
-                      <div
-                        className={`p-3 rounded-lg text-center font-medium ${
-                          statusMessage.type === "success"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {statusMessage.text}
-                      </div>
+                    {/* Alerta de errores de validación */}
+                    {Object.keys(errors).length > 0 && (
+                      <ValidationAlert 
+                        errors={errors} 
+                        onClose={clearAllErrors}
+                        className="mt-2"
+                      />
                     )}
 
                     {/* Nombre y Email */}
@@ -380,8 +375,15 @@ export default function Contact(): React.JSX.Element {
                           onChange={handleChange}
                           placeholder="Nombre completo"
                           required
-                          className="text-gray-900 h-10"
+                          className={`text-gray-900 ${
+                            errors.nombre 
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                              : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
+                          }`}
                         />
+                        {errors.nombre && (
+                          <p className="text-sm text-red-600">{errors.nombre}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <label
@@ -398,8 +400,15 @@ export default function Contact(): React.JSX.Element {
                           onChange={handleChange}
                           placeholder="correo@ejemplo.com"
                           required
-                          className="text-gray-900 h-10"
+                          className={`text-gray-900 ${
+                            errors.email 
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                              : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
+                          }`}
                         />
+                        {errors.email && (
+                          <p className="text-sm text-red-600">{errors.email}</p>
+                        )}
                       </div>
                     </div>
 
@@ -420,8 +429,15 @@ export default function Contact(): React.JSX.Element {
                           onChange={handleChange}
                           placeholder="+56 9 1234 5678"
                           required
-                          className="text-gray-900 h-10"
+                          className={`text-gray-900 ${
+                            errors.telefono 
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                              : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
+                          }`}
                         />
+                        {errors.telefono && (
+                          <p className="text-sm text-red-600">{errors.telefono}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <label
@@ -437,10 +453,14 @@ export default function Contact(): React.JSX.Element {
                           value={formData.servicio}
                           required
                         >
-                          <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 h-10 rounded-lg flex items-center justify-between">
+                          <SelectTrigger className={`w-full text-gray-900 bg-white ${
+                            errors.servicio 
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                              : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
+                          }`}>
                             <SelectValue placeholder="Seleccione servicio" className="text-gray-600 font-medium text-left flex-1 min-w-0 overflow-hidden text-ellipsis" />
                           </SelectTrigger>
-                          <SelectContent className="w-full" position="popper" side="bottom" sideOffset={4}>
+                          <SelectContent className="w-full bg-white" position="popper" side="bottom" sideOffset={4}>
                             <SelectItem
                               value="deteccion_fugas"
                               className="text-gray-900"
@@ -461,6 +481,9 @@ export default function Contact(): React.JSX.Element {
                             </SelectItem>
                           </SelectContent>
                         </Select>
+                        {errors.servicio && (
+                          <p className="text-sm text-red-600">{errors.servicio}</p>
+                        )}
                       </div>
                     </div>
 
@@ -478,10 +501,14 @@ export default function Contact(): React.JSX.Element {
                           value={formData.region}
                           required
                         >
-                          <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 h-10 rounded-lg flex items-center justify-between">
+                          <SelectTrigger className={`w-full text-gray-900 bg-white ${
+                            errors.region 
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                              : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
+                          }`}>
                             <SelectValue placeholder="Región" className="text-gray-600 font-medium text-left flex-1 min-w-0 overflow-hidden text-ellipsis" />
                           </SelectTrigger>
-                          <SelectContent className="w-full" position="popper" side="bottom" sideOffset={4}>
+                          <SelectContent className="w-full bg-white" position="popper" side="bottom" sideOffset={4}>
                             {Object.keys(regionesYComunas).map((region) => (
                               <SelectItem
                                 key={region}
@@ -493,6 +520,9 @@ export default function Contact(): React.JSX.Element {
                             ))}
                           </SelectContent>
                         </Select>
+                        {errors.region && (
+                          <p className="text-sm text-red-600">{errors.region}</p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
@@ -510,10 +540,14 @@ export default function Contact(): React.JSX.Element {
                           disabled={!formData.region}
                           required
                         >
-                          <SelectTrigger className="w-full text-gray-900 bg-white border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 px-3 h-10 rounded-lg flex items-center justify-between">
+                          <SelectTrigger className={`w-full text-gray-900 bg-white ${
+                            errors.comuna 
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                              : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
+                          }`}>
                             <SelectValue placeholder="Comuna" className="text-gray-600 font-medium text-left flex-1 min-w-0 overflow-hidden text-ellipsis" />
                           </SelectTrigger>
-                          <SelectContent className="w-full" position="popper" side="bottom" sideOffset={4}>
+                          <SelectContent className="w-full bg-white" position="popper" side="bottom" sideOffset={4}>
                             {comunasDisponibles.length > 0 ? (
                               comunasDisponibles.map((comuna) => (
                                 <SelectItem
@@ -531,6 +565,9 @@ export default function Contact(): React.JSX.Element {
                             )}
                           </SelectContent>
                         </Select>
+                        {errors.comuna && (
+                          <p className="text-sm text-red-600">{errors.comuna}</p>
+                        )}
                       </div>
                     </div>
 
@@ -551,8 +588,15 @@ export default function Contact(): React.JSX.Element {
                           onChange={handleChange}
                           placeholder="Calle, Número"
                           required
-                          className="text-gray-900 h-10"
+                          className={`text-gray-900 ${
+                            errors.direccion 
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                              : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
+                          }`}
                         />
+                        {errors.direccion && (
+                          <p className="text-sm text-red-600">{errors.direccion}</p>
+                        )}
                       </div>
 
                       <div>
@@ -569,10 +613,27 @@ export default function Contact(): React.JSX.Element {
                           onChange={handleChange}
                           placeholder="Explique su requerimiento"
                           rows={3}
-                          className="text-gray-900"
+                          className={`text-gray-900 ${
+                            errors.mensaje 
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                              : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
+                          }`}
                         />
+                        {errors.mensaje && (
+                          <p className="text-sm text-red-600">{errors.mensaje}</p>
+                        )}
                       </div>
                     </div>
+
+                    {/* Mensaje de estado del envío */}
+                    {statusMessage && (
+                      <FormAlert
+                        type={statusMessage.type as 'success' | 'error'}
+                        message={statusMessage.text}
+                        onClose={() => setStatusMessage(null)}
+                        className="mt-2"
+                      />
+                    )}
 
                     <div className="flex justify-center">
                       <Button
@@ -584,7 +645,7 @@ export default function Contact(): React.JSX.Element {
                           color: colors.white,
                         }}
                       >
-                        {isSubmitting ? "Enviando..." : "Enviar"}
+                        {isSubmitting ? "Enviando..." : "Enviar solicitud"}
                       </Button>
                     </div>
                   </form>

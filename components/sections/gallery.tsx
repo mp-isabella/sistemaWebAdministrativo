@@ -47,8 +47,7 @@ export default function Gallery() {
   const [isMobile, setIsMobile] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState<Set<string>>(new Set());
   const [modalLoading, setModalLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [scrollPosition, setScrollPosition] = useState(0);
+  const [initialLoading, setInitialLoading] = useState(false);
   const [modalKey, setModalKey] = useState(0); // Key para forzar re-render
   const [imageReady, setImageReady] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -57,37 +56,31 @@ export default function Gallery() {
   // Preload optimizado de imágenes para carga inicial rápida
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Preload optimizado - más agresivo en móvil
+      // Preload con prioridad para la imagen central
       galleryItems.forEach((item, index) => {
         const img = new window.Image();
         
+        // Configurar para máxima calidad
+        img.crossOrigin = 'anonymous';
+        img.decoding = 'async';
+        
         img.onload = () => {
-          setImagesLoaded(prev => {
-            const newSet = new Set(prev).add(item.src);
-            // Ocultar loading inicial más rápido en móvil
-            if (newSet.size === galleryItems.length) {
-              const hideTime = isMobile ? 100 : 200;
-              setTimeout(() => setInitialLoading(false), hideTime);
-            }
-            return newSet;
-          });
+          setImagesLoaded(prev => new Set(prev).add(item.src));
         };
         
-        // Cargar con prioridad alta
-        img.src = item.src;
-        
-        // Preload adicional solo si no es móvil para ahorrar datos
-        if (!isMobile) {
-          fetch(item.src, { 
-            method: 'GET',
-            cache: 'force-cache'
-          }).catch(() => {
-            // Fallback silencioso
-          });
+        // Cargar con prioridad alta para la imagen central
+        if (index === 1) {
+          img.fetchPriority = 'high';
+          img.loading = 'eager';
+        } else {
+          img.fetchPriority = 'low';
+          img.loading = 'lazy';
         }
+        
+        img.src = item.src;
       });
     }
-  }, [isMobile]);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth !== undefined) {
@@ -110,9 +103,6 @@ export default function Gallery() {
     if (selectedImage) {
       // Prevenir scroll cuando el modal está abierto
       document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollPosition}px`;
-      document.body.style.width = '100%';
       
       // Agregar listener para tecla Escape
       const handleEscape = (e: KeyboardEvent) => {
@@ -129,19 +119,13 @@ export default function Gallery() {
     } else {
       // Restaurar scroll cuando el modal se cierra
       document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
     }
 
     // Cleanup al desmontar
     return () => {
       document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
     };
-  }, [selectedImage, scrollPosition]);
+  }, [selectedImage]);
 
   const handleNext = () => setActiveIndex((prev) => (prev + 1) % galleryItems.length);
   const handlePrev = () => setActiveIndex((prev) => (prev - 1 + galleryItems.length) % galleryItems.length);
@@ -166,21 +150,9 @@ export default function Gallery() {
   return (
     <section
       id="gallery"
-      className="section-full-height w-full py-16 md:py-32 px-4 md:px-6 relative overflow-hidden touch-optimized"
+      className="section-full-height w-full py-12 md:py-20 px-4 md:px-6 relative overflow-hidden touch-optimized"
       style={{ backgroundColor: colors.white }}
     >
-      {/* Loading inicial */}
-      {initialLoading && (
-        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 font-medium">Cargando galería...</p>
-            <p className="text-sm text-gray-500 mt-2">
-              {imagesLoaded.size} de {galleryItems.length} imágenes cargadas
-            </p>
-          </div>
-        </div>
-      )}
       {/* Fondos decorativos - reducidos en móvil */}
       <div className="absolute inset-0 opacity-20 md:opacity-30">
         <div className="absolute top-0 right-0 w-[200px] h-[200px] md:w-[400px] md:h-[400px]" style={{ backgroundColor: colors.strong, clipPath: "polygon(100% 0, 0% 100%, 100% 100%)" }} />
@@ -191,7 +163,7 @@ export default function Gallery() {
 
       <div className="relative z-10 text-center container mx-auto">
         <div className="mb-8 md:mb-16">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-4 tracking-tight" style={{ color: colors.dark }}>
+          <h2 id="gallery-title" className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-4 tracking-tight" style={{ color: colors.dark }}>
             Galería
           </h2>
           <p className="text-base md:text-lg max-w-3xl mx-auto leading-relaxed font-medium px-4" style={{ color: colors.medium }}>
@@ -228,8 +200,8 @@ export default function Gallery() {
               key={`${item.src}-${index}`}
               className={`relative group cursor-pointer overflow-hidden rounded-xl md:rounded-[1.5rem] shadow-lg md:shadow-xl mobile-image-optimized
               ${index === 1 
-                ? 'w-full md:w-[55%] lg:w-[45%] shadow-xl md:shadow-2xl aspect-[4/5] md:aspect-[9/10]' 
-                : 'w-[15%] md:w-[20%] lg:w-[25%] xl:w-[30%] opacity-30 md:opacity-50 hidden md:block aspect-[3/4]'
+                ? 'w-full md:w-[55%] lg:w-[45%] shadow-xl md:shadow-2xl aspect-[4/3] md:aspect-[3/2]' 
+                : 'w-[15%] md:w-[20%] lg:w-[25%] xl:w-[30%] opacity-30 md:opacity-50 hidden md:block aspect-[4/3]'
               }
               `}
               onClick={() => {
@@ -266,13 +238,13 @@ export default function Gallery() {
                 className="object-cover transition-all duration-500 ease-out group-hover:scale-110 pointer-events-none"
                 sizes={item.sizes}
                 priority={index === 1}
-                quality={isMobile ? 85 : 95}
+                quality={100}
                 placeholder="blur"
                 blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-                loading="eager"
-                fetchPriority={index === 1 ? "high" : "auto"}
+                loading={index === 1 ? "eager" : "lazy"}
+                fetchPriority={index === 1 ? "high" : "low"}
                 style={{
-                  filter: "brightness(1.05) contrast(1.1) saturate(1.1)",
+                  filter: "brightness(1.02) contrast(1.15) saturate(1.2) sharpness(1.1)",
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-all duration-500 ease-out opacity-0 group-hover:opacity-100 flex flex-col justify-end p-3 md:p-6">
@@ -351,7 +323,8 @@ export default function Gallery() {
               onClick={(e) => e.stopPropagation()}
               onLoad={() => setImageReady(true)}
               style={{
-                filter: "brightness(1.05) contrast(1.1) saturate(1.1)",
+                filter: "brightness(1.02) contrast(1.15) saturate(1.2) sharpness(1.1)",
+                imageRendering: "crisp-edges" as any,
               }}
             />
           </div>

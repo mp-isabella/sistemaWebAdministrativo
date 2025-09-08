@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
+import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
@@ -67,7 +67,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
-    const { name, email, phone, address } = await request.json()
+    const { 
+      name, 
+      email, 
+      phone, 
+      address, 
+      rut, 
+      company, 
+      region, 
+      commune, 
+      assignedTechnicianId,
+      // Campos de horario
+      preferredTimeStart,
+      preferredTimeEnd,
+      preferredDays
+    } = await request.json()
+
+    if (!session.user.id) {
+      return NextResponse.json({ error: "ID de usuario no válido" }, { status: 400 })
+    }
 
     const newClient = await prisma.client.create({
       data: {
@@ -75,6 +93,14 @@ export async function POST(request: NextRequest) {
         email,
         phone,
         address,
+        rut,
+        company,
+        region,
+        commune,
+        // Campos de horario
+        preferredTimeStart,
+        preferredTimeEnd,
+        preferredDays,
         createdById: session.user.id
       }
     })

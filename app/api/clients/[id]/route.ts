@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from "next-auth/next"
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
@@ -73,22 +73,45 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+     console.log('🔄 PUT /api/clients/[id] - Iniciando actualización');
+    
     const session = await getServerSession(authOptions)
+    console.log('🔐 Sesión obtenida:', session ? 'Sí' : 'No');
     
     if (!session) {
+      console.log('❌ No hay sesión válida');
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
+    
+    console.log('👤 Usuario autenticado:', session.user?.name, 'Rol:', session.user?.role);
 
     // Verificar permisos (admin o secretaria)
     if (!['admin', 'secretaria'].includes(session.user.role)) {
+      console.log('❌ Sin permisos para actualizar cliente');
       return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
     }
 
     const body = await request.json()
-    const { name, email, phone, address, rut, company, notes } = body
+    console.log('📥 Datos recibidos:', body);
+    
+    const { 
+      name, 
+      email, 
+      phone, 
+      address, 
+      rut, 
+      company, 
+      notes,
+      region,
+      commune,
+      preferredTimeStart,
+      preferredTimeEnd,
+      preferredDays
+    } = body
 
     // Validaciones
     if (!name || !phone || !address) {
+      console.log('❌ Validación fallida - campos requeridos faltantes');
       return NextResponse.json(
         { error: 'Campos requeridos: nombre, teléfono, dirección' },
         { status: 400 }
@@ -96,6 +119,7 @@ export async function PUT(
     }
 
     if (email && !/\S+@\S+\.\S+/.test(email)) {
+      console.log('❌ Validación fallida - email inválido');
       return NextResponse.json(
         { error: 'Email inválido' },
         { status: 400 }
@@ -103,22 +127,29 @@ export async function PUT(
     }
 
     const { id } = await params
+    console.log('🔍 Buscando cliente con ID:', id);
+    
     // Verificar que el cliente existe
     const existingClient = await prisma.client.findUnique({
       where: { id }
     })
 
     if (!existingClient) {
+      console.log('❌ Cliente no encontrado con ID:', id);
       return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
     }
+    
+    console.log('✅ Cliente encontrado:', existingClient.name);
 
     // Verificar email único si se cambió
     if (email && email !== existingClient.email) {
+      console.log('🔍 Verificando email único:', email);
       const emailExists = await prisma.client.findUnique({
         where: { email }
       })
 
       if (emailExists) {
+        console.log('❌ Email ya existe:', email);
         return NextResponse.json(
           { error: 'Ya existe un cliente con este email' },
           { status: 400 }
@@ -126,19 +157,33 @@ export async function PUT(
       }
     }
 
+    console.log('💾 Actualizando cliente en base de datos...');
+    
+    // Manejar el email - si no se proporciona, mantener el existente
+    const emailToUpdate = email || existingClient.email;
+    
+    console.log('💾 Actualizando cliente en base de datos...');
+    console.log('📧 Email a actualizar:', emailToUpdate);
+    
     const updatedClient = await prisma.client.update({
       where: { id },
       data: {
         name,
-        email: email || null,
+        email: emailToUpdate,
         phone,
         address,
         rut: rut || null,
         company: company || null,
-        notes: notes || null
+        notes: notes || null,
+        region: region || null,
+        commune: commune || null,
+        preferredTimeStart: preferredTimeStart || null,
+        preferredTimeEnd: preferredTimeEnd || null,
+        preferredDays: preferredDays || null
       }
     })
 
+    console.log('✅ Cliente actualizado exitosamente:', updatedClient.name);
     return NextResponse.json(updatedClient)
 
   } catch (error) {

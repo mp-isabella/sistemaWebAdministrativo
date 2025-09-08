@@ -1,164 +1,182 @@
 #!/usr/bin/env node
 
+const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const imagemin = require('imagemin');
+const imageminWebp = require('imagemin-webp');
+const imageminMozjpeg = require('imagemin-mozjpeg');
+const imageminPngquant = require('imagemin-pngquant');
 
 // Configuración de optimización
-const config = {
-  inputDir: './public',
-  outputDir: './public/optimized',
-  quality: 85,
-  formats: ['webp', 'avif'],
-  sizes: {
-    thumbnail: 150,
-    small: 300,
-    medium: 600,
-    large: 1200,
-    xlarge: 1920
-  }
+const OPTIMIZATION_CONFIG = {
+  // Calidad para WebP
+  webp: {
+    quality: 85,
+    effort: 6
+  },
+  // Calidad para JPEG
+  jpeg: {
+    quality: 85,
+    progressive: true,
+    mozjpeg: true
+  },
+  // Calidad para PNG
+  png: {
+    quality: 85,
+    speed: 4
+  },
+  // Tamaños máximos
+  maxWidth: 1920,
+  maxHeight: 1080
 };
 
-// Función para crear directorio si no existe
-function ensureDir(dir) {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-}
+// Directorios a procesar
+const DIRECTORIES = [
+  'public',
+  'public/logos',
+  'public/icons'
+];
 
-// Función para obtener todas las imágenes
-function getImageFiles(dir) {
-  const files = [];
-  const items = fs.readdirSync(dir);
-  
-  for (const item of items) {
-    const fullPath = path.join(dir, item);
-    const stat = fs.statSync(fullPath);
-    
-    if (stat.isDirectory()) {
-      files.push(...getImageFiles(fullPath));
-    } else if (/\.(jpg|jpeg|png|gif|bmp|tiff)$/i.test(item)) {
-      files.push(fullPath);
-    }
-  }
-  
-  return files;
-}
+// Extensiones de imagen soportadas
+const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG'];
 
-// Función para optimizar imagen con sharp
-function optimizeImage(inputPath, outputPath, options = {}) {
+// Función para optimizar una imagen individual
+async function optimizeImage(filePath) {
   try {
-    const sharp = require('sharp');
+    const ext = path.extname(filePath).toLowerCase();
+    const fileName = path.basename(filePath, ext);
+    const dir = path.dirname(filePath);
     
-    return sharp(inputPath)
-      .resize(options.width, options.height, {
+    console.log(`🔄 Optimizando: ${filePath}`);
+    
+    // Leer la imagen
+    const image = sharp(filePath);
+    const metadata = await image.metadata();
+    
+    // Redimensionar si es muy grande
+    let processedImage = image;
+    if (metadata.width > OPTIMIZATION_CONFIG.maxWidth || metadata.height > OPTIMIZATION_CONFIG.maxHeight) {
+      processedImage = image.resize(OPTIMIZATION_CONFIG.maxWidth, OPTIMIZATION_CONFIG.maxHeight, {
         fit: 'inside',
         withoutEnlargement: true
+      });
+      console.log(`  📏 Redimensionando de ${metadata.width}x${metadata.height} a máximo ${OPTIMIZATION_CONFIG.maxWidth}x${OPTIMIZATION_CONFIG.maxHeight}`);
+    }
+    
+    // Crear versiones optimizadas
+    const outputs = [];
+    
+    // WebP (formato principal)
+    const webpPath = path.join(dir, `${fileName}.webp`);
+    await processedImage
+      .webp(OPTIMIZATION_CONFIG.webp)
+      .toFile(webpPath);
+    outputs.push(webpPath);
+    
+    // JPEG optimizado (fallback)
+    if (['.jpg', '.jpeg', '.JPG', '.JPEG'].includes(ext)) {
+      const jpegPath = path.join(dir, `${fileName}-optimized.jpg`);
+      await processedImage
+        .jpeg(OPTIMIZATION_CONFIG.jpeg)
+        .toFile(jpegPath);
+      outputs.push(jpegPath);
+    }
+    
+    // PNG optimizado (fallback)
+    if (ext === '.png' || ext === '.PNG') {
+      const pngPath = path.join(dir, `${fileName}-optimized.png`);
+      await processedImage
+        .png(OPTIMIZATION_CONFIG.png)
+        .toFile(pngPath);
+      outputs.push(pngPath);
+    }
+    
+    // Obtener tamaños de archivo
+    const originalSize = fs.statSync(filePath).size;
+    const optimizedSizes = await Promise.all(
+      outputs.map(async (output) => {
+        const stats = fs.statSync(output);
+        return { path: output, size: stats.size };
       })
-      .webp({ quality: options.quality || config.quality })
-      .toFile(outputPath);
+    );
+    
+    // Mostrar resultados
+    const bestOptimized = optimizedSizes.reduce((min, current) => 
+      current.size < min.size ? current : min
+    );
+    
+    const savings = ((originalSize - bestOptimized.size) / originalSize * 100).toFixed(1);
+    console.log(`  ✅ Optimizado: ${bestOptimized.path}`);
+    console.log(`  📊 Tamaño: ${(originalSize / 1024).toFixed(1)}KB → ${(bestOptimized.size / 1024).toFixed(1)}KB (${savings}% reducción)`);
+    
+    return { original: filePath, optimized: bestOptimized.path, savings };
+    
   } catch (error) {
-    console.error(`Error optimizing ${inputPath}:`, error.message);
+    console.error(`❌ Error optimizando ${filePath}:`, error.message);
     return null;
   }
 }
 
-// Función para generar diferentes tamaños
-function generateSizes(inputPath, outputDir, filename) {
-  const results = [];
-  
-  for (const [sizeName, size] of Object.entries(config.sizes)) {
-    const outputPath = path.join(outputDir, `${filename}-${sizeName}.webp`);
+// Función para procesar un directorio
+async function processDirectory(dirPath) {
+  try {
+    const files = fs.readdirSync(dirPath);
     
-    const result = optimizeImage(inputPath, outputPath, {
-      width: size,
-      height: size,
-      quality: config.quality
-    });
-    
-    if (result) {
-      results.push({
-        size: sizeName,
-        path: outputPath,
-        width: size
-      });
+    for (const file of files) {
+      const filePath = path.join(dirPath, file);
+      const stat = fs.statSync(filePath);
+      
+      if (stat.isDirectory()) {
+        // Procesar subdirectorios recursivamente
+        await processDirectory(filePath);
+      } else if (stat.isFile()) {
+        // Verificar si es una imagen
+        const ext = path.extname(file).toLowerCase();
+        if (IMAGE_EXTENSIONS.includes(ext)) {
+          await optimizeImage(filePath);
+        }
+      }
     }
+  } catch (error) {
+    console.error(`❌ Error procesando directorio ${dirPath}:`, error.message);
   }
-  
-  return results;
 }
 
 // Función principal
 async function main() {
-  console.log('🚀 Iniciando optimización de imágenes...');
+  console.log('🚀 Iniciando optimización de imágenes...\n');
   
-  // Verificar si sharp está instalado
-  try {
-    require('sharp');
-  } catch (error) {
-    console.error('❌ Sharp no está instalado. Instalando...');
-    try {
-      execSync('npm install sharp', { stdio: 'inherit' });
-    } catch (installError) {
-      console.error('❌ Error instalando sharp:', installError.message);
-      process.exit(1);
+  const startTime = Date.now();
+  let totalImages = 0;
+  let successfulOptimizations = 0;
+  let totalSavings = 0;
+  
+  // Procesar cada directorio
+  for (const dir of DIRECTORIES) {
+    if (fs.existsSync(dir)) {
+      console.log(`📁 Procesando directorio: ${dir}`);
+      await processDirectory(dir);
     }
   }
   
-  // Crear directorio de salida
-  ensureDir(config.outputDir);
+  const endTime = Date.now();
+  const duration = ((endTime - startTime) / 1000).toFixed(1);
   
-  // Obtener todas las imágenes
-  const imageFiles = getImageFiles(config.inputDir);
-  console.log(`📁 Encontradas ${imageFiles.length} imágenes para optimizar`);
+  console.log(`\n🎉 Optimización completada en ${duration}s`);
+  console.log(`📊 Total de imágenes procesadas: ${totalImages}`);
+  console.log(`✅ Optimizaciones exitosas: ${successfulOptimizations}`);
+  console.log(`💰 Ahorro total estimado: ${(totalSavings / 1024).toFixed(1)}KB`);
   
-  let processed = 0;
-  let errors = 0;
-  
-  for (const imagePath of imageFiles) {
-    try {
-      const relativePath = path.relative(config.inputDir, imagePath);
-      const filename = path.basename(imagePath, path.extname(imagePath));
-      const outputSubDir = path.dirname(relativePath);
-      const fullOutputDir = path.join(config.outputDir, outputSubDir);
-      
-      // Crear subdirectorio si no existe
-      ensureDir(fullOutputDir);
-      
-      console.log(`🔄 Procesando: ${relativePath}`);
-      
-      // Generar diferentes tamaños
-      const results = generateSizes(imagePath, fullOutputDir, filename);
-      
-      if (results.length > 0) {
-        processed++;
-        console.log(`✅ Optimizada: ${relativePath} (${results.length} tamaños)`);
-      } else {
-        errors++;
-        console.log(`❌ Error: ${relativePath}`);
-      }
-      
-    } catch (error) {
-      errors++;
-      console.error(`❌ Error procesando ${imagePath}:`, error.message);
-    }
-  }
-  
-  console.log('\n📊 Resumen:');
-  console.log(`✅ Procesadas: ${processed}`);
-  console.log(`❌ Errores: ${errors}`);
-  console.log(`📁 Directorio de salida: ${config.outputDir}`);
-  
-  if (errors === 0) {
-    console.log('\n🎉 ¡Optimización completada exitosamente!');
-  } else {
-    console.log('\n⚠️  Optimización completada con errores');
-  }
+  console.log('\n💡 Recomendaciones:');
+  console.log('  • Usa archivos .webp como formato principal');
+  console.log('  • Mantén archivos .jpg/.png como fallback');
+  console.log('  • Actualiza los componentes para usar las imágenes optimizadas');
 }
 
-// Ejecutar si es llamado directamente
+// Ejecutar si se llama directamente
 if (require.main === module) {
   main().catch(console.error);
 }
 
-module.exports = { optimizeImage, generateSizes, config };
+module.exports = { optimizeImage, processDirectory };

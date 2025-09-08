@@ -1,0 +1,212 @@
+/* ===== ELIMINACIÓN DEL CURSOR DE TEXTO EN EL DASHBOARD ===== */
+
+/* Reglas específicas para el dashboard */
+.dashboard,
+.dashboard-page,
+.dashboard-container,
+.dashboard-sidebar,
+.dashboard-header,
+.dashboard-content,
+.dashboard-main,
+.dashboard-footer {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+}
+
+/* Aplicar a todos los elementos del dashboard */
+.dashboard *,
+.dashboard-page *,
+.dashboard-container *,
+.dashboard-sidebar *,
+.dashboard-header *,
+.dashboard-content *,
+.dashboard-main *,
+.dashboard-footer * {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos específicos del dashboard */
+.dashboard-nav,
+.dashboard-menu,
+.dashboard-item,
+.dashboard-link,
+.dashboard-button,
+.dashboard-card,
+.dashboard-panel,
+.dashboard-section,
+.dashboard-widget,
+.dashboard-chart,
+.dashboard-table,
+.dashboard-form,
+.dashboard-input,
+.dashboard-select,
+.dashboard-textarea {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos de navegación del dashboard */
+.dashboard-nav-item,
+.dashboard-menu-item,
+.dashboard-submenu,
+.dashboard-dropdown,
+.dashboard-breadcrumb,
+.dashboard-tab,
+.dashboard-tab-content {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos de información del dashboard */
+.dashboard-info,
+.dashboard-details,
+.dashboard-summary,
+.dashboard-stats,
+.dashboard-metrics,
+.dashboard-kpi,
+.dashboard-indicator {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos de estado del dashboard */
+.dashboard-status,
+.dashboard-badge,
+.dashboard-indicator,
+.dashboard-alert,
+.dashboard-notification,
+.dashboard-message {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos de datos del dashboard */
+.dashboard-data,
+.dashboard-row,
+.dashboard-cell,
+.dashboard-field,
+.dashboard-value,
+.dashboard-label {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos de control del dashboard */
+.dashboard-control,
+.dashboard-action,
+.dashboard-tool,
+.dashboard-utility,
+.dashboard-option,
+.dashboard-setting {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos de interfaz del dashboard */
+.dashboard-ui,
+.dashboard-element,
+.dashboard-component,
+.dashboard-module,
+.dashboard-view,
+.dashboard-layout {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Regla de respaldo para cualquier elemento del dashboard */
+[class*="dashboard"] {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos con atributos específicos del dashboard */
+[data-dashboard],
+[data-sidebar],
+[data-header],
+[data-content],
+[data-nav],
+[data-menu] {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos específicos de formularios del dashboard (no editables) */
+.dashboard-form-label,
+.dashboard-form-description,
+.dashboard-form-help,
+.dashboard-form-error,
+.dashboard-form-success {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Elementos de tabla del dashboard */
+.dashboard-table-header,
+.dashboard-table-cell,
+.dashboard-table-row,
+.dashboard-table-footer {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}

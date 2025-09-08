@@ -1,49 +1,43 @@
 // app/layout.tsx
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { Montserrat } from "next/font/google";
-import { Providers } from './providers'
+import "./floating-buttons.css";
+import "./no-text-cursor.css";
+import "./utilities-no-text-cursor.css";
+import "./components-no-text-cursor.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { ChangeProtectionProvider } from "@/components/providers/change-protection-provider";
+import CustomSessionProvider from "@/components/auth/session-provider";
 
-// Fuente Montserrat
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  variable: "--font-montserrat",
-  display: "swap",
-});
+const inter = Inter({ subsets: ["latin"] });
 
-// Configuración del viewport
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  minimumScale: 1,
-  userScalable: true,
-};
-
-// Metadata del sitio
 export const metadata: Metadata = {
-  title: {
-    default: "Amestica | Especialistas en Detección de Fugas",
-    template: "%s | Amestica",
+  title: "Améstica Ltda. - Servicios de Plomería y Mantención",
+  description: "Empresa especializada en detección de fugas, destapes de alcantarillado y videoinspección de tuberías. Servicios profesionales en Santiago y Ñuble.",
+  keywords: "plomería, detección de fugas, destapes, videoinspección, tuberías, Santiago, Ñuble",
+  authors: [{ name: "Améstica Ltda." }],
+  creator: "Améstica Ltda.",
+  publisher: "Améstica Ltda.",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
   },
-  description:
-    "Empresa especializada en detección de fugas de agua en Coihueco y Chillán. Tecnología avanzada y equipo profesional.",
-  generator: "MP Riquelme | mpriquelme.dev",
-  keywords: [
-    "detección de fugas",
-    "Amestica",
-    "Coihueco",
-    "tecnología agua",
-    "empresa Chillán",
-  ],
-  authors: [{ name: "MP Riquelme", url: "https://mpriquelme.dev" }],
-  metadataBase: new URL("https://amestica.cl"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"),
   openGraph: {
-    title: "Amestica | Especialistas en Detección de Fugas",
-    description: "Soluciones profesionales en detección de fugas de agua.",
-    type: "website",
+    title: "Améstica Ltda. - Servicios de Plomería Profesional",
+    description: "Especialistas en detección de fugas, destapes y videoinspección de tuberías",
+    url: "/",
+    siteName: "Améstica Ltda.",
     locale: "es_CL",
-    url: "https://amestica.cl",
-    siteName: "Amestica",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Améstica Ltda. - Servicios de Plomería Profesional",
+    description: "Especialistas en detección de fugas, destapes y videoinspección de tuberías",
   },
   robots: {
     index: true,
@@ -51,29 +45,51 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/android-chrome-512x512.png", sizes: "512x512", type: "image/png" },
-    ],
-    shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
   },
-  manifest: "/manifest.json",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="es">
-      <body className={`${montserrat.variable} bg-background text-foreground antialiased`}>
-        <Providers>
-          {children}
-        </Providers>
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        {/* Preconnect to Google Maps for faster loading */}
+        <link rel="preconnect" href="https://www.google.com" />
+        <link rel="preconnect" href="https://maps.googleapis.com" />
+        <link rel="preconnect" href="https://maps.gstatic.com" />
+        <link rel="dns-prefetch" href="https://www.google.com" />
+        <link rel="dns-prefetch" href="https://maps.googleapis.com" />
+        <link rel="dns-prefetch" href="https://maps.gstatic.com" />
+      </head>
+      <body className={inter.className} suppressHydrationWarning>
+        <CustomSessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ChangeProtectionProvider>
+              {children}
+              <Toaster 
+                position="top-right"
+                richColors
+                closeButton
+                duration={4000}
+              />
+            </ChangeProtectionProvider>
+          </ThemeProvider>
+        </CustomSessionProvider>
       </body>
     </html>
   );

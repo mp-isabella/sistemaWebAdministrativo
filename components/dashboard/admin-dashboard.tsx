@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Users, Calendar, Clock, TrendingUp, Download, FileText, DollarSign, Plus, Eye, Wrench, CreditCard } from 'lucide-react'
+import { Users, Calendar, Clock, TrendingUp, Download, FileText, DollarSign, Plus, Eye, Wrench, CreditCard, ExternalLink, MapPin } from 'lucide-react'
 import { Bar, Line, Pie } from "react-chartjs-2"
 import {
   Chart as ChartJS,
@@ -19,6 +19,7 @@ import {
   Legend,
 } from "chart.js"
 import { useRouter } from "next/navigation"
+import { CalendarEvents } from "@/lib/calendar-events"
 import JobForm from "@/components/forms/job-form"
 import ClientForm from "@/components/forms/client-form"
 import CashTransactionForm from "@/components/forms/cash-transaction-form"
@@ -38,15 +39,13 @@ export default function AdminDashboard() {
     activeJobs: 0,
   })
 
- 
   const [loading, setLoading] = useState(true)
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-const showNotification = (type: 'success' | 'error', message: string) => {
-  setNotification({ type, message });
-  setTimeout(() => setNotification(null), 5000);
-};
-
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 5000);
+  };
 
   // Modales states
   const [showJobForm, setShowJobForm] = useState(false)
@@ -61,14 +60,14 @@ const showNotification = (type: 'success' | 'error', message: string) => {
   }, [])
 
   const [recentJobs, setRecentJobs] = useState<Array<{
-  id: string
-  client: string
-  service: string
-  status: string
-  priority: string
-  technician: string
-  date: string
-}>>([])
+    id: string
+    client: string
+    service: string
+    status: string
+    priority: string
+    technician: string
+    date: string
+  }>>([])
 
   const fetchDashboardData = async () => {
     try {
@@ -98,532 +97,512 @@ const showNotification = (type: 'success' | 'error', message: string) => {
           service: "Reparación de cañería",
           status: "COMPLETED",
           priority: "MEDIUM",
-          technician: "Ana Silva",
+          technician: "Marta Durán",
           date: "2024-01-14",
         },
         {
           id: "JOB-003",
-          client: "Pedro Sánchez",
-          service: "Mantención preventiva",
+          client: "Ana Silva",
+          service: "Instalación de grifo",
           status: "PENDING",
           priority: "LOW",
-          technician: "Luis Torres",
+          technician: "Sin asignar",
           date: "2024-01-16",
         },
       ])
-
-      setLoading(false)
     } catch (error) {
       console.error("Error fetching dashboard data:", error)
+    } finally {
       setLoading(false)
     }
   }
 
-  const exportReport = async (type: string) => {
-    try {
-      const response = await fetch(`/api/reports/export?type=${type}`, {
-        method: "GET",
-      })
-
-      if (response.ok) {
-        const blob = await response.blob()
-        if (typeof window !== 'undefined') {
-          const url = window.URL.createObjectURL(blob)
-          const a = document.createElement("a")
-          a.href = url
-          a.download = `reporte-${type}-${new Date().toISOString().split("T")[0]}.pdf`
-          document.body.appendChild(a)
-          a.click()
-          window.URL.revokeObjectURL(url)
-          document.body.removeChild(a)
-        }
-      }
-    } catch (error) {
-      console.error("Error exporting report:", error)
-    }
-  }
-
-  // Handlers for various actions
-  const handleNewJob = () => {
-    setShowJobForm(true)
-  }
-
-  const handleViewSchedule = () => {
-    router.push('/dashboard/schedule')
-  }
-
-  const handleNewClient = () => {
-    setShowClientForm(true)
-  }
-
-  const handleManageWorkers = () => {
-    router.push('/dashboard/workers')
-  }
-
-  const handleViewStats = () => {
-    router.push('/dashboard/analytics')
-  }
-
-  const handleRegisterIncome = () => {
-    setCashTransactionType('income')
-    setShowCashForm(true)
-  }
-
-  const handleRegisterExpense = () => {
-    setCashTransactionType('expense')
-    setShowCashForm(true)
-  }
-
-  const handleNewInvoice = () => {
-    setShowInvoiceForm(true)
-  }
-
-  const handleExportBilling = () => {
-    exportReport('billing')
-  }
-
-  const handleNewReport = () => {
-    setShowReportForm(true)
-  }
-
-  const handleJobFormSubmit = async (jobData: any) => {
-    try {
-      const response = await fetch('/api/jobs', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(jobData),
-      })
-
-      if (response.ok) {
-        setShowJobForm(false)
-        fetchDashboardData() // Refresh data
-        showNotification('success', 'Trabajo creado exitosamente')
-      } else {
-        showNotification('error', 'Error al crear el trabajo')
-      }
-    } catch (error) {
-      console.error('Error creating job:', error)
-      showNotification('error', 'Error de conexión')
-    }
-  }
-
-  const handleClientFormClose = () => {
-    setShowClientForm(false)
-  }
-
-  const handleClientFormSave = async () => {
-    setShowClientForm(false)
-    fetchDashboardData() // Refresh data
-    showNotification('success', 'Cliente guardado exitosamente')
-  }
-
-  const handleCashFormSubmit = async (transactionData: any) => {
-    try {
-      const response = await fetch('/api/cash-transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...transactionData,
-          type: cashTransactionType.toUpperCase()
-        }),
-      })
-
-      if (response.ok) {
-        setShowCashForm(false)
-        fetchDashboardData() // Refresh data
-        showNotification('success', `${cashTransactionType === 'income' ? 'Ingreso' : 'Gasto'} registrado exitosamente`)
-      } else {
-        showNotification('error', 'Error al registrar la transacción')
-      }
-    } catch (error) {
-      console.error('Error creating transaction:', error)
-      showNotification('error', 'Error de conexión')
-    }
-  }
-
-  const handleInvoiceFormSubmit = async (invoiceData: any) => {
-    try {
-      const response = await fetch('/api/invoices', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(invoiceData),
-      })
-
-      if (response.ok) {
-        setShowInvoiceForm(false)
-        fetchDashboardData() // Refresh data
-        showNotification('success', 'Factura creada exitosamente')
-      } else {
-        showNotification('error', 'Error al crear la factura')
-      }
-    } catch (error) {
-      console.error('Error creating invoice:', error)
-      showNotification('error', 'Error de conexión')
-    }
-  }
-
-  const handleReportFormSubmit = (reportData: any) => {
-    exportReport(reportData.type)
-    setShowReportForm(false)
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0,
+    }).format(amount)
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "COMPLETED":
-        return "bg-green-100 text-green-800"
-      case "IN_PROGRESS":
-        return "bg-blue-100 text-blue-800"
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-800"
+      case 'PENDING':
+        return 'warning'
+      case 'IN_PROGRESS':
+        return 'primary'
+      case 'COMPLETED':
+        return 'success'
+      case 'CANCELLED':
+        return 'danger'
       default:
-        return "bg-gray-100 text-gray-800"
+        return 'info'
     }
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "HIGH":
-        return "bg-red-100 text-red-800"
-      case "MEDIUM":
-        return "bg-yellow-100 text-yellow-800"
-      case "LOW":
-        return "bg-green-100 text-green-800"
+      case 'HIGH':
+        return 'danger'
+      case 'MEDIUM':
+        return 'warning'
+      case 'LOW':
+        return 'success'
       default:
-        return "bg-gray-100 text-gray-800"
+        return 'info'
     }
   }
 
-  // Chart data
-  const monthlyJobsData = {
-    labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Trabajos Completados",
-        data: [12, 19, 15, 25, 22, 30],
-        backgroundColor: "rgba(59, 130, 246, 0.5)",
-        borderColor: "rgb(59, 130, 246)",
-        borderWidth: 1,
-      },
-    ],
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'PENDING':
+        return 'Pendiente'
+      case 'IN_PROGRESS':
+        return 'En Progreso'
+      case 'COMPLETED':
+        return 'Completado'
+      case 'CANCELLED':
+        return 'Cancelado'
+      default:
+        return status
+    }
   }
 
-  const revenueData = {
-    labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Ingresos (CLP)",
-        data: [1200000, 1900000, 1500000, 2500000, 2200000, 3000000],
-        borderColor: "rgb(34, 197, 94)",
-        backgroundColor: "rgba(34, 197, 94, 0.1)",
-        tension: 0.1,
-      },
-    ],
-  }
-
-  const serviceDistribution = {
-    labels: ["Detección", "Reparación", "Mantención", "Emergencia", "Instalación"],
-    datasets: [
-      {
-        data: [30, 25, 20, 15, 10],
-        backgroundColor: [
-          "rgba(239, 68, 68, 0.8)",
-          "rgba(59, 130, 246, 0.8)",
-          "rgba(34, 197, 94, 0.8)",
-          "rgba(245, 158, 11, 0.8)",
-          "rgba(139, 92, 246, 0.8)",
-        ],
-      },
-    ],
-  }
-
-  const handleChartClick = (chartType: string) => {
-    router.push(`/dashboard/analytics?chart=${chartType}`)
-  }
-
-  const handleAddClient = () => {
-    setShowClientForm(true)
-  }
-
-  const handleExportSpecificReport = (reportType: string) => {
-    exportReport(reportType)
+  const getPriorityText = (priority: string) => {
+    switch (priority) {
+      case 'HIGH':
+        return 'Alta'
+      case 'MEDIUM':
+        return 'Media'
+      case 'LOW':
+        return 'Baja'
+      default:
+        return priority
+    }
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Cargando dashboard...</div>
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p className="text-lg sm:text-xl text-gray-600 font-medium ml-4">Cargando dashboard...</p>
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Panel de Administración</h1>
-          <p className="text-gray-600">Vista general del sistema SIGAS</p>
+    <div className="w-full space-y-4 sm:space-y-6 md:space-y-8">
+      {/* Notificación */}
+      {notification && (
+        <div className={`fixed top-4 sm:top-6 right-4 sm:right-6 z-50 p-3 sm:p-4 rounded-xl text-white shadow-lg transform transition-all duration-300 max-w-sm sm:max-w-md ${
+          notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        }`}>
+          <p className="text-sm sm:text-base">{notification.message}</p>
         </div>
-        <div className="flex space-x-2">
-          <Button onClick={handleNewJob} className="bg-green-600 hover:bg-green-700">
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Trabajo
-          </Button>
-          <Button onClick={handleViewSchedule} variant="outline" className="bg-white">
-            <Calendar className="mr-2 h-4 w-4" />
-            Ver Agenda
-          </Button>
-          <Button onClick={() => exportReport("general")} className="bg-blue-600 hover:bg-blue-700">
-            <Download className="mr-2 h-4 w-4" />
-            Exportar Reporte
-          </Button>
+      )}
+
+      {/* Header del Dashboard */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-8">
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              Dashboard Administrativo
+            </h1>
+            <p className="text-sm sm:text-base md:text-lg text-gray-600">
+              Resumen general del sistema y estadísticas
+            </p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <Button 
+              onClick={() => setShowJobForm(true)}
+              className="w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+              <span className="hidden sm:inline">Nuevo Trabajo</span>
+              <span className="sm:hidden">Trabajo</span>
+            </Button>
+            <Button 
+              onClick={() => setShowClientForm(true)}
+              variant="outline"
+              className="w-full sm:w-auto"
+            >
+              <Users className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+              <span className="hidden sm:inline">Nuevo Cliente</span>
+              <span className="sm:hidden">Cliente</span>
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleManageWorkers}>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <Users className="h-8 w-8 text-blue-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Trabajadores</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalWorkers}</p>
+      {/* Tarjetas de Estadísticas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+        {/* Total Trabajadores */}
+        <Card className="w-full">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm sm:text-base font-semibold text-gray-700">
+                Total Trabajadores
+              </CardTitle>
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
               </div>
             </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+              {stats.totalWorkers}
+            </div>
+            <p className="text-xs sm:text-sm text-gray-600">
+              Técnicos activos en el sistema
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/dashboard/clients')}>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <Users className="h-8 w-8 text-green-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Clientes</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalClients}</p>
+        {/* Total Clientes */}
+        <Card className="w-full">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm sm:text-base font-semibold text-gray-700">
+                Total Clientes
+              </CardTitle>
+              <div className="p-2 bg-green-100 rounded-lg">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
               </div>
             </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+              {stats.totalClients}
+            </div>
+            <p className="text-xs sm:text-sm text-gray-600">
+              Clientes registrados
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleViewSchedule}>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <Clock className="h-8 w-8 text-yellow-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Trabajos Pendientes</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.pendingJobs}</p>
+        {/* Trabajos Pendientes */}
+        <Card className="w-full">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm sm:text-base font-semibold text-gray-700">
+                Trabajos Pendientes
+              </CardTitle>
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
               </div>
             </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+              {stats.pendingJobs}
+            </div>
+            <p className="text-xs sm:text-sm text-gray-600">
+              Trabajos en espera
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/dashboard/billing')}>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <DollarSign className="h-8 w-8 text-green-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Ingresos del Mes</p>
-                <p className="text-2xl font-bold text-gray-900">${stats.monthlyRevenue.toLocaleString("es-CL")}</p>
+        {/* Trabajos Completados */}
+        <Card className="w-full">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm sm:text-base font-semibold text-gray-700">
+                Trabajos Completados
+              </CardTitle>
+              <div className="p-2 bg-green-100 rounded-lg">
+                <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
               </div>
             </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+              {stats.completedJobs}
+            </div>
+            <p className="text-xs sm:text-sm text-gray-600">
+              Trabajos finalizados este mes
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Ingresos Mensuales */}
+        <Card className="w-full">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm sm:text-base font-semibold text-gray-700">
+                Ingresos Mensuales
+              </CardTitle>
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 break-words">
+              {formatCurrency(stats.monthlyRevenue)}
+            </div>
+            <p className="text-xs sm:text-sm text-gray-600">
+              Ingresos del mes actual
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Trabajos Activos */}
+        <Card className="w-full">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm sm:text-base font-semibold text-gray-700">
+                Trabajos Activos
+              </CardTitle>
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+              {stats.activeJobs}
+            </div>
+            <p className="text-xs sm:text-sm text-gray-600">
+              Trabajos en progreso
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleChartClick('jobs')}>
+      {/* Gráficos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+        {/* Gráfico de Trabajos por Estado */}
+        <Card className="w-full">
           <CardHeader>
-            <CardTitle>Trabajos por Mes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Bar data={monthlyJobsData} options={{ responsive: true }} />
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleChartClick('revenue')}>
-          <CardHeader>
-            <CardTitle>Ingresos Mensuales</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Line data={revenueData} options={{ responsive: true }} />
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Distribución de Servicios</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Pie data={serviceDistribution} options={{ responsive: true }} />
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Trabajos Recientes</span>
-              <Button variant="outline" size="sm" onClick={handleViewSchedule}>
-                <FileText className="mr-2 h-4 w-4" />
-                Ver Todos
-              </Button>
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
+              Trabajos por Estado
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentJobs.map((job: any) => (
-                <div key={job.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3">
-                      <span className="font-medium text-gray-900">{job.id}</span>
-                      <Badge className={getPriorityColor(job.priority)}>{job.priority}</Badge>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {job.client} - {job.service}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Técnico: {job.technician} | {job.date}
-                    </p>
-                  </div>
-                  <Badge className={getStatusColor(job.status)}>{job.status}</Badge>
-                </div>
-              ))}
+            <div className="h-64 sm:h-80">
+              <Pie
+                data={{
+                  labels: ['Pendientes', 'En Progreso', 'Completados', 'Cancelados'],
+                  datasets: [
+                    {
+                      data: [stats.pendingJobs, stats.activeJobs, stats.completedJobs, 2],
+                      backgroundColor: ['#fbbf24', '#3b82f6', '#10b981', '#ef4444'],
+                      borderWidth: 2,
+                      borderColor: '#ffffff',
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: 'bottom' as const,
+                      labels: {
+                        padding: 20,
+                        font: {
+                          size: window.innerWidth < 768 ? 10 : 14,
+                          weight: 600
+                        }
+                      },
+                    },
+                  },
+                }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Gráfico de Ingresos Mensuales */}
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
+              Ingresos Mensuales
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 sm:h-80">
+              <Bar
+                data={{
+                  labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                  datasets: [
+                    {
+                      label: 'Ingresos (CLP)',
+                      data: [2100000, 1800000, 2500000, 2200000, 2800000, 2500000],
+                      backgroundColor: 'rgba(0, 45, 113, 0.8)',
+                      borderRadius: 8,
+                      borderSkipped: false,
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      display: false,
+                    },
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      grid: {
+                        color: 'rgba(0, 0, 0, 0.1)',
+                      },
+                      ticks: {
+                        callback: function(value) {
+                          return formatCurrency(value as number).replace('CLP', '');
+                        },
+                        font: {
+                          size: window.innerWidth < 768 ? 10 : 12,
+                          weight: 600
+                        }
+                      }
+                    },
+                    x: {
+                      grid: {
+                        display: false,
+                      },
+                      ticks: {
+                        font: {
+                          size: window.innerWidth < 768 ? 10 : 12,
+                          weight: 600
+                        }
+                      }
+                    }
+                  }
+                }}
+              />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <Card>
+      {/* Trabajos Recientes */}
+      <Card className="w-full">
         <CardHeader>
-          <CardTitle>Acciones Rápidas</CardTitle>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+              Trabajos Recientes
+            </CardTitle>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => router.push('/dashboard/schedule')}
+              className="w-full sm:w-auto"
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Ver Todos
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button onClick={handleNewClient} className="h-20 flex-col space-y-2 bg-transparent" variant="outline">
-              <Users className="h-6 w-6" />
-              <span>Nuevo Cliente</span>
-            </Button>
-            <Button onClick={handleNewJob} className="h-20 flex-col space-y-2 bg-transparent" variant="outline">
-              <Calendar className="h-6 w-6" />
-              <span>Programar Trabajo</span>
-            </Button>
-            <Button onClick={handleNewReport} className="h-20 flex-col space-y-2 bg-transparent" variant="outline">
-              <FileText className="h-6 w-6" />
-              <span>Generar Reporte</span>
-            </Button>
-            <Button onClick={handleViewStats} className="h-20 flex-col space-y-2 bg-transparent" variant="outline">
-              <TrendingUp className="h-6 w-6" />
-              <span>Ver Estadísticas</span>
-            </Button>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-gray-700">ID</th>
+                  <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-gray-700">Cliente</th>
+                  <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-gray-700 hidden sm:table-cell">Servicio</th>
+                  <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-gray-700">Estado</th>
+                  <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-gray-700 hidden md:table-cell">Prioridad</th>
+                  <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-gray-700 hidden lg:table-cell">Técnico</th>
+                  <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-gray-700 hidden md:table-cell">Fecha</th>
+                  <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-gray-700">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentJobs.map((job) => (
+                  <tr key={job.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm font-mono text-gray-600">{job.id}</td>
+                    <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-gray-800 truncate max-w-20 sm:max-w-32">{job.client}</td>
+                    <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm text-gray-700 hidden sm:table-cell truncate max-w-24 sm:max-w-40">{job.service}</td>
+                    <td className="py-3 px-2 sm:px-4">
+                      <Badge variant="outline" className={`text-xs ${
+                        getStatusColor(job.status) === 'warning' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                        getStatusColor(job.status) === 'primary' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                        getStatusColor(job.status) === 'success' ? 'bg-green-50 text-green-700 border-green-200' :
+                        'bg-red-50 text-red-700 border-red-200'
+                      }`}>
+                        {getStatusText(job.status)}
+                      </Badge>
+                    </td>
+                    <td className="py-3 px-2 sm:px-4 hidden md:table-cell">
+                      <Badge variant="outline" className={`text-xs ${
+                        getPriorityColor(job.priority) === 'danger' ? 'bg-red-50 text-red-700 border-red-200' :
+                        getPriorityColor(job.priority) === 'warning' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                        'bg-green-50 text-green-700 border-green-200'
+                      }`}>
+                        {getPriorityText(job.priority)}
+                      </Badge>
+                    </td>
+                    <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm text-gray-700 hidden lg:table-cell truncate max-w-24">{job.technician}</td>
+                    <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm text-gray-600 hidden md:table-cell">{new Date(job.date).toLocaleDateString('es-CL')}</td>
+                    <td className="py-3 px-2 sm:px-4">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => router.push(`/dashboard/my-jobs/${job.id}`)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </CardContent>
       </Card>
 
-      {/* Client Actions */}
-      <Card>
+      {/* Acciones Rápidas */}
+      <Card className="w-full">
         <CardHeader>
-          <CardTitle>Gestión de Clientes</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Wrench className="h-4 w-4 sm:h-5 sm:w-5" />
+            Acciones Rápidas
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <Button onClick={handleAddClient} className="h-16 flex-col space-y-2" variant="outline">
-              <Plus className="h-5 w-5" />
-              <span>Nuevo Cliente</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+            <Button 
+              onClick={() => setShowCashForm(true)}
+              className="h-auto flex-col gap-3 p-4 sm:p-6"
+            >
+              <CreditCard className="h-6 w-6 sm:h-8 sm:w-8" />
+              <span className="text-sm sm:text-base">Registrar Pago</span>
             </Button>
-            <Button onClick={() => router.push('/dashboard/clients')} className="h-16 flex-col space-y-2" variant="outline">
-              <Eye className="h-5 w-5" />
-              <span>Ver Clientes</span>
+            
+            <Button 
+              onClick={() => setShowInvoiceForm(true)}
+              variant="outline"
+              className="h-auto flex-col gap-3 p-4 sm:p-6"
+            >
+              <FileText className="h-6 w-6 sm:h-8 sm:w-8" />
+              <span className="text-sm sm:text-base">Crear Factura</span>
             </Button>
-            <Button onClick={() => router.push('/dashboard/clients?filter=potential')} className="h-16 flex-col space-y-2" variant="outline">
-              <Plus className="h-5 w-5" />
-              <span>Clientes Potenciales</span>
+            
+            <Button 
+              onClick={() => setShowReportForm(true)}
+              variant="outline"
+              className="h-auto flex-col gap-3 p-4 sm:p-6"
+            >
+              <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8" />
+              <span className="text-sm sm:text-base">Generar Reporte</span>
             </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Cash Management */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Gestión de Caja</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button onClick={handleRegisterIncome} className="h-16 flex-col space-y-2 bg-green-600 hover:bg-green-700 text-white">
-              <TrendingUp className="h-5 w-5" />
-              <span>Registrar Ingreso</span>
-            </Button>
-            <Button onClick={handleRegisterExpense} className="h-16 flex-col space-y-2 bg-red-600 hover:bg-red-700 text-white">
-              <TrendingUp className="h-5 w-5 rotate-180" />
-              <span>Registrar Gasto</span>
-            </Button>
-            <Button onClick={() => router.push('/dashboard/cash')} className="h-16 flex-col space-y-2" variant="outline">
-              <Eye className="h-5 w-5" />
-              <span>Ver Movimientos</span>
-            </Button>
-            <Button onClick={() => router.push('/dashboard/cash/balance')} className="h-16 flex-col space-y-2" variant="outline">
-              <DollarSign className="h-5 w-5" />
-              <span>Balance General</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Billing Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recaudación y Facturación</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button onClick={handleNewInvoice} className="h-16 flex-col space-y-2 bg-blue-600 hover:bg-blue-700 text-white">
-              <FileText className="h-5 w-5" />
-              <span>Nueva Factura</span>
-            </Button>
-            <Button onClick={() => router.push('/dashboard/billing')} className="h-16 flex-col space-y-2" variant="outline">
-              <Eye className="h-5 w-5" />
-              <span>Ver Facturas</span>
-            </Button>
-            <Button onClick={handleExportBilling} className="h-16 flex-col space-y-2" variant="outline">
-              <Download className="h-5 w-5" />
-              <span>Exportar</span>
-            </Button>
-            <Button onClick={() => router.push('/dashboard/billing/pending')} className="h-16 flex-col space-y-2" variant="outline">
-              <Clock className="h-5 w-5" />
-              <span>Pendientes</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Reports Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Reportes y Análisis</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button onClick={() => handleExportSpecificReport('general')} className="h-16 flex-col space-y-2 bg-purple-600 hover:bg-purple-700 text-white">
-              <Download className="h-5 w-5" />
-              <span>Exportar PDF</span>
-            </Button>
-            <Button onClick={handleNewReport} className="h-16 flex-col space-y-2" variant="outline">
-              <FileText className="h-5 w-5" />
-              <span>Nuevo Reporte</span>
-            </Button>
-            <Button onClick={() => router.push('/dashboard/reports/available')} className="h-16 flex-col space-y-2" variant="outline">
-              <Eye className="h-5 w-5" />
-              <span>Reportes Disponibles</span>
-            </Button>
-            <Button onClick={() => router.push('/dashboard/analytics')} className="h-16 flex-col space-y-2" variant="outline">
-              <TrendingUp className="h-5 w-5" />
-              <span>Análisis Avanzado</span>
+            
+            <Button 
+              onClick={() => router.push('/dashboard/calendar')}
+              variant="outline"
+              className="h-auto flex-col gap-3 p-4 sm:p-6"
+            >
+              <Calendar className="h-6 w-6 sm:h-8 sm:w-8" />
+              <span className="text-sm sm:text-base">Ver Calendario</span>
             </Button>
           </div>
         </CardContent>
@@ -631,49 +610,58 @@ const showNotification = (type: 'success' | 'error', message: string) => {
 
       {/* Modales */}
       {showJobForm && (
-        <div className="fixed inset-0 z-modal">
-          <JobForm 
-            onSubmit={handleJobFormSubmit}
-            onCancel={() => setShowJobForm(false)}
-          />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <JobForm 
+              onSubmit={() => {}} 
+              onCancel={() => setShowJobForm(false)} 
+            />
+          </div>
         </div>
       )}
 
       {showClientForm && (
-        <ClientForm 
-          onCancel={handleClientFormClose}
-          onSubmit={handleClientFormSave}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <ClientForm 
+              onSubmit={() => {}} 
+              onCancel={() => setShowClientForm(false)} 
+            />
+          </div>
+        </div>
       )}
 
       {showCashForm && (
-        <CashTransactionForm 
-          type={cashTransactionType}
-          onSubmit={handleCashFormSubmit}
-          onCancel={() => setShowCashForm(false)}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <CashTransactionForm 
+              type={cashTransactionType}
+              onSubmit={() => {}} 
+              onCancel={() => setShowCashForm(false)} 
+            />
+          </div>
+        </div>
       )}
 
       {showInvoiceForm && (
-        <InvoiceForm 
-          onSubmit={handleInvoiceFormSubmit}
-          onCancel={() => setShowInvoiceForm(false)}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <InvoiceForm 
+              onSubmit={() => {}} 
+              onCancel={() => setShowInvoiceForm(false)} 
+            />
+          </div>
+        </div>
       )}
 
       {showReportForm && (
-        <ReportGeneratorForm 
-          onSubmit={handleReportFormSubmit}
-          onCancel={() => setShowReportForm(false)}
-        />
-      )}
-
-      {/* Estado para notificaciones */}
-      {notification && (
-        <div className={`fixed top-4 right-4 p-4 rounded-md z-50 ${
-          notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-        } text-white`}>
-          {notification.message}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <ReportGeneratorForm 
+              onSubmit={() => {}} 
+              onCancel={() => setShowReportForm(false)} 
+            />
+          </div>
         </div>
       )}
     </div>

@@ -38,7 +38,6 @@ return isMounted ? isMobile : false;
 - `components/ui/sidebar.tsx`
 - `components/mobile-optimizer.tsx`
 - `components/layout/header.tsx`
-- `components/ui/floating-buttons.tsx`
 - `app/ClientWrapper.tsx`
 - `components/ui/performance-optimizer.tsx`
 
@@ -78,7 +77,6 @@ Added `components/ui/hydration-debugger.tsx` to help identify hydration issues d
 - `components/ui/sidebar.tsx`
 - `components/mobile-optimizer.tsx`
 - `components/layout/header.tsx`
-- `components/ui/floating-buttons.tsx`
 - `app/ClientWrapper.tsx`
 - `components/ui/performance-optimizer.tsx`
 - `components/ui/hydration-debugger.tsx` (new)

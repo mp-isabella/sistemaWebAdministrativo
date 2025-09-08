@@ -1,41 +1,61 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import type { Professional, Appointment, Patient } from "@/types/calendar"
 import { DollarSign } from "lucide-react"
+import { TechnicianHeader } from "./technician-header"
+import { useCalendarOptimization } from "@/hooks/use-calendar-optimization"
 
 interface CalendarGridProps {
   selectedDate: Date
   professionals: Professional[]
   appointments: Appointment[]
   onPatientSelect: (patient: Patient) => void
+  onJobSelect: (job: Appointment) => void
 }
 
-const timeSlots = Array.from({ length: 11 }, (_, i) => `${(i + 9).toString().padStart(2, '0')}:00`)
+// Tipo para la posición de las citas
+interface AppointmentPosition {
+  top: number
+  height: number
+  left?: string
+  width?: string
+  zIndex?: number
+}
 
 const mockPatient: Patient = {
   id: "1",
-  name: "ELIZABETH DEL PILAR LOYOLA",
-  appointmentType: "Consulta Matrona",
-  price: "$20.000",
-  date: "Lunes 18 de agosto",
-  time: "12:00 a 12:30 hrs",
-  attendedBy: "María Isabel Sandoval",
-  phone: "+56933745946",
-  email: "elizabeth.loyola2904@gmail.com",
+  name: "BÁRBARA TRONCOSO",
+  appointmentType: "Primera consulta",
+  price: "$45.000",
+  date: "Miércoles 14 de agosto",
+  time: "14:00 a 15:00 hrs",
+  attendedBy: "Camila Torres",
+  phone: "+56912345678",
+  email: "barbarat89@email.com",
   id_number: "19.294.498-8",
-  notes: "Sin información",
+  notes: "Primera consulta - Paciente nuevo",
 }
 
-export function CalendarGrid({ selectedDate, professionals, appointments, onPatientSelect }: CalendarGridProps) {
+export function CalendarGrid({ selectedDate, professionals, appointments, onPatientSelect, onJobSelect }: CalendarGridProps) {
   const [currentTime, setCurrentTime] = useState(new Date())
+  
+  // Hook de optimización del calendario
+  const {
+    timeConfig,
+    getTechnicianColumnWidth,
+    calculateAppointmentPosition,
+    getCurrentTimePosition: getOptimizedCurrentTimePosition,
+    responsiveStyles
+  } = useCalendarOptimization({ professionalsCount: professionals.length })
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date())
-    }, 60000)
+    }, 1000) // Actualizar cada segundo para tiempo real
     return () => clearInterval(timer)
   }, [])
 
@@ -43,131 +63,252 @@ export function CalendarGrid({ selectedDate, professionals, appointments, onPati
     return appointments.filter((apt) => apt.professionalId === professionalId)
   }
 
-  const getAppointmentPosition = (startTime: string, endTime: string) => {
-    const [startHour, startMinute] = startTime.split(":").map(Number)
-    const [endHour, endMinute] = endTime.split(":").map(Number)
+  // Función para agrupar trabajos por horario
+  const groupAppointmentsByTimeSlot = (appointments: Appointment[]) => {
+    const grouped: { [key: string]: Appointment[] } = {}
     
-    const startTotalMinutes = (startHour - 9) * 60 + startMinute
-    const endTotalMinutes = (endHour - 9) * 60 + endMinute
-    const duration = endTotalMinutes - startTotalMinutes
-
-    const slotHeightMinutes = 60
-    const slotHeightPx = 64
-
-    const top = (startTotalMinutes / slotHeightMinutes) * slotHeightPx
-    const height = (duration / slotHeightMinutes) * slotHeightPx
-
-    return { top: `${top}px`, height: `${height}px` }
+    appointments.forEach(appointment => {
+      if (!appointment.startTime || !appointment.endTime) return
+      
+      // Crear clave única para el horario
+      const timeKey = `${appointment.startTime}-${appointment.endTime}`
+      
+      if (!grouped[timeKey]) {
+        grouped[timeKey] = []
+      }
+      
+      grouped[timeKey].push(appointment)
+    })
+    
+    return grouped
   }
 
+  // Función para obtener el estilo de posicionamiento para múltiples trabajos
+  const getMultiJobPosition = (appointments: Appointment[], index: number, total: number): AppointmentPosition | null => {
+    if (total === 1) {
+      return calculateAppointmentPosition(appointments[0].startTime, appointments[0].endTime)
+    }
+    
+    const basePosition = calculateAppointmentPosition(appointments[0].startTime, appointments[0].endTime)
+    if (!basePosition) return null
+    
+    // Calcular ancho y posición para múltiples trabajos
+    const maxWidth = getTechnicianColumnWidth() - 8 // Ancho dinámico menos padding
+    const jobWidth = Math.min(maxWidth / total, Math.max(80, maxWidth / 3)) // Ancho adaptativo
+    const leftOffset = (index * jobWidth) % maxWidth
+    
+    return {
+      ...basePosition,
+      left: `${leftOffset}px`,
+      width: `${jobWidth}px`
+    }
+  }
+
+  // Calcular posición de la línea de tiempo actual en Chile
   const getCurrentTimePosition = () => {
     const now = new Date()
-    const hours = now.getHours()
-    const minutes = now.getMinutes()
+    // Ajustar a zona horaria de Chile (UTC-3)
+    const chileTime = new Date(now.getTime() - (3 * 60 * 60 * 1000))
+    const hours = chileTime.getHours()
+    const minutes = chileTime.getMinutes()
     
-    if (selectedDate.getDate() !== now.getDate() ||
-        selectedDate.getMonth() !== now.getMonth() ||
-        selectedDate.getFullYear() !== now.getFullYear()) {
-          return null
-    }
-
-    if (hours < 9 || hours > 19) return null
-
-    const totalMinutes = (hours - 9) * 60 + minutes
-    const totalSlotsMinutes = 11 * 60
-    const percentage = (totalMinutes / totalSlotsMinutes) * 100
-
-    return Math.min(Math.max(percentage, 0), 100)
+    // Calcular posición basada en el horario de trabajo (8:00 - 20:00)
+    const startHour = timeConfig.startHour
+    const endHour = timeConfig.endHour
+    
+    if (hours < startHour || hours >= endHour) return null
+    
+    const hourPosition = (hours - startHour) * timeConfig.slotHeight
+    const minuteOffset = (minutes / 60) * timeConfig.slotHeight
+    
+    return hourPosition + minuteOffset
   }
 
   const currentTimePosition = getCurrentTimePosition()
 
+  // Función para obtener el estado del trabajo
+  const getJobStatusBadge = (status: string | undefined) => {
+    switch (status?.toUpperCase()) {
+      case "PENDING":
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pendiente</Badge>
+      case "IN_PROGRESS":
+        return <Badge variant="secondary" className="bg-blue-100 text-blue-800">En Progreso</Badge>
+      case "COMPLETED":
+        return <Badge variant="secondary" className="bg-green-100 text-green-800">Completado</Badge>
+      case "CANCELLED":
+        return <Badge variant="secondary" className="bg-red-100 text-red-800">Cancelado</Badge>
+      default:
+        return <Badge variant="outline">Sin Estado</Badge>
+    }
+  }
+
   return (
-    <div className="flex-1 overflow-auto bg-gray-50">
-      <div className="min-w-max">
-        {/* Header with professional info */}
-        <div className="flex">
+    <div className="w-full h-full bg-white overflow-hidden">
+      <div className="w-full h-full">
+        {/* Calendar Grid Header */}
+        <div className="flex border-b-2 border-gray-300 bg-gray-100 sticky top-0 z-30">
           {/* Time column header */}
-          <div className="w-20 flex-shrink-0 sticky top-0 z-20 bg-white border-b border-r border-gray-200" />
+          <div className="w-16 flex-shrink-0 border-r-2 border-gray-300 bg-gray-100 px-3 py-2 text-center">
+            <span className="font-medium text-gray-700">Horario</span>
+          </div>
 
           {/* Professional columns header */}
-          {professionals.map((professional) => (
-            <div key={professional.id} className="w-40 flex-shrink-0 sticky top-0 z-20 bg-white border-b border-r border-gray-200 p-4 text-center">
-              <Avatar className="mx-auto mb-2">
-                <AvatarImage src={professional.avatar || "/placeholder.svg"} alt={professional.name} />
-                <AvatarFallback>
-                  {professional.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .slice(0, 2)}
-                </AvatarFallback>
-              </Avatar>
-              <h3 className="font-medium text-sm text-gray-900 mb-1">{professional.name}</h3>
-              <Badge variant="secondary" className="text-xs">
-                {professional.status === 'available' ? 'Disponible' : 'No disponible'}
-              </Badge>
-              <p className="text-xs text-gray-500 mt-1">{professional.timeRange}</p>
+          {professionals.map((professional, index) => (
+            <div 
+              key={professional.id}
+              className="border-r-2 border-gray-300 bg-gray-100 px-3 py-2 text-center flex-shrink-0 w-50"
+            >
+              <div className="font-bold mb-1">{professional.name}</div>
+              <div className="text-xs text-gray-500">Técnico</div>
             </div>
           ))}
         </div>
 
-        {/* Calendar grid */}
-        <div className="relative">
-          <div className="flex">
-            {/* Time column */}
-            <div className="w-20 flex-shrink-0 sticky left-0 z-10 bg-gray-50 border-r border-gray-200">
-              {timeSlots.map((time) => (
-                <div key={time} className="h-16 border-b border-gray-200 flex items-start justify-end pr-2 pt-1">
-                  <span className="text-xs text-gray-500">{time}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Professional columns with appointments and current time indicator */}
-            <div className="flex-1 relative">
-              {/* Current time indicator */}
-              {currentTimePosition !== null && (
-                <div
-                  className="absolute left-0 right-0 h-0.5 bg-red-500 z-20 pointer-events-none"
-                  style={{ top: `${currentTimePosition}%` }}
-                  aria-hidden="true"
-                >
-                  <div className="absolute -left-2 -top-1 w-4 h-2 bg-red-500 rounded-full" />
-                </div>
-              )}
-              <div className="grid grid-cols-7 min-h-full">
-                {professionals.map((professional) => (
-                  <div key={professional.id} className="relative border-r border-gray-200">
-                    {/* Background grid lines */}
-                    {timeSlots.map((time, index) => (
-                      <div
-                        key={`${professional.id}-${time}`}
-                        className="h-16 border-b border-gray-200 bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
-                      />
-                    ))}
-
-                    {/* Appointments */}
-                    {getAppointmentsForProfessional(professional.id).map((appointment) => {
-                      const { top, height } = getAppointmentPosition(appointment.startTime, appointment.endTime)
-                      
-                      return (
-                        <div
-                          key={appointment.id}
-                          className={`absolute left-1 right-1 rounded px-2 py-1 text-white shadow-sm cursor-pointer transition-transform duration-200 hover:scale-[1.02] hover:shadow-md ${appointment.color}`}
-                          style={{ top, height }}
-                          onClick={() => onPatientSelect(mockPatient)}
-                        >
-                          <div className="text-xs font-semibold truncate">{appointment.patientName}</div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                ))}
+        {/* Calendar Grid Body */}
+        <div className="flex relative m-0 p-0 gap-0">
+          {/* Time column */}
+          <div className="w-16 flex-shrink-0 border-r-2 border-gray-300 bg-gray-50">
+            {timeConfig.timeSlots.map((time: string, timeIndex: number) => (
+              <div 
+                key={time} 
+                className="px-3 py-1 text-xs text-gray-700 border-b-2 border-gray-200 flex items-center justify-center bg-gray-50"
+                style={{ height: `${timeConfig.slotHeight}px` }}
+              >
+                {time}
               </div>
+            ))}
+          </div>
+
+          {/* Professional columns */}
+          {professionals.map((professional, index) => (
+            <div 
+              key={professional.id}
+              className="flex-shrink-0 border-r-2 border-gray-300 bg-white relative w-50"
+            >
+              {/* Grid lines for each time slot */}
+              {timeConfig.timeSlots.map((time: string, timeIndex: number) => (
+                <div 
+                  key={`grid-${professional.id}-${time}`}
+                  className="absolute left-0 right-0 border-b border-gray-200"
+                  style={{ 
+                    top: `${timeIndex * timeConfig.slotHeight}px`,
+                    height: '1px'
+                  }}
+                />
+              ))}
+              
+              {/* Empty time slots for visual consistency */}
+              {timeConfig.timeSlots.map((time: string, timeIndex: number) => (
+                <div 
+                  key={`empty-${professional.id}-${time}`}
+                  className="absolute left-0 right-0"
+                  style={{ 
+                    top: `${timeIndex * timeConfig.slotHeight}px`,
+                    height: `${timeConfig.slotHeight}px`
+                  }}
+                />
+              ))}
+              
+              {/* Appointments for this professional */}
+              {(() => {
+                const professionalAppointments = getAppointmentsForProfessional(professional.id)
+                const groupedAppointments = groupAppointmentsByTimeSlot(professionalAppointments)
+                
+                return Object.entries(groupedAppointments).map(([timeSlot, appointments]) => {
+                  if (appointments.length === 0) return null
+                  
+                  return appointments.map((appointment, index) => {
+                    const position = getMultiJobPosition(appointments, index, appointments.length)
+                    if (!position) return null
+                    
+                    // Para la columna "Técnico" genérica, permitir superposición
+                    const isGenericTechnician = professional.id === "tecnico-generico"
+                    
+                    // Determinar clases CSS basadas en el estado del trabajo
+                    const getJobCardClasses = (status: string | undefined, isUnassigned: boolean) => {
+                      if (isUnassigned) {
+                        return "absolute rounded-lg p-2 text-xs font-medium cursor-pointer hover:scale-105 transition-all bg-orange-100 text-orange-800 border-2 border-dashed border-orange-400 shadow-lg"
+                      }
+                      
+                      switch (status?.toUpperCase()) {
+                        case "PENDING":
+                          return "absolute rounded-lg p-2 text-xs font-medium cursor-pointer hover:scale-105 transition-all bg-yellow-100 text-yellow-800 shadow-md"
+                        case "IN_PROGRESS":
+                          return "absolute rounded-lg p-2 text-xs font-medium cursor-pointer hover:scale-105 transition-all bg-blue-100 text-blue-800 shadow-md"
+                        case "COMPLETED":
+                          return "absolute rounded-lg p-2 text-xs font-medium cursor-pointer hover:scale-105 transition-all bg-green-100 text-green-800 shadow-md"
+                        case "CANCELLED":
+                          return "absolute rounded-lg p-2 text-xs font-medium cursor-pointer hover:scale-105 transition-all bg-red-100 text-red-800 shadow-md"
+                        default:
+                          return "absolute rounded-lg p-2 text-xs font-medium cursor-pointer hover:scale-105 transition-all bg-gray-100 text-gray-800 shadow-md"
+                      }
+                    }
+                    
+                    // Estilo especial para trabajos sin técnico asignado
+                    const isUnassigned = appointment.professionalId === "tecnico-generico"
+                    const cardClasses = getJobCardClasses(appointment.status, isUnassigned)
+                    
+                    // Mostrar indicador de múltiples trabajos si hay más de uno
+                    const showMultiIndicator = appointments.length > 1
+                    
+                    return (
+                      <div
+                        key={appointment.id}
+                        className={`${cardClasses} calendar-appointment`}
+                        style={{
+                          top: `${position.top}px`,
+                          left: `${position.left || 4}px`,
+                          width: position.width ? `${position.width}px` : 'auto',
+                          height: `${position.height}px`,
+                          zIndex: position.zIndex || 20,
+                          minHeight: '48px',
+                          overflow: 'hidden'
+                        }}
+                        onClick={() => onJobSelect(appointment)}
+                        title={isUnassigned ? "Trabajo sin técnico asignado - Hacer clic para asignar" : "Hacer clic para ver detalles"}
+                      >
+                        <div className="font-medium truncate">
+                          {isUnassigned && (
+                            <span className="text-orange-600">⚠️</span>
+                          )}
+                          {showMultiIndicator && (
+                            <span className="text-xs bg-blue-600 text-white px-1 rounded-full">
+                              {appointments.length}
+                            </span>
+                          )}
+                          {appointment.patientName}
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1 truncate">
+                          {appointment.company && appointment.company.name ? appointment.company.name : "Sin empresa"} - {appointment.type}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1 truncate">
+                          {appointment.startTimeDisplay || appointment.startTime} - {appointment.endTimeDisplay || appointment.endTime}
+                        </div>
+                        {isUnassigned && (
+                          <div className="text-xs text-orange-700 font-bold mt-1">
+                            ⚠️ Sin asignar
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })
+                }).flat()
+              })()}
+            </div>
+          ))}
+        </div>
+        
+        {/* Línea de tiempo actual en Chile */}
+        {currentTimePosition && (
+          <div 
+            className="absolute left-16 right-0 z-10 pointer-events-none"
+            style={{ top: `${currentTimePosition}px` }}
+          >
+            <div className="w-full h-0.5 bg-red-500 opacity-80 shadow-lg">
+              <div className="absolute -left-2 -top-1 w-4 h-3 bg-red-500 rounded-full"></div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

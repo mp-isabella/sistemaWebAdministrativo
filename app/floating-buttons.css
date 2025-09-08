@@ -1,0 +1,639 @@
+/* 
+ * ESTILOS PARA LOS GLOBOS FLOTANTES - POSICIÓN COMPLETAMENTE FIJA Y BIEN ORGANIZADOS
+ * 
+ * IMPORTANTE: Los botones están configurados con position: fixed !important
+ * para asegurar que NO se muevan con el scroll en ningún dispositivo.
+ * 
+ * ORGANIZACIÓN: Los tres botones están perfectamente alineados en una columna vertical
+ * con espaciado uniforme de 1.5rem entre cada uno.
+ * 
+ * Se han eliminado todas las transformaciones que podrían causar movimiento.
+ */
+
+/* Contenedor principal - POSICIÓN COMPLETAMENTE FIJA Y BIEN ORGANIZADO */
+.floating-buttons-container {
+  position: fixed !important;
+  bottom: 5rem !important;
+  right: 2.5rem !important;
+  z-index: 9999 !important;
+  /* Organización perfecta en columna vertical */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 1.5rem !important;
+  /* Asegurar alineación perfecta */
+  width: auto !important;
+  height: auto !important;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  /* Eliminar transformaciones que puedan interferir */
+  transform: none !important;
+  /* Asegurar que esté por encima de todo */
+  isolation: isolate;
+}
+
+/* Botones individuales - POSICIÓN COMPLETAMENTE FIJA Y BIEN ALINEADOS */
+.floating-button {
+  width: 4rem !important;
+  height: 4rem !important;
+  border: none;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  /* Alineación perfecta del contenido */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(1);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  overflow: hidden;
+  outline: none !important;
+  /* Asegurar alineación perfecta en la columna */
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+  /* Asegurar que no se muevan con el scroll */
+  z-index: 10000;
+  /* Centrado perfecto */
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.floating-button:focus {
+  outline: none !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25) !important;
+}
+
+.floating-button:focus-visible {
+  outline: none !important;
+}
+
+.floating-button:active {
+  outline: none !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25) !important;
+}
+
+.floating-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.floating-button:hover::before {
+  opacity: 1;
+}
+
+.floating-button:hover {
+  transform: scale(1.15);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+}
+
+.floating-button:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* Colores específicos como en la imagen */
+.floating-button.whatsapp {
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+}
+
+.floating-button.whatsapp:hover {
+  background: linear-gradient(135deg, #128C7E 0%, #0E6B5F 100%);
+}
+
+.floating-button.phone {
+  background: linear-gradient(135deg, #007AFF 0%, #0056CC 100%);
+}
+
+.floating-button.phone:hover {
+  background: linear-gradient(135deg, #0056CC 0%, #004499 100%);
+}
+
+.floating-button.chatbot {
+  background: linear-gradient(135deg, #FF6B35 0%, #E55A2B 100%);
+}
+
+.floating-button.chatbot:hover {
+  background: linear-gradient(135deg, #E55A2B 0%, #CC4A1F 100%);
+}
+
+/* Iconos dentro de los botones - PERFECTAMENTE CENTRADOS */
+.floating-button svg,
+.floating-button .w-6 {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transition: transform 0.3s ease;
+  width: 2rem !important;
+  height: 2rem !important;
+  /* Centrado perfecto del icono */
+  display: block !important;
+  margin: auto !important;
+  flex-shrink: 0 !important;
+}
+
+.floating-button:hover svg,
+.floating-button:hover .w-6 {
+  transform: scale(1.1);
+}
+
+/* Botones fijos sin animación de movimiento */
+.floating-button {
+  /* Sin animación de movimiento - POSICIÓN COMPLETAMENTE FIJA */
+  transform: scale(1);
+}
+
+.floating-button:hover {
+  transform: scale(1.15);
+}
+
+/* Asegurar que los botones estén siempre por encima de otros elementos */
+.floating-button {
+  position: relative;
+  z-index: 10000;
+}
+
+/* Asegurar que los modales estén por encima de todo */
+.contact-modal {
+  z-index: 10001;
+}
+
+/* REGLAS CRÍTICAS PARA POSICIÓN FIJA Y ORGANIZACIÓN PERFECTA */
+.floating-buttons-container,
+.floating-buttons-container * {
+  /* Forzar posición fija */
+  position: fixed !important;
+  /* Eliminar cualquier transformación que pueda interferir */
+  transform: none !important;
+  /* Asegurar que estén por encima de todo */
+  z-index: 9999 !important;
+}
+
+/* ORGANIZACIÓN PERFECTA DE LA COLUMNA */
+.floating-buttons-container {
+  /* Estructura de columna perfecta */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  /* Espaciado uniforme entre botones */
+  gap: 1.5rem !important;
+  /* Asegurar que no haya desbordamiento */
+  overflow: visible !important;
+  /* Alineación perfecta */
+  text-align: center !important;
+}
+
+/* Asegurar que solo el contenedor principal tenga position: fixed */
+.floating-buttons-container {
+  position: fixed !important;
+  bottom: 5rem !important;
+  right: 2.5rem !important;
+}
+
+/* Los botones individuales deben mantener position: relative */
+.floating-button {
+  position: relative !important;
+  z-index: 10000 !important;
+}
+
+/* ALINEACIÓN PERFECTA DE CADA BOTÓN EN LA COLUMNA */
+.floating-button {
+  /* Posicionamiento perfecto en la columna */
+  align-self: center !important;
+  /* Tamaño consistente */
+  width: 4rem !important;
+  height: 4rem !important;
+  /* Sin márgenes que puedan desalinear */
+  margin: 0 !important;
+  /* Centrado perfecto del contenido */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* REGLAS DE EMERGENCIA - Forzar posición fija y organización perfecta */
+.floating-buttons-container {
+  /* Forzar posición fija en todos los dispositivos */
+  position: fixed !important;
+  /* Eliminar cualquier transformación */
+  transform: none !important;
+  /* Asegurar que esté por encima de todo */
+  z-index: 9999 !important;
+  /* Prevenir cualquier movimiento */
+  top: auto !important;
+  left: auto !important;
+  /* Solo usar bottom y right para posicionamiento */
+  bottom: 5rem !important;
+  right: 2.5rem !important;
+  /* ORGANIZACIÓN PERFECTA DE LA COLUMNA */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 1.5rem !important;
+}
+
+/* Asegurar que los botones no se muevan en ningún caso */
+.floating-buttons-container * {
+  /* Eliminar transformaciones heredadas */
+  transform: none !important;
+}
+
+/* PREVENIR DESALINEACIÓN EN TODOS LOS DISPOSITIVOS */
+.floating-buttons-container {
+  /* Estructura de columna siempre consistente */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  /* Espaciado uniforme */
+  gap: 1.5rem !important;
+  /* Sin flexbox que pueda causar desalineación */
+  flex-wrap: nowrap !important;
+  /* Alineación perfecta */
+  text-align: center !important;
+}
+
+/* Estados de carga */
+.floating-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: scale(1);
+}
+
+.floating-button:disabled:hover {
+  transform: scale(1);
+}
+
+/* Optimizaciones para dispositivos táctiles */
+@media (hover: none) and (pointer: coarse) {
+  .floating-button:hover {
+    transform: scale(1);
+  }
+  
+  .floating-button:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Modal de contacto */
+.contact-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.contact-content {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 2rem;
+  position: relative;
+  max-width: 24rem;
+  width: 100%;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { 
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.contact-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #f3f4f6;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contact-close:hover {
+  background: #e5e7eb;
+  color: #374151;
+  transform: scale(1.1);
+}
+
+.contact-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.contact-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contact-button {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.contact-button:hover {
+  border-color: #007AFF;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 122, 255, 0.15);
+}
+
+.contact-button:active {
+  transform: translateY(0);
+}
+
+.contact-button.santiago:hover {
+  border-color: #007AFF;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+.contact-button.ñuble:hover {
+  border-color: #007AFF;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+.contact-button.whatsapp-btn:hover {
+  border-color: #25D366;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  box-shadow: 0 8px 25px rgba(37, 211, 102, 0.15);
+}
+
+.contact-region {
+  font-weight: 600;
+  color: #374151;
+  font-size: 1rem;
+}
+
+.contact-number {
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Estilos específicos para el modal del chatbot */
+.chatbot-modal {
+  max-width: 28rem;
+}
+
+.chatbot-content {
+  text-align: left;
+}
+
+.chatbot-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+
+.chatbot-avatar {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.chatbot-text p {
+  margin: 0;
+  color: #374151;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.chatbot-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.chatbot-option {
+  background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  font-size: 0.9rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.chatbot-option:hover {
+  border-color: #FF6B35;
+  background: linear-gradient(135deg, #fff5f2 0%, #fef2f2 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
+}
+
+.chatbot-option:active {
+  transform: translateY(0);
+}
+
+.chatbot-footer {
+  text-align: center;
+  padding: 1rem;
+  background: #f1f5f9;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+
+.chatbot-footer p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Optimizaciones para tablets */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .floating-buttons-container {
+    bottom: 4rem !important;
+    right: 2rem !important;
+    gap: 1.5rem;
+    z-index: 9999 !important;
+    /* Asegurar posición fija en tablets */
+    position: fixed !important;
+    transform: none !important;
+  }
+
+  .floating-button {
+    width: 3.75rem;
+    height: 3.75rem;
+  }
+
+  .floating-button svg,
+  .floating-button .w-6 {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+
+  .contact-content {
+    padding: 1.5rem;
+    margin: 1.25rem;
+    max-width: 20rem;
+  }
+
+  .chatbot-modal {
+    max-width: 24rem;
+  }
+}
+
+/* Optimizaciones móviles */
+@media (max-width: 768px) {
+  .floating-buttons-container {
+    bottom: 2rem !important;
+    right: 1.25rem !important;
+    gap: 1.25rem;
+    z-index: 9999 !important;
+    /* Asegurar posición fija en móviles */
+    position: fixed !important;
+    transform: none !important;
+  }
+
+  .floating-button {
+    width: 3.5rem;
+    height: 3.5rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .floating-button svg,
+  .floating-button .w-6 {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+  }
+
+  /* Mejorar accesibilidad táctil en móviles */
+  .floating-button {
+    min-height: 56px;
+    min-width: 56px;
+  }
+
+  .contact-content {
+    padding: 1.5rem;
+    margin: 1rem;
+    max-width: 18rem;
+  }
+
+  .contact-button {
+    padding: 1rem;
+  }
+
+  .chatbot-modal {
+    max-width: 20rem;
+  }
+
+  .chatbot-options {
+    gap: 0.5rem;
+  }
+
+  .chatbot-option {
+    padding: 0.875rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .floating-buttons-container {
+    bottom: 1.5rem !important;
+    right: 1rem !important;
+    gap: 1rem;
+    z-index: 9999 !important;
+    /* Asegurar posición fija en pantallas pequeñas */
+    position: fixed !important;
+    transform: none !important;
+  }
+
+  .floating-button {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+
+  .floating-button svg,
+  .floating-button .w-6 {
+    width: 1.375rem !important;
+    height: 1.375rem !important;
+  }
+
+  .contact-content {
+    padding: 1.25rem;
+    margin: 0.5rem;
+    max-width: 16rem;
+  }
+
+  .contact-title {
+    font-size: 1.25rem;
+  }
+
+  .contact-button {
+    padding: 0.875rem;
+  }
+
+  .chatbot-modal {
+    max-width: 18rem;
+  }
+
+  .chatbot-message {
+    padding: 0.875rem;
+  }
+
+  .chatbot-avatar {
+    font-size: 1.75rem;
+  }
+
+  .chatbot-text p {
+    font-size: 0.9rem;
+  }
+}

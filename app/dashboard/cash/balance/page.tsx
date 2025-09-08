@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import '../../styles/unified-design.css';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -125,17 +126,41 @@ export default function CashBalancePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Cargando balance...</p>
+    <div className="dashboard-container">
+      <div className="dashboard-content">
+        {/* Header Unificado */}
+        <div className="section-header">
+          <div>
+            <h1 className="section-title">
+              <span className="text-blue-600">Título</span> de la Sección
+            </h1>
+            <p className="section-subtitle">
+              Descripción de la sección
+            </p>
+          </div>
+          <div className="header-actions">
+            <Button className="btn-primary">
+              Acción Principal
+            </Button>
+          </div>
+        </div>
+
+        {/* Contenido Principal */}
+        <div className="unified-card">
+          <div className="unified-card-content">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-gray-600">Cargando balance...</p>
+            </div>
+          </div>
         </div>
       </div>
-    );
+    </div>
+  );
   }
 
   return (
-    <div className="space-y-6">
+    <div>
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
@@ -160,7 +185,7 @@ export default function CashBalancePage() {
 
       {/* Main Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-l-4 border-l-blue-500">
+        <Card>
           <CardContent className="p-6 flex justify-between items-center">
             <div>
               <p className="text-sm font-medium text-gray-600">Balance Actual</p>
@@ -170,7 +195,7 @@ export default function CashBalancePage() {
             <div className="p-3 bg-blue-100 rounded-full"><DollarSign className="h-6 w-6 text-blue-600" /></div>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-green-500">
+        <Card>
           <CardContent className="p-6 flex justify-between items-center">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Ingresos</p>
@@ -180,7 +205,7 @@ export default function CashBalancePage() {
             <div className="p-3 bg-green-100 rounded-full"><ArrowUpRight className="h-6 w-6 text-green-600" /></div>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-red-500">
+        <Card>
           <CardContent className="p-6 flex justify-between items-center">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Gastos</p>
@@ -190,7 +215,7 @@ export default function CashBalancePage() {
             <div className="p-3 bg-red-100 rounded-full"><ArrowDownRight className="h-6 w-6 text-red-600" /></div>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-purple-500">
+        <Card>
           <CardContent className="p-6 flex justify-between items-center">
             <div>
               <p className="text-sm font-medium text-gray-600">Flujo Neto</p>

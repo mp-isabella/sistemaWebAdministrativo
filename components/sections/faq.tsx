@@ -84,7 +84,7 @@ export default function FAQ() {
   return (
     <section
       id="faq"
-      className="section-full-height relative py-24 overflow-hidden"
+      className="section-full-height relative py-16 overflow-hidden"
       style={{ backgroundColor: colors.white }}
     >
       {/* Fondo geométrico */}

@@ -125,11 +125,11 @@ export default function Testimonials() {
   // En móvil, mostrar todos los testimonios en vista vertical
   if (isMobile) {
     return (
-      <section id="testimonials" className="section-full-height py-16 md:py-32 bg-gray-100 relative">
+      <section id="testimonials" className="section-full-height py-12 md:py-20 bg-gray-100 relative">
         <div className="relative max-w-7xl mx-auto px-4 md:px-6">
           {/* Encabezado */}
           <div className="text-center mb-8 md:mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-4" style={{ color: colors.dark }}>
+            <h2 id="testimonials-title" className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-4" style={{ color: colors.dark }}>
               Testimonios
             </h2>
             <p className="text-base md:text-lg max-w-3xl mx-auto leading-relaxed font-medium px-4" style={{ color: colors.medium }}>
@@ -237,18 +237,18 @@ export default function Testimonials() {
                       style={{ transform: `rotate(${rotation})` }}
                     >
                       <Card className="h-full bg-white shadow-xl border-t-8 rounded-3xl" style={{ borderColor: colors.highlight }}>
-                        <CardContent className="h-full flex flex-col justify-between p-8">
+                        <CardContent className="h-full flex flex-col justify-between p-6">
                           <div>
-                                                    <div className="flex justify-center mb-6">
+                                                    <div className="flex justify-center mb-4">
                           {[...Array(testimonial?.rating || 0)].map((_, i) => (
                                 <Star key={i} className="h-6 w-6 fill-current" style={{ color: colors.highlight }} />
                               ))}
                             </div>
-                            <blockquote className="text-lg font-light italic leading-relaxed mb-6" style={{ color: colors.gray }}>
+                            <blockquote className="text-lg font-light italic leading-relaxed mb-4" style={{ color: colors.gray }}>
                               &quot;{testimonial.text}&quot;
                             </blockquote>
                           </div>
-                          <div className="border-t pt-6 border-gray-200">
+                          <div className="border-t pt-4 border-gray-200">
                             <h4 className="font-bold text-lg" style={{ color: colors.dark }}>
                               {testimonial.name}
                             </h4>
@@ -318,11 +318,11 @@ export default function Testimonials() {
 
   // Vista desktop original (sin cambios)
   return (
-    <section id="testimonials" className="section-full-height py-32 bg-gray-100 relative">
+    <section id="testimonials" className="section-full-height py-20 bg-gray-100 relative">
       <div className="relative max-w-7xl mx-auto px-4 md:px-6">
         {/* Encabezado */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-4" style={{ color: colors.dark }}>
+          <h2 id="testimonials-title" className="text-4xl md:text-5xl font-extrabold mb-4" style={{ color: colors.dark }}>
             Testimonios
           </h2>
           <p className="text-lg max-w-3xl mx-auto leading-relaxed font-medium" style={{ color: colors.medium }}>
@@ -355,18 +355,18 @@ export default function Testimonials() {
                   style={{ transform: `rotate(${rotation})` }}
                 >
                   <Card className="h-full bg-white shadow-xl border-t-8 rounded-3xl" style={{ borderColor: colors.highlight }}>
-                    <CardContent className="h-full flex flex-col justify-between p-8">
+                    <CardContent className="h-full flex flex-col justify-between p-6">
                       <div>
-                        <div className="flex justify-center mb-6">
+                        <div className="flex justify-center mb-4">
                           {[...Array(testimonial?.rating || 0)].map((_, i) => (
                             <Star key={i} className="h-6 w-6 fill-current" style={{ color: colors.highlight }} />
                           ))}
                         </div>
-                        <blockquote className="text-lg font-light italic leading-relaxed mb-6" style={{ color: colors.gray }}>
+                        <blockquote className="text-lg font-light italic leading-relaxed mb-4" style={{ color: colors.gray }}>
                           &quot;{testimonial.text}&quot;
                         </blockquote>
                       </div>
-                      <div className="border-t pt-6 border-gray-200">
+                      <div className="border-t pt-4 border-gray-200">
                         <h4 className="font-bold text-lg" style={{ color: colors.dark }}>
                           {testimonial.name}
                         </h4>

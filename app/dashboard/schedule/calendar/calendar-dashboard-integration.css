@@ -1,0 +1,204 @@
+/* ===== INTEGRACIÓN DEL CALENDARIO CON EL LAYOUT DEL DASHBOARD ===== */
+
+/* Asegurar que el calendario respete el sidebar del dashboard */
+.calendar-page {
+  /* Respetar el espacio del sidebar del dashboard (w-72 = 288px) */
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding: 0 !important;
+  
+  /* Ocupar todo el espacio disponible */
+  width: 100% !important;
+  height: 100% !important;
+  
+  /* Posicionamiento relativo para respetar el layout del padre */
+  position: relative !important;
+  top: 0 !important;
+  left: 0 !important;
+  
+  /* Sin scrolls adicionales */
+  overflow: hidden !important;
+}
+
+/* Contenedor principal del calendario */
+.calendar-dashboard-container {
+  /* Ocupar todo el espacio disponible sin interferir con el sidebar del dashboard */
+  width: 100% !important;
+  height: 100% !important;
+  
+  /* Layout flex horizontal */
+  display: flex !important;
+  flex-direction: row !important;
+  
+  /* Sin márgenes ni padding que interfieran */
+  margin: 0 !important;
+  padding: 0 !important;
+  
+  /* Overflow controlado */
+  overflow: hidden !important;
+}
+
+/* Sidebar del calendario - Ajustado al espacio disponible */
+.calendar-sidebar {
+  /* Ancho fijo para el sidebar del calendario */
+  width: 320px !important;
+  height: 100% !important;
+  
+  /* Posicionamiento sticky dentro del contenedor */
+  position: sticky !important;
+  top: 0 !important;
+  left: 0 !important;
+  
+  /* Sin interferir con el sidebar del dashboard */
+  z-index: 10 !important;
+  
+  /* Flex properties */
+  flex-shrink: 0 !important;
+  
+  /* Estilos visuales */
+  background: white !important;
+  border-right: 1px solid #e5e7eb !important;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Contenido principal del calendario */
+.calendar-main-content {
+  /* Ocupar el espacio restante */
+  flex: 1 !important;
+  
+  /* Dimensiones */
+  width: 100% !important;
+  height: 100% !important;
+  
+  /* Layout flex vertical */
+  display: flex !important;
+  flex-direction: column !important;
+  
+  /* Sin overflow en el contenedor principal */
+  overflow: hidden !important;
+  
+  /* Sin márgenes ni padding */
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Header del calendario */
+.calendar-header {
+  /* Header fijo en la parte superior */
+  flex-shrink: 0 !important;
+  
+  /* Estilos */
+  background: white !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding: 1.5rem !important;
+  
+  /* Sin márgenes */
+  margin: 0 !important;
+}
+
+/* Grid del calendario */
+.calendar-grid-container {
+  /* Ocupar el espacio restante */
+  flex: 1 !important;
+  
+  /* Dimensiones */
+  width: 100% !important;
+  height: 100% !important;
+  
+  /* Scroll controlado */
+  overflow: auto !important;
+  
+  /* Posicionamiento */
+  position: relative !important;
+  
+  /* Sin márgenes ni padding */
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Asegurar que el layout del dashboard no interfiera */
+main.flex-1 {
+  /* Cuando es calendario, sin padding */
+  padding: 0 !important;
+}
+
+main.flex-1 .h-full {
+  /* Altura completa para el calendario */
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* Responsive - Ajustes para móviles */
+@media (max-width: 1024px) {
+  .calendar-page {
+    /* En móviles, ocupar toda la pantalla */
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .calendar-dashboard-container {
+    /* Layout vertical en móviles */
+    flex-direction: column !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  
+  .calendar-sidebar {
+    /* Sidebar fijo en móviles */
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 320px !important;
+    height: 100vh !important;
+    z-index: 50 !important;
+    
+    /* Transform para mostrar/ocultar */
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s ease-in-out !important;
+  }
+  
+  .calendar-sidebar.open {
+    transform: translateX(0) !important;
+  }
+  
+  .calendar-main-content {
+    /* Contenido principal en móviles */
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+/* Asegurar que no haya conflictos con otros estilos del dashboard */
+.calendar-page *,
+.calendar-dashboard-container *,
+.calendar-sidebar *,
+.calendar-main-content *,
+.calendar-grid-container * {
+  box-sizing: border-box !important;
+}
+
+/* Override de estilos que puedan interferir */
+.calendar-page {
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+.calendar-dashboard-container {
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+/* Asegurar que el calendario se integre correctamente */
+.calendar-page {
+  display: block !important;
+  position: relative !important;
+}
+
+/* Eliminar cualquier transform o position que pueda interferir */
+.calendar-page,
+.calendar-dashboard-container {
+  transform: none !important;
+  position: relative !important;
+}

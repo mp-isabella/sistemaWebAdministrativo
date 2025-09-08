@@ -11,7 +11,16 @@ import {
 import { motion } from "framer-motion";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { FaTiktok } from "react-icons/fa";
+// Icono de TikTok personalizado
+const TikTokIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className="h-6 w-6"
+  >
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+  </svg>
+);
 import { useSmoothScroll } from "@/hooks/use-smooth-scroll";
 
 // Paleta de colores unificada
@@ -29,29 +38,25 @@ export default function Footer() {
   const { scrollToSection } = useSmoothScroll();
 
   const handleFooterLinkClick = (href: string) => {
-    if (href.startsWith('#')) {
-      scrollToSection(href);
+    if (href.startsWith("#")) {
+      setTimeout(() => {
+        scrollToSection(href);
+      }, 50);
     }
   };
 
   return (
     <footer className="relative bg-white">
-      {" "}
-      {/* Altura reducida aquí */}
-      {/* Sección con fondo angulado */}
       <div className="absolute left-0 w-full h-full bg-[#002D71] z-0">
         <div className="relative w-full h-full">
-          {/* Este div crea el efecto de ángulo con un transform */}
           <div
             className="absolute -top-12 left-0 w-full h-16 bg-gray-100"
             style={{ transform: "skewY(-2deg)" }}
           ></div>
         </div>
       </div>
-      {/* Contenedor principal del footer sobre el fondo */}
       <div className="relative z-10 container mx-auto px-6 py-12">
         <div className="flex flex-col lg:flex-row gap-12">
-          {/* Columna Izquierda: Logo + Descripción + Redes Sociales */}
           <div className="flex-1 lg:max-w-[400px]">
             <div className="relative w-[200px] h-[80px] mt-6">
               <Image
@@ -62,273 +67,35 @@ export default function Footer() {
                 priority
               />
             </div>
-            <p className="text-gray-300 leading-relaxed mb-6">
+            <p className="text-gray-300 leading-relaxed mb-6 text-base font-semibold">
               Especialistas en la detección de fugas de agua, destape de
               alcantarillado y videoinspección de ductos.
             </p>
 
-            {/* Redes Sociales */}
             <div className="flex space-x-4">
-              <motion.a
-                href="https://www.facebook.com/www.amestica.cl/?locale=es_LA"
-                aria-label="Facebook"
-                className="block p-2 rounded-full transition-colors duration-300 bg-white/10 hover:bg-[#F46015]"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Facebook className="h-6 w-6 text-white" />
-              </motion.a>
-              <motion.a
-                href="https://www.instagram.com/amestica.cl"
-                aria-label="Instagram"
-                className="block p-2 rounded-full transition-colors duration-300 bg-white/10 hover:bg-[#F46015]"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Instagram className="h-6 w-6 text-white" />
-              </motion.a>
-              <motion.a
-                href="https://www.youtube.com/@amestica.cl"
-                aria-label="YouTube"
-                className="block p-2 rounded-full transition-colors duration-300 bg-white/10 hover:bg-[#F46015]"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Youtube className="h-6 w-6 text-white" />
-              </motion.a>
-              <motion.a
-                href="https://www.tiktok.com/@amestica.cl"
-                aria-label="TikTok"
-                className="block p-2 rounded-full transition-colors duration-300 bg-white/10 hover:bg-[#F46015]"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <FaTiktok className="h-6 w-6 text-white" />
-              </motion.a>
+              {/* Redes sociales */}
+              <SocialIcon href="https://www.facebook.com/share/1AwoWrjqxf/" icon={<Facebook />} />
+              <SocialIcon href="https://www.instagram.com/amestica.ltda?igsh=OW15dHN4OW52cnJo" icon={<Instagram />} />
+              <SocialIcon href="https://youtube.com/@amestica_ltda?si=NLRlH1aa4swqSoUQ" icon={<Youtube />} />
+              <SocialIcon href="https://www.tiktok.com/@amesticaltda?is_from_webapp=1&sender_device=pc" icon={<TikTokIcon />} />
             </div>
           </div>
 
-          {/* Columna Derecha: Enlaces Rápidos y Servicios */}
+          {/* Enlaces rápidos y servicios */}
           <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 text-white">
-            {/* Enlaces Rápidos */}
-            <div>
-              <h3
-                className="text-xl font-bold mb-6"
-                style={{ color: colors.highlight }}
-              >
-                Enlaces Rápidos
-              </h3>
-              <ul className="space-y-3">
-                <li>
-                  <button
-                    onClick={() => handleFooterLinkClick("#hero")}
-                    className="text-gray-300 hover:text-white transition-colors duration-300 relative group text-left"
-                  >
-                    Inicio
-                    <span
-                      className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
-                      style={{ backgroundColor: colors.highlight }}
-                    ></span>
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => handleFooterLinkClick("#about")}
-                    className="text-gray-300 hover:text-white transition-colors duration-300 relative group text-left"
-                  >
-                    Quienes somos
-                    <span
-                      className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
-                      style={{ backgroundColor: colors.highlight }}
-                    ></span>
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => handleFooterLinkClick("#services")}
-                    className="text-gray-300 hover:text-white transition-colors duration-300 relative group text-left"
-                  >
-                    Servicios
-                    <span
-                      className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
-                      style={{ backgroundColor: colors.highlight }}
-                    ></span>
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => handleFooterLinkClick("#gallery")}
-                    className="text-gray-300 hover:text-white transition-colors duration-300 relative group text-left"
-                  >
-                    Galería
-                    <span
-                      className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
-                      style={{ backgroundColor: colors.highlight }}
-                    ></span>
-                  </button>
-                </li>
-                                  <li>
-                    <button
-                      onClick={() => handleFooterLinkClick("#testimonials")}
-                      className="text-gray-300 hover:text-white transition-colors duration-300 relative group text-left"
-                    >
-                      Testimonios
-                      <span
-                        className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
-                        style={{ backgroundColor: colors.highlight }}
-                      ></span>
-                    </button>
-                  </li>
-                  <li>
-                  <button
-                    onClick={() => handleFooterLinkClick("#contact")}
-                    className="text-gray-300 hover:text-white transition-colors duration-300 relative group text-left"
-                  >
-                    Contacto
-                    <span
-                      className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
-                      style={{ backgroundColor: colors.highlight }}
-                    ></span>
-                  </button>
-                </li>
-              </ul>
-            </div>
-
-            {/* Servicios */}
-            <div>
-              <h3
-                className="text-xl font-bold mb-6"
-                style={{ color: colors.highlight }}
-              >
-                Servicios
-              </h3>
-              <ul className="space-y-3">
-                <li>
-                  <Link
-                    href="#services"
-                    className="text-gray-300 hover:text-white transition-colors duration-300 relative group"
-                  >
-                    Detección de fugas de agua
-                    <span
-                      className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
-                      style={{ backgroundColor: colors.highlight }}
-                    ></span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#services"
-                    className="text-gray-300 hover:text-white transition-colors duration-300 relative group"
-                  >
-                    Detección de fugas de agua caliente
-                    <span
-                      className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
-                      style={{ backgroundColor: colors.highlight }}
-                    ></span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#services"
-                    className="text-gray-300 hover:text-white transition-colors duration-300 relative group"
-                  >
-                    Detección de fugas en piscina
-                    <span
-                      className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
-                      style={{ backgroundColor: colors.highlight }}
-                    ></span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-gray-300 hover:text-white transition-colors duration-300 relative group"
-                  >
-                    Detección de fugas en calefacción
-                    <span
-                      className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
-                      style={{ backgroundColor: colors.highlight }}
-                    ></span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#services"
-                    className="text-gray-300 hover:text-white transition-colors duration-300 relative group"
-                  >
-                    Detección de fugas en redes de incendio
-                    <span
-                      className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
-                      style={{ backgroundColor: colors.highlight }}
-                    ></span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-gray-300 hover:text-white transition-colors duration-300 relative group"
-                  >
-                    Detección de fugas en jardines
-                    <span
-                      className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
-                      style={{ backgroundColor: colors.highlight }}
-                    ></span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-gray-300 hover:text-white transition-colors duration-300 relative group"
-                  >
-                    Destape de alcantarillado
-                    <span
-                      className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
-                      style={{ backgroundColor: colors.highlight }}
-                    ></span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#services"
-                    className="text-gray-300 hover:text-white transition-colors duration-300 relative group"
-                  >
-                    Videoinspección de ductos
-                    <span
-                      className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
-                      style={{ backgroundColor: colors.highlight }}
-                    ></span>
-                  </Link>
-                </li>
-              </ul>
-            </div>
+            <QuickLinks handleClick={handleFooterLinkClick} />
+            <ServicesLinks />
           </div>
         </div>
       </div>
-      {/* Footer Bottom (Sección inferior simplificada) */}
-      <div className="relative z-10 bg-[#016AAB] mt-12 text-white py-4 px-6 flex flex-col lg:flex-row justify-between items-center rounded-t-3xl shadow-xl">
-        {/* Copyright */}
-        <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
-          <p className="text-sm">
-            © {new Date().getFullYear()} Améstica. Todos los derechos
-            reservados.
-          </p>
-          <div className="flex flex-wrap justify-center space-x-6">
-            <Link
-              href="#"
-              className="text-sm hover:text-gray-200 transition-colors duration-300"
-            >
-              Términos y Condiciones
-            </Link>
-            <Link
-              href="#"
-              className="text-sm hover:text-gray-200 transition-colors duration-300"
-            >
-              Política de Privacidad
-            </Link>
-          </div>
-        </div>
 
-        {/* Botón de acceso al sistema */}
+      {/* Sección inferior */}
+      <div className="relative z-10 bg-[#016AAB] mt-12 text-white py-4 px-6 flex flex-col lg:flex-row justify-between items-center rounded-t-3xl shadow-xl">
+        <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
+          <p className="text-sm font-semibold">
+            © {new Date().getFullYear()} Améstica. Todos los derechos reservados.
+          </p>
+        </div>
         <div className="mt-4 lg:mt-0">
           <Link href="/login">
             <Button className="bg-[#F46015] hover:bg-[#e1550f] text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-300 flex items-center space-x-2">
@@ -341,3 +108,83 @@ export default function Footer() {
     </footer>
   );
 }
+
+// Componente redes sociales animado
+const SocialIcon = ({ href, icon }: { href: string; icon: React.ReactNode }) => (
+  <motion.a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="block p-2 rounded-full transition-colors duration-300 bg-white/10 hover:bg-[#F46015]"
+    whileHover={{ scale: 1.1 }}
+    whileTap={{ scale: 0.9 }}
+  >
+    <div className="h-6 w-6 text-white">{icon}</div>
+  </motion.a>
+);
+
+// Enlaces rápidos
+const QuickLinks = ({ handleClick }: { handleClick: (href: string) => void }) => (
+  <div>
+    <h3 className="text-xl font-bold mb-6" style={{ color: colors.highlight }}>
+      Enlaces Rápidos
+    </h3>
+    <ul className="space-y-3">
+      {[
+        ["#hero", "Inicio"],
+        ["#about", "Quienes somos"],
+        ["#services", "Servicios"],
+        ["#gallery", "Galería"],
+        ["#testimonials", "Testimonios"],
+        ["#contacto", "Contacto"],
+      ].map(([href, label]) => (
+        <li key={href}>
+          <button
+            onClick={() => handleClick(href)}
+            className="text-gray-300 hover:text-white transition-colors duration-300 relative group text-left"
+          >
+            {label}
+            <span
+              className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
+              style={{ backgroundColor: colors.highlight }}
+            ></span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+// Servicios
+const ServicesLinks = () => (
+  <div>
+    <h3 className="text-xl font-bold mb-6" style={{ color: colors.highlight }}>
+      Servicios
+    </h3>
+    <ul className="space-y-3">
+      {[
+        "Detección de fugas de agua",
+        "Detección de fugas de agua caliente",
+        "Detección de fugas en piscina",
+        "Detección de fugas en calefacción",
+        "Detección de fugas en redes de incendio",
+        "Detección de fugas en jardines",
+        "Destape de alcantarillado",
+        "Videoinspección de ductos",
+      ].map((service) => (
+        <li key={service}>
+          <Link
+            href="#services"
+            className="text-gray-300 hover:text-white transition-colors duration-300 relative group text-base font-semibold"
+          >
+            {service}
+            <span
+              className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
+              style={{ backgroundColor: colors.highlight }}
+            ></span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  </div>
+);

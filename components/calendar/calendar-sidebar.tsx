@@ -1,11 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ChevronLeft, ChevronRight, Search, HelpCircle } from "lucide-react"
+import { ChevronLeft, ChevronRight, HelpCircle, X, Filter } from "lucide-react"
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday } from "date-fns"
 import { es } from "date-fns/locale"
 import { cn } from "@/lib/utils"
@@ -15,173 +14,291 @@ interface CalendarSidebarProps {
   onDateChange: (date: Date) => void
   selectedCenter: string
   onCenterChange: (center: string) => void
+  selectedTechnician: string
+  onTechnicianChange: (technician: string) => void
+  selectedStatus: string
+  onStatusChange: (status: string) => void
+  technicians: Array<{ id: string; name: string }>
+  onClose?: () => void
 }
 
-export function CalendarSidebar({ selectedDate, onDateChange, selectedCenter, onCenterChange }: CalendarSidebarProps) {
-  const [currentMonth, setCurrentMonth] = useState(selectedDate)
-  const [searchQuery, setSearchQuery] = useState("")
+export function CalendarSidebar({ 
+  selectedDate, 
+  onDateChange, 
+  selectedCenter, 
+  onCenterChange,
+  selectedTechnician,
+  onTechnicianChange,
+  selectedStatus,
+  onStatusChange,
+  technicians,
+  onClose 
+}: CalendarSidebarProps) {
+  // Debug: verificar fecha actual
+  const today = new Date()
+  console.log('📅 Fecha actual:', today.toDateString())
+  console.log('🎯 isToday test:', isToday(today))
+  
+  // Función personalizada para detectar el día de hoy
+  const isTodayCustom = (date: Date) => {
+    const today = new Date()
+    const result = date.getDate() === today.getDate() && 
+                   date.getMonth() === today.getMonth() && 
+                   date.getFullYear() === today.getFullYear()
+    
+    // Debug: mostrar comparación
+    console.log(`🔍 Comparando fecha: ${date.toDateString()} con hoy: ${today.toDateString()} = ${result}`)
+    
+    if (result) {
+      console.log('✅ DÍA DE HOY DETECTADO!', date.toDateString())
+    }
+    
+    return result
+  }
+  
+  // Estado separado para cada mes
+  const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(selectedDate))
+  const [nextMonth, setNextMonth] = useState(() => {
+    const next = new Date(selectedDate)
+    next.setMonth(next.getMonth() + 1)
+    return startOfMonth(next)
+  })
 
-  const monthStart = startOfMonth(currentMonth)
-  const monthEnd = endOfMonth(currentMonth)
-  const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
-
+  // Navegación independiente para el mes actual
   const goToPreviousMonth = () => {
+    console.log('🔄 Navegando al mes anterior del primer calendario')
     const newMonth = new Date(currentMonth)
     newMonth.setMonth(currentMonth.getMonth() - 1)
     setCurrentMonth(newMonth)
+    
+    // Actualizar también el próximo mes para mantener la secuencia
+    const newNextMonth = new Date(newMonth)
+    newNextMonth.setMonth(newMonth.getMonth() + 1)
+    setNextMonth(newNextMonth)
   }
 
   const goToNextMonth = () => {
+    console.log('🔄 Navegando al mes siguiente del primer calendario')
     const newMonth = new Date(currentMonth)
     newMonth.setMonth(currentMonth.getMonth() + 1)
     setCurrentMonth(newMonth)
+    
+    // Actualizar también el próximo mes para mantener la secuencia
+    const newNextMonth = new Date(newMonth)
+    newNextMonth.setMonth(newMonth.getMonth() + 1)
+    setNextMonth(newNextMonth)
+  }
+
+  // Navegación independiente para el próximo mes
+  const goToPreviousNextMonth = () => {
+    console.log('🔄 Navegando al mes anterior del segundo calendario')
+    const newNextMonth = new Date(nextMonth)
+    newNextMonth.setMonth(nextMonth.getMonth() - 1)
+    setNextMonth(newNextMonth)
+  }
+
+  const goToNextNextMonth = () => {
+    console.log('🔄 Navegando al mes siguiente del segundo calendario')
+    const newNextMonth = new Date(nextMonth)
+    newNextMonth.setMonth(nextMonth.getMonth() + 1)
+    setNextMonth(newNextMonth)
   }
 
   const handleDateSelect = (date: Date) => {
     onDateChange(date)
   }
 
-  return (
-    <aside className="w-80 bg-white border-r border-gray-200 flex flex-col">
-      {/* Branch Selection */}
-      <div className="p-4 border-b border-gray-200">
-        <Label htmlFor="branch-select" className="text-sm font-medium text-gray-700 mb-2 block">
-          Sucursal
-        </Label>
-        <Select value={selectedCenter} onValueChange={onCenterChange}>
-          <SelectTrigger id="branch-select">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="CENTRO MÉDICO COIHUECO">CENTRO MÉDICO COIHUECO</SelectItem>
-            <SelectItem value="CENTRO MÉDICO SANTIAGO">CENTRO MÉDICO SANTIAGO</SelectItem>
-            <SelectItem value="CENTRO MÉDICO VALPARAÍSO">CENTRO MÉDICO VALPARAÍSO</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+  // Actualizar los meses cuando cambie la fecha seleccionada
+  useEffect(() => {
+    const newCurrentMonth = startOfMonth(selectedDate)
+    const newNextMonth = new Date(newCurrentMonth)
+    newNextMonth.setMonth(newCurrentMonth.getMonth() + 1)
+    
+    setCurrentMonth(newCurrentMonth)
+    setNextMonth(newNextMonth)
+  }, [selectedDate])
 
-      {/* Professional Filter */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center gap-2 mb-2">
-          <Label className="text-sm font-medium text-gray-700">Profesional</Label>
-          <HelpCircle className="h-4 w-4 text-gray-400" />
-          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">+12</span>
-        </div>
-        <Select defaultValue="todos">
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos</SelectItem>
-            <SelectItem value="andrea">Andrea Cid Venegas</SelectItem>
-            <SelectItem value="cristopher">Cristopher Hernández</SelectItem>
-            <SelectItem value="diego">Diego Cabezas Cádiz</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+  // Función para renderizar un mini calendario
+  const renderMiniCalendar = (month: Date, title: string, onPrev: () => void, onNext: () => void) => {
+    console.log(`📅 Renderizando calendario: ${title}`, month.toDateString())
+    console.log(`🔍 Fecha actual del sistema: ${new Date().toDateString()}`)
+    
+    const monthStart = startOfMonth(month)
+    const monthEnd = endOfMonth(month)
+    const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
+    
+    // Verificar si el mes actual contiene el día de hoy
+    const today = new Date()
+    const hasToday = days.some(day => 
+      day.getDate() === today.getDate() && 
+      day.getMonth() === today.getMonth() && 
+      day.getFullYear() === today.getFullYear()
+    )
+    console.log(`🎯 ¿Este mes contiene el día de hoy? ${hasToday}`)
 
-      {/* Reservation Status */}
-      <div className="p-4 border-b border-gray-200">
-        <Label className="text-sm font-medium text-gray-700 mb-2 block">Estado de la reserva</Label>
-        <Select defaultValue="activas">
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="activas">Reservas activas</SelectItem>
-            <SelectItem value="todas">Todas las reservas</SelectItem>
-            <SelectItem value="canceladas">Reservas canceladas</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Quick Search */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Búsqueda rápida de hora"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
-
-      {/* Mini Calendar */}
-      <div className="p-4 flex-1">
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" size="sm" onClick={goToPreviousMonth} aria-label="Mes anterior">
+    return (
+      <div>
+        <div className="calendar-mini-calendar-header">
+          <h3 className="calendar-mini-calendar-title capitalize">
+            {title}
+          </h3>
+          <div className="calendar-mini-calendar-nav">
+            <Button variant="ghost" size="sm" onClick={onPrev} className="calendar-mini-calendar-nav-btn">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <h3 className="font-medium text-gray-900">{format(currentMonth, "MMMM yyyy", { locale: es })}</h3>
-            <Button variant="ghost" size="sm" onClick={goToNextMonth} aria-label="Mes siguiente">
+            <Button variant="ghost" size="sm" onClick={onNext} className="calendar-mini-calendar-nav-btn">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
+        </div>
 
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-1 text-center text-xs">
-            {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((day) => (
-              <div key={day} className="p-2 text-gray-500 font-medium">
-                {day}
-              </div>
-            ))}
+        {/* Grid del calendario */}
+        <div className="calendar-mini-calendar-grid">
+          {/* Días de la semana */}
+          {["L", "M", "M", "J", "V", "S", "D"].map((day) => (
+            <div key={day} className="calendar-mini-calendar-weekday">
+              {day}
+            </div>
+          ))}
 
-            {/* Empty cells for days before month start */}
-            {Array.from({ length: (monthStart.getDay() + 6) % 7 }).map((_, index) => (
-              <div key={`empty-${index}`} className="p-2" />
-            ))}
+          {/* Celdas vacías para alineación */}
+          {(() => {
+            const firstDayOfMonth = monthStart.getDay()
+            const startOffset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1
+            return Array.from({ length: startOffset }).map((_, index) => (
+              <div key={`empty-start-${index}`} className="h-7" />
+            ))
+          })()}
 
-            {/* Calendar days */}
-            {days.map((day) => (
+          {/* Días del mes */}
+          {days.map((day) => {
+            const isTodayDate = isTodayCustom(day)
+            const isSelectedDate = isSameDay(day, selectedDate)
+            
+            // Debug: mostrar información del día actual
+            if (isTodayDate) {
+              console.log('🎯 Día de hoy encontrado:', day.toDateString(), 'isToday:', isTodayDate)
+            }
+            
+            return (
               <Button
                 key={day.toISOString()}
                 variant="ghost"
                 size="sm"
                 onClick={() => handleDateSelect(day)}
                 className={cn(
-                  "h-8 w-8 p-0 text-xs font-normal",
-                  isSameDay(day, selectedDate) && "bg-primary text-primary-foreground",
-                  isToday(day) && !isSameDay(day, selectedDate) && "bg-accent text-accent-foreground font-medium",
-                  !isSameMonth(day, currentMonth) && "text-gray-300",
+                  "calendar-mini-calendar-day",
+                  // Día seleccionado (prioridad más alta)
+                  isSelectedDate && "selected",
+                  // Día de hoy (prioridad alta, solo si no está seleccionado)
+                  isTodayDate && !isSelectedDate && "today",
+                  // Día normal
+                  !isTodayDate && !isSelectedDate && ""
                 )}
-                aria-label={format(day, "d de MMMM", { locale: es })}
               >
                 {format(day, "d")}
+                {/* Círculo indicador para el día de hoy */}
+                {isTodayDate && !isSelectedDate && (
+                  <div className="absolute inset-0 border-2 border-blue-600 rounded-full animate-pulse"></div>
+                )}
               </Button>
-            ))}
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <aside className="calendar-sidebar">
+      {/* Header mejorado */}
+      <div className="calendar-sidebar-header">
+        <div className="flex items-center justify-between">
+          <div className="calendar-sidebar-title">
+            <Filter className="h-5 w-5 text-blue-600" />
+            <h2 className="text-lg font-bold text-gray-900">Filtros</h2>
+          </div>
+          {onClose && (
+            <Button variant="ghost" size="sm" className="lg:hidden hover:bg-blue-100" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Filtros mejorados */}
+      <div className="calendar-sidebar-content">
+        <div className="calendar-filters-section">
+          {/* Empresa */}
+          <div className="calendar-filter-group">
+            <Label className="calendar-filter-label">Empresa</Label>
+            <Select value={selectedCenter} onValueChange={onCenterChange}>
+              <SelectTrigger className="calendar-filter-select">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Amestica">Amestica</SelectItem>
+                <SelectItem value="Multifugas">Multifugas</SelectItem>
+                <SelectItem value="Servifugas">Servifugas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Técnico */}
+          <div className="calendar-filter-group">
+            <Label className="calendar-filter-label">Técnico</Label>
+            <Select value={selectedTechnician} onValueChange={onTechnicianChange}>
+              <SelectTrigger className="calendar-filter-select">
+                <SelectValue placeholder="Seleccionar técnico" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos los técnicos</SelectItem>
+                {technicians.map((technician) => (
+                  <SelectItem key={technician.id} value={technician.id}>
+                    {technician.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Estado */}
+          <div className="calendar-filter-group">
+            <Label className="calendar-filter-label">Estado</Label>
+            <Select value={selectedStatus} onValueChange={onStatusChange}>
+              <SelectTrigger className="calendar-filter-select">
+                <SelectValue placeholder="Seleccionar estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="activas">Reservas activas</SelectItem>
+                <SelectItem value="todas">Todas las reservas</SelectItem>
+                <SelectItem value="canceladas">Reservas canceladas</SelectItem>
+                <SelectItem value="completadas">Reservas completadas</SelectItem>
+                <SelectItem value="pendientes">Reservas pendientes</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
-        {/* Next Month Preview */}
-        <div className="mt-6">
-          <h4 className="font-medium text-gray-900 mb-2">
-            {format(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1), "MMMM yyyy", { locale: es })}
-          </h4>
-          <div className="grid grid-cols-7 gap-1 text-center text-xs">
-            {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((day) => (
-              <div key={day} className="p-1 text-gray-400 text-xs">
-                {day.charAt(0)}
-              </div>
-            ))}
-            {/* Simplified next month preview */}
-            {Array.from({ length: 35 }).map((_, index) => {
-              const nextMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
-              const nextMonthStart = startOfMonth(nextMonth)
-              const dayOffset = (nextMonthStart.getDay() + 6) % 7
-              const dayNumber = index - dayOffset + 1
+        {/* Calendario actual - con navegación independiente */}
+        <div className="calendar-mini-calendars">
+          <div className="calendar-mini-calendar">
+            {renderMiniCalendar(
+              currentMonth,
+              format(currentMonth, "MMMM yyyy", { locale: es }),
+              goToPreviousMonth,
+              goToNextMonth
+            )}
+          </div>
 
-              if (dayNumber > 0 && dayNumber <= 31) {
-                return (
-                  <div key={index} className="p-1 text-xs text-gray-600 hover:bg-gray-100 rounded cursor-pointer">
-                    {dayNumber}
-                  </div>
-                )
-              }
-              return <div key={index} className="p-1" />
-            })}
+          {/* Calendario del próximo mes - con navegación independiente */}
+          <div className="calendar-mini-calendar">
+            {renderMiniCalendar(
+              nextMonth,
+              format(nextMonth, "MMMM yyyy", { locale: es }),
+              goToPreviousNextMonth,
+              goToNextNextMonth
+            )}
           </div>
         </div>
       </div>

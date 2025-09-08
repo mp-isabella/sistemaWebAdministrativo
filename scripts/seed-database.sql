@@ -8,7 +8,7 @@ INSERT INTO roles (id, name) VALUES
 INSERT INTO services (id, name, description, price) VALUES 
   ('service_1', 'Amestica', 'Diagnóstico de redes de agua', 80000),
   ('service_2', 'Multifugas', 'Detección de fugas con tecnología especializada', 50000),
-  ('service_3', 'Semifugas', 'Revisión de fugas domiciliarias', 35000);
+  ('service_3', 'Servifugas', 'Revisión de fugas domiciliarias', 35000);
 
 -- Insert admin user (password: admin123)
 INSERT INTO users (id, email, name, password, "roleId") VALUES 

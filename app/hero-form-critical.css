@@ -1,0 +1,245 @@
+/* ===== ESTILOS CRÍTICOS DEL FORMULARIO HERO - ESPECIFICIDAD MÁXIMA ===== */
+
+/* ===== ESTILOS PARA MODAL DE SERVICIOS ===== */
+.services-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 9999 !important;
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(10px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem !important;
+}
+
+.services-modal-content {
+  position: relative !important;
+  max-width: 42rem !important;
+  width: 100% !important;
+  background: white !important;
+  border-radius: 1.5rem !important;
+  overflow: hidden !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.services-modal-header {
+  position: relative !important;
+  padding: 1rem 1.5rem !important;
+  text-align: center !important;
+  flex-shrink: 0 !important;
+}
+
+.services-modal-body {
+  padding: 1rem 1.5rem !important;
+  flex-grow: 1 !important;
+  overflow-y: auto !important;
+}
+
+.services-modal-close-btn {
+  position: absolute !important;
+  top: 0.75rem !important;
+  right: 0.75rem !important;
+  padding: 0.5rem !important;
+  border-radius: 9999px !important;
+  transition: all 0.3s !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+
+.services-modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+  transform: scale(1.1) !important;
+}
+
+.services-modal-close-btn:active {
+  transform: scale(0.95) !important;
+}
+
+/* Prevenir scroll del body cuando el modal está abierto */
+body.services-modal-open {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+}
+
+/* Estilos responsivos para móvil */
+@media (max-width: 768px) {
+  .services-modal-overlay {
+    padding: 0.5rem !important;
+  }
+  
+  .services-modal-content {
+    max-height: 95vh !important;
+    margin: 0 0.5rem !important;
+  }
+  
+  .services-modal-header {
+    padding: 1rem !important;
+  }
+  
+  .services-modal-body {
+    padding: 1rem !important;
+  }
+}
+
+/* Estilos críticos para todos los campos del formulario */
+body #Inicio .hero-mobile-optimized .form-mobile-compact input,
+body #Inicio .hero-mobile-optimized .form-mobile-compact textarea,
+body #Inicio .hero-mobile-optimized .form-mobile-compact .SelectTrigger,
+body #Inicio .hero-mobile-optimized .form-mobile-compact [data-radix-select-trigger] {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos críticos para el campo de servicio */
+body #Inicio .hero-mobile-optimized .form-mobile-compact input[name="servicio"] {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos críticos para el campo de nombre */
+body #Inicio .hero-mobile-optimized .form-mobile-compact input[name="nombre"] {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos críticos para el campo de email */
+body #Inicio .hero-mobile-optimized .form-mobile-compact input[name="email"] {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos críticos para el campo de teléfono */
+body #Inicio .hero-mobile-optimized .form-mobile-compact input[name="telefono"] {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos críticos para el campo de dirección */
+body #Inicio .hero-mobile-optimized .form-mobile-compact input[name="direccion"] {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos críticos para el campo de mensaje */
+body #Inicio .hero-mobile-optimized .form-mobile-compact textarea[name="mensaje"] {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos críticos para los campos de región y comuna */
+body #Inicio .hero-mobile-optimized .form-mobile-compact .SelectTrigger,
+body #Inicio .hero-mobile-optimized .form-mobile-compact [data-radix-select-trigger] {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos críticos para los placeholders */
+body #Inicio .hero-mobile-optimized .form-mobile-compact input::placeholder,
+body #Inicio .hero-mobile-optimized .form-mobile-compact textarea::placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
+/* Estilos críticos para el focus de los campos */
+body #Inicio .hero-mobile-optimized .form-mobile-compact input:focus,
+body #Inicio .hero-mobile-optimized .form-mobile-compact textarea:focus,
+body #Inicio .hero-mobile-optimized .form-mobile-compact .SelectTrigger:focus,
+body #Inicio .hero-mobile-optimized .form-mobile-compact [data-radix-select-trigger]:focus {
+  border-color: #9ca3af !important;
+  box-shadow: 0 0 0 2px rgba(156, 163, 175, 0.2) !important;
+  outline: none !important;
+}
+
+/* Estilos críticos para los labels */
+body #Inicio .hero-mobile-optimized .form-mobile-compact label {
+  color: #374151 !important;
+  font-weight: 500 !important;
+}
+
+/* Estilos críticos para el botón de envío */
+body #Inicio .hero-mobile-optimized .form-mobile-compact button[type="submit"] {
+  background-color: #f46015 !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
+}
+
+body #Inicio .hero-mobile-optimized .form-mobile-compact button[type="submit"]:hover {
+  background-color: #e1550f !important;
+}
+
+/* Estilos críticos para el título del formulario */
+body #Inicio .hero-mobile-optimized .form-mobile-compact .title-mobile-optimized {
+  color: #002D71 !important;
+}
+
+body #Inicio .hero-mobile-optimized .form-mobile-compact .title-mobile-optimized span {
+  color: #f46015 !important;
+}
+
+/* Estilos críticos para los SelectValue */
+body #Inicio .hero-mobile-optimized .form-mobile-compact .SelectValue {
+  color: #111827 !important;
+}
+
+/* Estilos críticos para los SelectContent */
+body #Inicio .hero-mobile-optimized .form-mobile-compact .SelectContent {
+  background-color: white !important;
+  border-color: #d1d5db !important;
+}
+
+/* Estilos críticos para los SelectItem */
+body #Inicio .hero-mobile-optimized .form-mobile-compact .SelectItem {
+  color: #111827 !important;
+  background-color: white !important;
+}
+
+body #Inicio .hero-mobile-optimized .form-mobile-compact .SelectItem:hover {
+  background-color: #f9fafb !important;
+}
+
+/* Estilos críticos para los SelectItem seleccionados */
+body #Inicio .hero-mobile-optimized .form-mobile-compact .SelectItem[data-state="checked"] {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+/* Estilos críticos para los SelectItem deshabilitados */
+body #Inicio .hero-mobile-optimized .form-mobile-compact .SelectItem[data-disabled] {
+  color: #9ca3af !important;
+  background-color: #f9fafb !important;
+}

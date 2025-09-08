@@ -1,8 +1,5 @@
 "use client";
 
-import Header from '@/components/layout/header';
-import Footer from '@/components/layout/footer';
-import Hero from '@/components/sections/hero';
 import Services from '@/components/sections/services';
 import About from '@/components/sections/about';
 import Contact from '@/components/sections/contact';
@@ -12,6 +9,10 @@ import BannerTexto from '@/components/sections/BannerTexto';
 import FAQ from "@/components/sections/faq";
 import Gallery from "@/components/sections/gallery";
 import Testimonials from "@/components/sections/testimonials";
+import Hero from '@/components/sections/hero';
+import Header from '@/components/layout/header';
+import Footer from '@/components/layout/footer';
+import FloatingButtons from '@/components/floating-buttons';
 
 export default function Page() {
   return (
@@ -31,6 +32,7 @@ export default function Page() {
         <Contact />
       </main>
       <Footer />
+      <FloatingButtons />
     </div>
   );
 }

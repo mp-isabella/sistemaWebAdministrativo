@@ -1,0 +1,182 @@
+/* ===== ELIMINACIÓN COMPLETA DEL CURSOR DE TEXTO ===== */
+/* Este archivo elimina el cursor de texto "|" de todo el sistema */
+
+/* Regla global para eliminar cursor de texto */
+* {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+}
+
+/* Solo permitir cursor de texto en elementos editables específicos */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"],
+textarea,
+[contenteditable="true"],
+[contenteditable="true"] * {
+  caret-color: auto !important;
+  -webkit-caret-color: auto !important;
+  -moz-caret-color: auto !important;
+}
+
+/* Prevenir selección de texto en elementos no editables */
+*:not(input):not(textarea):not([contenteditable="true"]):not([contenteditable]) {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Permitir selección de texto solo en elementos editables */
+input, textarea, [contenteditable="true"] {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* Prevenir cursor de texto en elementos específicos del sistema */
+.calendar-page,
+.calendar-container,
+.calendar-header,
+.calendar-body,
+.calendar-footer,
+.calendar-sidebar,
+.calendar-grid,
+.dashboard,
+.dashboard-page,
+.dashboard-container,
+.dashboard-sidebar,
+.dashboard-header,
+.dashboard-content,
+.form-section,
+.form-group,
+.form-label,
+.form-description,
+.nav,
+.navigation,
+.menu,
+.sidebar,
+.btn,
+.button,
+.link,
+.clickable,
+.cursor-pointer {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+}
+
+/* Prevenir cursor de texto en elementos del calendario */
+.calendar-page *,
+.calendar-container *,
+.calendar-header *,
+.calendar-body *,
+.calendar-footer *,
+.calendar-sidebar *,
+.calendar-grid * {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+}
+
+/* Prevenir cursor de texto en elementos del dashboard */
+.dashboard *,
+.dashboard-page *,
+.dashboard-container *,
+.dashboard-sidebar *,
+.dashboard-header *,
+.dashboard-content * {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+}
+
+/* Prevenir cursor de texto en elementos de formularios no editables */
+.form-section *,
+.form-group *,
+.form-label *,
+.form-description * {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+}
+
+/* Prevenir cursor de texto en elementos de navegación */
+.nav *,
+.navigation *,
+.menu *,
+.sidebar * {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+}
+
+/* Prevenir cursor de texto en elementos de botones y enlaces */
+.btn *,
+.button *,
+.link *,
+a * {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+}
+
+/* Reglas específicas para elementos que podrían tener cursor de texto */
+[role="button"],
+[tabindex],
+.clickable,
+.cursor-pointer {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+}
+
+/* Prevenir cursor de texto en elementos de estado */
+.status-badge,
+.status-indicator,
+.priority-badge,
+.priority-indicator {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+}
+
+/* Prevenir cursor de texto en elementos de información */
+.info-card,
+.info-panel,
+.info-section,
+.data-display,
+.data-row,
+.data-cell {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+}
+
+/* Prevenir cursor de texto en elementos de interfaz */
+.ui-element,
+.interface-element,
+.display-element,
+.view-element {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+}
+
+/* Regla de respaldo para cualquier elemento que se haya perdido */
+*:not(input):not(textarea):not([contenteditable="true"]):not([contenteditable]) {
+  caret-color: transparent !important;
+  -webkit-caret-color: transparent !important;
+  -moz-caret-color: transparent !important;
+}

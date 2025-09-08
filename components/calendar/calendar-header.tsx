@@ -1,17 +1,26 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Calendar, RefreshCw, Maximize2, ExternalLink, Printer, Plus } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import { RefreshCw } from "lucide-react"
 
 interface CalendarHeaderProps {
   selectedDate: Date
   onDateChange: (date: Date) => void
   selectedCenter: string
+  userRole?: string
+  onRefresh?: () => void
 }
 
-export function CalendarHeader({ selectedDate, onDateChange, selectedCenter }: CalendarHeaderProps) {
+export function CalendarHeader({ 
+  selectedDate, 
+  onDateChange, 
+  selectedCenter, 
+  userRole,
+  onRefresh 
+}: CalendarHeaderProps) {
   const goToPreviousDay = () => {
     const newDate = new Date(selectedDate)
     newDate.setDate(selectedDate.getDate() - 1)
@@ -24,58 +33,55 @@ export function CalendarHeader({ selectedDate, onDateChange, selectedCenter }: C
     onDateChange(newDate)
   }
 
-  const goToToday = () => {
-    onDateChange(new Date())
-  }
-
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="bg-white border-b border-gray-200 px-6 py-5">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          {/* Date Navigation */}
+        {/* Sección izquierda - Navegación y fecha */}
+        <div className="flex items-center gap-10">
+          {/* Navegación de días */}
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={goToToday} className="text-sm bg-transparent">
-              Hoy
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={goToPreviousDay} 
+              aria-label="Día anterior"
+              className="h-10 w-10 p-0 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ChevronLeft className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={goToPreviousDay} aria-label="Día anterior">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={goToNextDay} aria-label="Día siguiente">
-              <ChevronRight className="h-4 w-4" />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={goToNextDay} 
+              aria-label="Día siguiente"
+              className="h-10 w-10 p-0 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ChevronRight className="h-5 w-5" />
             </Button>
           </div>
 
-          {/* Current Date */}
+          {/* Información de fecha */}
           <div className="flex flex-col">
-            <h1 className="text-lg font-semibold text-gray-900">
+            <h1 className="text-xl font-bold text-gray-900 leading-tight tracking-tight">
               {format(selectedDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
             </h1>
-            <p className="text-sm text-gray-600 flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              {selectedCenter}
-            </p>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">Actualizado hace 0 min</span>
-          <Button variant="ghost" size="sm" aria-label="Actualizar">
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" aria-label="Pantalla completa">
-            <Maximize2 className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" aria-label="Abrir en nueva ventana">
-            <ExternalLink className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" aria-label="Imprimir">
-            <Printer className="h-4 w-4" />
-          </Button>
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo
-          </Button>
+        {/* Sección derecha - Acciones */}
+        <div className="flex items-center gap-3">
+          {/* Botón de refresco */}
+          {onRefresh && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onRefresh}
+              aria-label="Refrescar calendario"
+              className="h-10 w-10 p-0 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <RefreshCw className="h-5 w-5" />
+            </Button>
+          )}
         </div>
       </div>
     </header>

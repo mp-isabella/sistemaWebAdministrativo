@@ -1,3 +1,4 @@
+
 "use client"
 
 import Image from "next/image"
@@ -7,13 +8,12 @@ import { useState, useEffect, useCallback } from "react";
 import { Menu, X } from "lucide-react";
 import { FaFacebookF, FaInstagram, FaTiktok, FaYoutube } from "react-icons/fa";
 import { useSmoothScroll } from "@/hooks/use-smooth-scroll";
-import { useIsClient } from '@/hooks/use-hydration-safe';
 
 export default function Header() {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const isClient = useIsClient();
+  const [isMounted, setIsMounted] = useState(false);
   const { scrollToSection } = useSmoothScroll();
 
   const navigationItems = [
@@ -26,15 +26,20 @@ export default function Header() {
   ];
 
   const socialMediaLinks = [
-    { icon: <FaFacebookF />, url: 'https://www.facebook.com/www.amestica.cl/?locale=es_LA' },
-    { icon: <FaInstagram />, url: 'https://www.instagram.com/amestica.cl' },
-    { icon: <FaYoutube />, url: 'https://www.youtube.com/@amestica.cl' },
-    { icon: <FaTiktok />, url: 'https://www.tiktok.com/@amestica.cl' },
-  ];
+  { icon: <FaFacebookF />, url: 'https://www.facebook.com/share/1AwoWrjqxf/' },
+  { icon: <FaInstagram />, url: 'https://www.instagram.com/amestica.ltda?igsh=OW15dHN4OW52cnJo' },
+  { icon: <FaYoutube />, url: 'https://youtube.com/@amestica_ltda?si=NLRlH1aa4swqSoUQ' },
+  { icon: <FaTiktok />, url: 'https://www.tiktok.com/@amesticaltda?is_from_webapp=1&sender_device=pc' },
+];
+
+  // Set mounted state
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Optimización: Detectar scroll con throttling
   useEffect(() => {
-    if (!isClient) return;
+    if (!isMounted || typeof window === 'undefined') return;
     
     let ticking = false;
     
@@ -50,93 +55,23 @@ export default function Header() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isClient]);
+  }, [isMounted]);
 
   const handleNavigationClick = useCallback((href: string) => {
-    if (!isClient) return;
+    if (!isMounted || typeof window === 'undefined' || typeof document === 'undefined') return;
     
     console.log('handleNavigationClick called with:', href);
     
-    // Caso especial para "Inicio"
-    if (href === '#hero') {
-      console.log('🏠 INICIO detectado en header');
-      
-      // Método múltiple para asegurar que funcione
-      const scrollToTop = () => {
-        if (typeof window === 'undefined') return;
-        
-        console.log('📍 Posición actual:', window.scrollY);
-        
-        // Si ya estamos en el tope, hacer un pequeño scroll para mostrar el movimiento
-        if (window.scrollY === 0) {
-          console.log('📍 Ya en el tope, haciendo scroll de demostración...');
-          
-          // Hacer un pequeño scroll hacia abajo y luego regresar al tope
-          window.scrollTo({
-            top: 100,
-            behavior: 'smooth'
-          });
-          
-          setTimeout(() => {
-            if (typeof window !== 'undefined') {
-              window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-              });
-            }
-            console.log('✅ Scroll de demostración completado');
-          }, 300);
-          
-          return;
-        }
-        
-        // Método 1: Scroll directo
-        window.scrollTo(0, 0);
-        console.log('✅ Método 1 ejecutado');
-        
-        // Método 2: Scroll suave
-        setTimeout(() => {
-          if (typeof window !== 'undefined') {
-            window.scrollTo({
-              top: 0,
-              behavior: 'smooth'
-            });
-          }
-          console.log('✅ Método 2 ejecutado');
-        }, 50);
-        
-        // Método 3: Fallback agresivo
-        setTimeout(() => {
-          if (typeof window !== 'undefined' && window.scrollY > 0) {
-            console.log('⚠️ Aplicando fallback agresivo...');
-            if (typeof document !== 'undefined') {
-              document.documentElement.scrollTop = 0;
-              document.body.scrollTop = 0;
-            }
-            window.scrollTo(0, 0);
-            console.log('✅ Fallback completado');
-          }
-        }, 200);
-      };
-      
-      try {
-        scrollToTop();
-      } catch (error) {
-        console.error('❌ Error en header:', error);
-        // Último recurso
-        if (typeof document !== 'undefined') {
-          document.documentElement.scrollTop = 0;
-          document.body.scrollTop = 0;
-        }
-      }
-    } else if (href.startsWith('#')) {
+    // Usar el hook de smooth scroll para consistencia
+    if (href.startsWith('#')) {
       scrollToSection(href);
     } else {
       router.push(href);
     }
     
+    // Cerrar el menú móvil si está abierto
     setIsMenuOpen(false);
-  }, [isClient, scrollToSection, router]);
+  }, [isMounted, router, scrollToSection]);
 
   return (
     <>
@@ -187,7 +122,7 @@ export default function Header() {
                     handleNavigationClick(item.href);
                   }
                 }}
-                className="text-sm md:text-base lg:text-lg text-gray-700 hover:text-blue-700 font-medium relative group transition-colors duration-200 focus:outline-none  rounded cursor-pointer"
+                className="text-sm md:text-base lg:text-lg text-gray-700 hover:text-blue-700 font-medium relative group transition-colors duration-200 focus:outline-none rounded cursor-pointer"
                 aria-label={`Navegar a ${item.name}`}
                 onMouseDown={(e) => e.preventDefault()}
               >
@@ -244,7 +179,7 @@ export default function Header() {
         </div>
 
         {/* Enlaces optimizados para móvil */}
-        <nav className="flex flex-col items-center space-y-4 md:space-y-6 mt-8 md:mt-12" role="navigation">
+        <nav className="flex flex-col items-center space-y-6 mt-12" role="navigation">
           {navigationItems.map((item) => (
             <button
               key={item.name}
@@ -278,7 +213,7 @@ export default function Header() {
         </nav>
 
         {/* Redes sociales en menú móvil optimizadas */}
-        <div className="flex justify-center space-x-4 md:space-x-6 mt-8 md:mt-10">
+        <div className="flex justify-center space-x-6 mt-10">
           {socialMediaLinks.map(({ icon, url }, index) => (
             <a
               key={index}

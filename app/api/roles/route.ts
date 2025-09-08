@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
+import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
@@ -17,7 +17,12 @@ export async function GET(request: NextRequest) {
       orderBy: { name: "asc" }
     })
 
-    return NextResponse.json(roles)
+    // Asegurar que no hay duplicados (por si acaso)
+    const uniqueRoles = roles.filter((role, index, self) => 
+      index === self.findIndex(r => r.name.toUpperCase() === role.name.toUpperCase())
+    )
+
+    return NextResponse.json(uniqueRoles)
   } catch (error) {
     console.error("Error fetching roles:", error)
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })

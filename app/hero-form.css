@@ -1,0 +1,118 @@
+/* ===== ESTILOS ESPECÍFICOS DEL FORMULARIO HERO - ALTA ESPECIFICIDAD ===== */
+
+/* Estilos para todos los campos del formulario del hero */
+#Inicio .hero-mobile-optimized .form-mobile-compact input,
+#Inicio .hero-mobile-optimized .form-mobile-compact textarea,
+#Inicio .hero-mobile-optimized .form-mobile-compact .SelectTrigger {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos específicos para el campo de servicio */
+#Inicio .hero-mobile-optimized .form-mobile-compact input[name="servicio"] {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos específicos para el campo de nombre */
+#Inicio .hero-mobile-optimized .form-mobile-compact input[name="nombre"] {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos específicos para el campo de email */
+#Inicio .hero-mobile-optimized .form-mobile-compact input[name="email"] {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos específicos para el campo de teléfono */
+#Inicio .hero-mobile-optimized .form-mobile-compact input[name="telefono"] {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos específicos para el campo de dirección */
+#Inicio .hero-mobile-optimized .form-mobile-compact input[name="direccion"] {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos específicos para el campo de mensaje */
+#Inicio .hero-mobile-optimized .form-mobile-compact textarea[name="mensaje"] {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos para los campos de región y comuna */
+#Inicio .hero-mobile-optimized .form-mobile-compact .SelectTrigger {
+  color: #111827 !important;
+  background-color: white !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+/* Estilos para los placeholders */
+#Inicio .hero-mobile-optimized .form-mobile-compact input::placeholder,
+#Inicio .hero-mobile-optimized .form-mobile-compact textarea::placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
+/* Estilos para el focus de los campos */
+#Inicio .hero-mobile-optimized .form-mobile-compact input:focus,
+#Inicio .hero-mobile-optimized .form-mobile-compact textarea:focus,
+#Inicio .hero-mobile-optimized .form-mobile-compact .SelectTrigger:focus {
+  border-color: #9ca3af !important;
+  box-shadow: 0 0 0 2px rgba(156, 163, 175, 0.2) !important;
+  outline: none !important;
+}
+
+/* Estilos para los labels */
+#Inicio .hero-mobile-optimized .form-mobile-compact label {
+  color: #374151 !important;
+  font-weight: 500 !important;
+}
+
+/* Estilos para el botón de envío */
+#Inicio .hero-mobile-optimized .form-mobile-compact button[type="submit"] {
+  background-color: #f46015 !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
+}
+
+#Inicio .hero-mobile-optimized .form-mobile-compact button[type="submit"]:hover {
+  background-color: #e1550f !important;
+}
+
+/* Estilos para el título del formulario */
+#Inicio .hero-mobile-optimized .form-mobile-compact .title-mobile-optimized {
+  color: #002D71 !important;
+}
+
+#Inicio .hero-mobile-optimized .form-mobile-compact .title-mobile-optimized span {
+  color: #f46015 !important;
+}

@@ -70,26 +70,13 @@ export function useMobileCardInteraction(options: UseMobileCardInteractionOption
     if (typeof document === 'undefined') return;
     
     if (isOpen) {
-      // Guardar la posición actual del scroll
-      const scrollY = window.scrollY;
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
+      // Prevenir scroll cuando el modal está abierto
       document.body.style.overflow = 'hidden';
       document.body.classList.add('modal-open');
     } else {
-      // Restaurar la posición del scroll
-      const scrollY = document.body.style.top;
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      document.body.style.overflow = 'unset';
+      // Restaurar scroll cuando el modal se cierra
+      document.body.style.overflow = '';
       document.body.classList.remove('modal-open');
-      
-      // Restaurar la posición del scroll
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
-      }
     }
   }, []);
 
@@ -97,18 +84,8 @@ export function useMobileCardInteraction(options: UseMobileCardInteractionOption
   useEffect(() => {
     return () => {
       if (typeof document !== 'undefined') {
-        // Restaurar la posición del scroll
-        const scrollY = document.body.style.top;
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.overflow = 'unset';
+        document.body.style.overflow = '';
         document.body.classList.remove('modal-open');
-        
-        // Restaurar la posición del scroll
-        if (scrollY) {
-          window.scrollTo(0, parseInt(scrollY || '0') * -1);
-        }
       }
     };
   }, []);

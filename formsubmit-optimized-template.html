@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Cotización - Améstica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8fafc;
+            padding: 20px;
+            line-height: 1.6;
+            color: #334155;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .logo {
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.025em;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .intro {
+            text-align: center;
+            margin-bottom: 32px;
+            color: #64748b;
+            font-size: 16px;
+        }
+        
+        .company-name {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        .info-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-icon {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+        }
+        
+        .field {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .field:last-child {
+            border-bottom: none;
+        }
+        
+        .field-label {
+            font-weight: 600;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 140px;
+        }
+        
+        .field-icon {
+            width: 14px;
+            height: 14px;
+            opacity: 0.7;
+        }
+        
+        .field-value {
+            color: #1e293b;
+            font-weight: 500;
+            text-align: right;
+            flex: 1;
+            word-break: break-word;
+        }
+        
+        .message-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 20px;
+            border: 1px solid #bae6fd;
+        }
+        
+        .message-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #0ea5e9;
+            font-style: italic;
+            color: #0f172a;
+            line-height: 1.7;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .footer {
+            background: #f8fafc;
+            padding: 24px 30px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .footer-text {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .timestamp {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 16px;
+        }
+        
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+            margin: 24px 0;
+        }
+        
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 10px;
+                border-radius: 12px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .title {
+                font-size: 28px;
+            }
+            
+            .content {
+                padding: 24px 20px;
+            }
+            
+            .field {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+            
+            .field-value {
+                text-align: left;
+            }
+            
+            .field-label {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div class="logo">A</div>
+                <h1 class="title">🔥 Nueva Cotización</h1>
+                <p class="subtitle">Solicitud de servicio profesional</p>
+            </div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <div class="intro">
+                <p>Ha recibido una nueva solicitud de cotización desde el sitio web <strong class="company-name">Améstica</strong>.</p>
+            </div>
+            
+            <!-- Información del Cliente -->
+            <div class="info-section">
+                <h2 class="section-title">
+                    <span class="section-icon">👤</span>
+                    Información del Cliente
+                </h2>
+                <div class="field">
+                    <span class="field-label">
+                        <span class="field-icon">📝</span>
+                        Nombre:
+                    </span>
+                    <span class="field-value">{{nombre}}</span>
+                </div>
+                <div class="field">
+                    <span class="field-label">
+                        <span class="field-icon">📧</span>
+                        Email:
+                    </span>
+                    <span class="field-value">{{correo_electronico}}</span>
+                </div>
+                <div class="field">
+                    <span class="field-label">
+                        <span class="field-icon">📱</span>
+                        Teléfono:
+                    </span>
+                    <span class="field-value">{{telefono}}</span>
+                </div>
+            </div>
+            
+            <!-- Ubicación del Servicio -->
+            <div class="info-section">
+                <h2 class="section-title">
+                    <span class="section-icon">📍</span>
+                    Ubicación del Servicio
+                </h2>
+                <div class="field">
+                    <span class="field-label">
+                        <span class="field-icon">🌍</span>
+                        Región:
+                    </span>
+                    <span class="field-value">{{region}}</span>
+                </div>
+                <div class="field">
+                    <span class="field-label">
+                        <span class="field-icon">🏢</span>
+                        Comuna:
+                    </span>
+                    <span class="field-value">{{comuna}}</span>
+                </div>
+                <div class="field">
+                    <span class="field-label">
+                        <span class="field-icon">🏠</span>
+                        Dirección:
+                    </span>
+                    <span class="field-value">{{direccion}}</span>
+                </div>
+            </div>
+            
+            <!-- Servicio Solicitado -->
+            <div class="info-section">
+                <h2 class="section-title">
+                    <span class="section-icon">🔧</span>
+                    Servicio Solicitado
+                </h2>
+                <div class="field">
+                    <span class="field-label">
+                        <span class="field-icon">⚙️</span>
+                        Tipo:
+                    </span>
+                    <span class="field-value">{{servicio}}</span>
+                </div>
+            </div>
+            
+            <!-- Mensaje -->
+            <div class="message-section">
+                <h2 class="section-title">
+                    <span class="section-icon">💬</span>
+                    Mensaje del Cliente
+                </h2>
+                <div class="message-content">
+                    {{mensaje}}
+                </div>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="timestamp">
+                📅 Recibido el {{fecha}} a las {{hora}}
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p class="footer-text">
+                <strong>Este mensaje fue enviado automáticamente</strong><br>
+                desde el formulario de cotización en <strong class="company-name">www.amestica.cl</strong>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

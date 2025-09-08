@@ -1,356 +1,498 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { X, Plus, Trash2, FileText, Calculator } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Plus, Trash2, Calculator } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
+
+interface InvoiceFormProps {
+  onSubmit: (data: any) => void
+  onCancel: () => void
+  loading?: boolean
+  initialData?: any
+}
 
 interface InvoiceItem {
-  id: string
   description: string
   quantity: number
   unitPrice: number
   total: number
 }
 
-interface InvoiceFormProps {
-  onSubmit: (data: any) => void
-  onCancel: () => void
-}
-
-export default function InvoiceForm({ onSubmit, onCancel }: InvoiceFormProps) {
+export default function InvoiceForm({ onSubmit, onCancel, loading = false, initialData }: InvoiceFormProps) {
+  const { toast } = useToast()
+  const [clients, setClients] = useState<any[]>([])
+  const [companies, setCompanies] = useState<any[]>([])
+  const [services, setServices] = useState<any[]>([])
+  const [selectedCompany, setSelectedCompany] = useState('')
+  const [selectedClient, setSelectedClient] = useState('')
+  
   const [formData, setFormData] = useState({
-    clientId: '',
     invoiceNumber: '',
     date: new Date().toISOString().split('T')[0],
-    dueDate: '',
+    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    clientId: '',
+    companyId: '',
     notes: '',
-    taxRate: 19 // IVA 19%
+    items: [] as InvoiceItem[]
   })
 
-  const [items, setItems] = useState<InvoiceItem[]>([
-    {
-      id: '1',
-      description: '',
-      quantity: 1,
-      unitPrice: 0,
-      total: 0
-    }
-  ])
-
-  const [clients, setClients] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [subtotal, setSubtotal] = useState(0)
-  const [tax, setTax] = useState(0)
-  const [total, setTotal] = useState(0)
+  const [newItem, setNewItem] = useState({
+    description: '',
+    quantity: 1,
+    unitPrice: 0
+  })
+  const [unitPriceInput, setUnitPriceInput] = useState('0')
+  const [taxRateInput, setTaxRateInput] = useState('19')
 
   useEffect(() => {
     fetchClients()
-    generateInvoiceNumber()
+    fetchCompanies()
+    fetchServices()
   }, [])
 
   useEffect(() => {
-    calculateTotals()
-  }, [items, formData.taxRate])
+    if (initialData) {
+      setFormData({
+        ...initialData,
+        date: initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : formData.date,
+        dueDate: initialData.dueDate ? new Date(initialData.dueDate).toISOString().split('T')[0] : formData.dueDate
+      })
+      setSelectedClient(initialData.clientId || '')
+      setSelectedCompany(initialData.companyId || '')
+    }
+  }, [initialData])
 
   const fetchClients = async () => {
     try {
       const response = await fetch('/api/clients')
       if (response.ok) {
         const data = await response.json()
-        setClients(data.clients || [])
+        setClients(data)
       }
     } catch (error) {
       console.error('Error fetching clients:', error)
     }
   }
 
-  const generateInvoiceNumber = () => {
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const day = String(now.getDate()).padStart(2, '0')
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
-    
+  const fetchCompanies = async () => {
+    try {
+      const response = await fetch('/api/companies')
+      if (response.ok) {
+        const data = await response.json()
+        setCompanies(data)
+      }
+    } catch (error) {
+      console.error('Error fetching companies:', error)
+    }
+  }
+
+  const fetchServices = async () => {
+    try {
+      const response = await fetch('/api/services')
+      if (response.ok) {
+        const data = await response.json()
+        setServices(data)
+      }
+    } catch (error) {
+      console.error('Error fetching services:', error)
+    }
+  }
+
+  const getCompanyConfig = (companyType: string) => {
+    const configs = {
+      AMESTICA: {
+        name: 'AMESTICA LIMITADA',
+        colors: {
+          primary: 'bg-blue-600',
+          secondary: 'bg-blue-100',
+          text: 'text-blue-600',
+          border: 'border-blue-200'
+        }
+      },
+      MULTIFUGAS: {
+        name: 'MULTIFUGAS',
+        colors: {
+          primary: 'bg-green-600',
+          secondary: 'bg-green-100',
+          text: 'text-green-600',
+          border: 'border-green-200'
+        }
+      },
+      SERVIFUGAS: {
+        name: 'SERVIFUGAS SPA',
+        colors: {
+          primary: 'bg-green-600',
+          secondary: 'bg-green-100',
+          text: 'text-green-600',
+          border: 'border-green-200'
+        }
+      }
+    }
+
+    return configs[companyType as keyof typeof configs] || configs.AMESTICA
+  }
+
+  const selectedCompanyConfig = selectedCompany ? getCompanyConfig(selectedCompany) : null
+
+  const addItem = () => {
+    if (!newItem.description || newItem.quantity <= 0 || newItem.unitPrice <= 0) {
+      toast({
+        title: "Error",
+        description: "Por favor completa todos los campos del ítem",
+        variant: "destructive"
+      })
+      return
+    }
+
+    const item: InvoiceItem = {
+      description: newItem.description,
+      quantity: newItem.quantity,
+      unitPrice: newItem.unitPrice,
+      total: newItem.quantity * newItem.unitPrice
+    }
+
     setFormData(prev => ({
       ...prev,
-      invoiceNumber: `INV-${year}${month}${day}-${random}`
+      items: [...prev.items, item]
+    }))
+
+    setNewItem({
+      description: '',
+      quantity: 1,
+      unitPrice: 0
+    })
+    setUnitPriceInput('0')
+  }
+
+  const removeItem = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      items: prev.items.filter((_, i) => i !== index)
     }))
   }
 
   const calculateTotals = () => {
-    const newSubtotal = items.reduce((sum, item) => sum + item.total, 0)
-    const newTax = (newSubtotal * formData.taxRate) / 100
-    const newTotal = newSubtotal + newTax
+    const subtotal = formData.items.reduce((sum, item) => sum + item.total, 0)
+    const taxRate = parseFloat(taxRateInput) || 19
+    const tax = subtotal * (taxRate / 100)
+    const total = subtotal + tax
 
-    setSubtotal(newSubtotal)
-    setTax(newTax)
-    setTotal(newTotal)
+    return { subtotal, tax, total, taxRate }
   }
 
-  const handleInputChange = (field: string, value: string | number) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP'
+    }).format(amount)
   }
 
-  const handleItemChange = (id: string, field: string, value: string | number) => {
-    setItems(prev => prev.map(item => {
-      if (item.id === id) {
-        const updatedItem = { ...item, [field]: value }
-        if (field === 'quantity' || field === 'unitPrice') {
-          updatedItem.total = updatedItem.quantity * updatedItem.unitPrice
-        }
-        return updatedItem
-      }
-      return item
-    }))
-  }
-
-  const addItem = () => {
-    const newItem: InvoiceItem = {
-      id: Date.now().toString(),
-      description: '',
-      quantity: 1,
-      unitPrice: 0,
-      total: 0
-    }
-    setItems(prev => [...prev, newItem])
-  }
-
-  const removeItem = (id: string) => {
-    if (items.length > 1) {
-      setItems(prev => prev.filter(item => item.id !== id))
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-
-    try {
-      await onSubmit({
-        ...formData,
-        items,
-        subtotal,
-        tax,
-        total
+    
+    if (!formData.clientId || !formData.companyId || formData.items.length === 0) {
+      toast({
+        title: "Error",
+        description: "Por favor completa todos los campos requeridos y agrega al menos un ítem",
+        variant: "destructive"
       })
-    } catch (error) {
-      console.error('Error submitting invoice:', error)
-    } finally {
-      setLoading(false)
+      return
     }
+
+         const { subtotal, tax, total, taxRate } = calculateTotals()
+     
+     const invoiceData = {
+       ...formData,
+       subtotal,
+       tax,
+       total,
+       taxRate
+     }
+
+    onSubmit(invoiceData)
+  }
+
+  const handleClientChange = (clientId: string) => {
+    setSelectedClient(clientId)
+    setFormData(prev => ({ ...prev, clientId }))
+  }
+
+  const handleCompanyChange = (companyId: string) => {
+    setSelectedCompany(companyId)
+    setFormData(prev => ({ ...prev, companyId }))
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-modal p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="flex items-center space-x-2">
-            <FileText className="h-5 w-5 text-blue-600" />
-            <span>Nueva Factura</span>
-          </CardTitle>
-          <Button variant="ghost" size="sm" onClick={onCancel}>
-            <X className="h-4 w-4" />
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Header Information */}
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header con información de la empresa seleccionada */}
+      {selectedCompanyConfig && (
+        <Card className={`border-2 ${selectedCompanyConfig.colors.border}`}>
+          <CardHeader className={`${selectedCompanyConfig.colors.secondary}`}>
+            <CardTitle className={`${selectedCompanyConfig.colors.text}`}>
+              {selectedCompanyConfig.name}
+            </CardTitle>
+            <p className="text-sm text-gray-600">
+              Generando factura con el estilo de {selectedCompanyConfig.name}
+            </p>
+          </CardHeader>
+        </Card>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Información básica */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Información de la Factura</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+               <div>
+                 <Label htmlFor="invoiceNumber">Número de Factura</Label>
+                 <Input
+                   id="invoiceNumber"
+                   value={formData.invoiceNumber}
+                   onChange={(e) => setFormData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+                   placeholder="FAC-001"
+                   required
+                 />
+               </div>
+               <div>
+                 <Label htmlFor="date">Fecha de Emisión</Label>
+                 <Input
+                   id="date"
+                   type="date"
+                   value={formData.date}
+                   onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                   required
+                 />
+               </div>
+               <div>
+                 <Label htmlFor="dueDate">Fecha de Vencimiento</Label>
+                 <Input
+                   id="dueDate"
+                   type="date"
+                   value={formData.dueDate}
+                   onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+                   required
+                 />
+               </div>
+               <div>
+                 <Label htmlFor="taxRate">Tasa de IVA (%)</Label>
+                 <Input
+                   id="taxRate"
+                   type="number"
+                   value={taxRateInput}
+                   onChange={(e) => {
+                     const value = e.target.value
+                     setTaxRateInput(value)
+                   }}
+                   min="0"
+                   max="100"
+                   step="0.01"
+                   placeholder="19"
+                 />
+               </div>
+             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="clientId">Cliente *</Label>
-                <Select value={formData.clientId} onValueChange={(value) => handleInputChange('clientId', value)}>
+              <div>
+                <Label htmlFor="company">Empresa</Label>
+                <Select value={selectedCompany} onValueChange={handleCompanyChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar empresa" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {companies
+                      .map((company) => ({
+                        ...company,
+                        displayName: company.name.replace(/\s+Ltda\.?$/i, '')
+                      }))
+                      .filter((company, index, self) => 
+                        index === self.findIndex(c => c.displayName === company.displayName)
+                      )
+                      .map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.displayName} ({company.type})
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="client">Cliente</Label>
+                <Select value={selectedClient} onValueChange={handleClientChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar cliente" />
                   </SelectTrigger>
                   <SelectContent>
-                    {clients.map((client: any) => (
+                    {clients.map((client) => (
                       <SelectItem key={client.id} value={client.id}>
-                        {client.name} - {client.email}
+                        {client.name} {client.company && `(${client.company})`}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="invoiceNumber">Número de Factura *</Label>
-                <Input
-                  id="invoiceNumber"
-                  value={formData.invoiceNumber}
-                  onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="date">Fecha de Emisión *</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => handleInputChange('date', e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="dueDate">Fecha de Vencimiento</Label>
-                <Input
-                  id="dueDate"
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={(e) => handleInputChange('dueDate', e.target.value)}
-                />
-              </div>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* Items Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Items de la Factura</h3>
-                <Button type="button" onClick={addItem} size="sm" variant="outline">
+        {/* Ítems de la factura */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Detalle de Servicios</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Formulario para agregar ítems */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+              <div>
+                <Label htmlFor="description">Descripción</Label>
+                <Input
+                  id="description"
+                  value={newItem.description}
+                  onChange={(e) => setNewItem(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Descripción del servicio"
+                />
+              </div>
+              <div>
+                <Label htmlFor="quantity">Cantidad</Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  min="1"
+                  value={newItem.quantity}
+                  onChange={(e) => setNewItem(prev => ({ ...prev, quantity: parseInt(e.target.value) || 1 }))}
+                />
+              </div>
+                             <div>
+                 <Label htmlFor="unitPrice">Precio Unitario</Label>
+                 <Input
+                   id="unitPrice"
+                   type="text"
+                   value={unitPriceInput ? new Intl.NumberFormat('es-CL', {
+                     style: 'currency',
+                     currency: 'CLP',
+                     minimumFractionDigits: 0,
+                     maximumFractionDigits: 0
+                   }).format(parseFloat(unitPriceInput)) : ''}
+                   onChange={(e) => {
+                     const value = e.target.value
+                     // Remover símbolos de moneda y separadores de miles
+                     const cleanValue = value.replace(/[^\d]/g, '')
+                     const numValue = cleanValue === '' ? '' : cleanValue
+                     setUnitPriceInput(numValue)
+                     const parsedValue = cleanValue === '' ? 0 : parseInt(cleanValue) || 0
+                     setNewItem(prev => ({ ...prev, unitPrice: parsedValue }))
+                   }}
+                   placeholder="$0"
+                 />
+               </div>
+              <div>
+                <Button type="button" onClick={addItem} className="w-full">
                   <Plus className="h-4 w-4 mr-2" />
-                  Agregar Item
+                  Agregar
                 </Button>
               </div>
-
-              <div className="space-y-3">
-                {items.map((item, index) => (
-                  <Card key={item.id} className="p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-                      <div className="md:col-span-5">
-                        <Label htmlFor={`description-${item.id}`}>Descripción *</Label>
-                        <Input
-                          id={`description-${item.id}`}
-                          placeholder="Descripción del servicio..."
-                          value={item.description}
-                          onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
-                          required
-                        />
-                      </div>
-
-                      <div className="md:col-span-2">
-                        <Label htmlFor={`quantity-${item.id}`}>Cantidad *</Label>
-                        <Input
-                          id={`quantity-${item.id}`}
-                          type="number"
-                          min="1"
-                          step="1"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
-                          required
-                        />
-                      </div>
-
-                      <div className="md:col-span-2">
-                        <Label htmlFor={`unitPrice-${item.id}`}>Precio Unit. *</Label>
-                        <Input
-                          id={`unitPrice-${item.id}`}
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={item.unitPrice}
-                          onChange={(e) => handleItemChange(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
-                          required
-                        />
-                      </div>
-
-                      <div className="md:col-span-2">
-                        <Label>Total</Label>
-                        <div className="h-10 flex items-center px-3 bg-gray-50 rounded-md border">
-                          ${item.total.toLocaleString('es-CL')}
-                        </div>
-                      </div>
-
-                      <div className="md:col-span-1">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeItem(item.id)}
-                          disabled={items.length === 1}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
             </div>
 
-            {/* Totals Section */}
-            <Card className="p-4 bg-gray-50">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Subtotal:</span>
-                  <span className="font-medium">${subtotal.toLocaleString('es-CL')}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-2">
-                    <span>IVA ({formData.taxRate}%):</span>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      value={formData.taxRate}
-                      onChange={(e) => handleInputChange('taxRate', parseFloat(e.target.value) || 0)}
-                      className="w-20 h-8"
-                    />
+            {/* Lista de ítems */}
+            {formData.items.length > 0 && (
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2 text-left">Descripción</th>
+                      <th className="px-4 py-2 text-center">Cantidad</th>
+                      <th className="px-4 py-2 text-right">Precio Unit.</th>
+                      <th className="px-4 py-2 text-right">Total</th>
+                      <th className="px-4 py-2 text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {formData.items.map((item, index) => (
+                      <tr key={index} className="border-t">
+                        <td className="px-4 py-2">{item.description}</td>
+                        <td className="px-4 py-2 text-center">{item.quantity}</td>
+                        <td className="px-4 py-2 text-right">{formatCurrency(item.unitPrice)}</td>
+                        <td className="px-4 py-2 text-right font-semibold">{formatCurrency(item.total)}</td>
+                        <td className="px-4 py-2 text-center">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeItem(index)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Totales */}
+            {formData.items.length > 0 && (
+              <div className="flex justify-end">
+                <div className="w-64 space-y-2">
+                  <div className="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span>{formatCurrency(calculateTotals().subtotal)}</span>
                   </div>
-                  <span className="font-medium">${tax.toLocaleString('es-CL')}</span>
-                </div>
-                <div className="flex justify-between text-lg font-bold border-t pt-2">
-                  <span>Total:</span>
-                  <span>${total.toLocaleString('es-CL')}</span>
+                                     <div className="flex justify-between">
+                     <span>IVA ({calculateTotals().taxRate}%):</span>
+                     <span>{formatCurrency(calculateTotals().tax)}</span>
+                   </div>
+                  <div className="flex justify-between text-lg font-bold border-t pt-2">
+                    <span>Total:</span>
+                    <span className={selectedCompanyConfig?.colors.text}>
+                      {formatCurrency(calculateTotals().total)}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </Card>
+            )}
+          </CardContent>
+        </Card>
 
-            {/* Notes */}
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notas Adicionales</Label>
-              <Textarea
-                id="notes"
-                placeholder="Términos y condiciones, notas especiales..."
-                value={formData.notes}
-                onChange={(e) => handleInputChange('notes', e.target.value)}
-                rows={3}
-              />
-            </div>
+        {/* Notas */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Observaciones</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              value={formData.notes}
+              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              placeholder="Observaciones adicionales sobre la factura..."
+              rows={3}
+            />
+          </CardContent>
+        </Card>
 
-            {/* Actions */}
-            <div className="flex space-x-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                className="flex-1"
-                disabled={loading}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                className="flex-1 bg-blue-600 hover:bg-blue-700"
-                disabled={loading}
-              >
-                {loading ? 'Creando...' : 'Crear Factura'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+        {/* Botones de acción */}
+        <div className="flex justify-end gap-4">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={loading || formData.items.length === 0}
+            className={selectedCompanyConfig?.colors.primary}
+          >
+            {loading ? 'Guardando...' : 'Crear Factura'}
+          </Button>
+        </div>
+      </form>
     </div>
   )
 }

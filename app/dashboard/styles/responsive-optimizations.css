@@ -1,0 +1,256 @@
+/* ===== OPTIMIZACIONES RESPONSIVAS PARA EL SISTEMA ===== */
+
+/* Utilidades responsivas adicionales */
+.responsive-text {
+  @apply text-sm sm:text-base lg:text-lg;
+}
+
+.responsive-heading {
+  @apply text-lg sm:text-xl lg:text-2xl xl:text-3xl;
+}
+
+.responsive-padding {
+  @apply p-3 sm:p-4 lg:p-6;
+}
+
+.responsive-margin {
+  @apply m-3 sm:m-4 lg:m-6;
+}
+
+.responsive-gap {
+  @apply gap-3 sm:gap-4 lg:gap-6;
+}
+
+/* Mejoras para formularios en móvil */
+@media (max-width: 640px) {
+  .form-input-mobile {
+    @apply text-base; /* Previene zoom en iOS */
+  }
+  
+  .form-button-mobile {
+    @apply min-h-[44px]; /* Tamaño mínimo táctil */
+  }
+}
+
+/* Optimizaciones para tablas */
+@media (max-width: 768px) {
+  .table-mobile {
+    @apply text-xs;
+  }
+  
+  .table-mobile th,
+  .table-mobile td {
+    @apply px-2 py-2;
+  }
+}
+
+/* Mejoras para modales en móvil */
+@media (max-width: 640px) {
+  .modal-mobile {
+    @apply m-0 rounded-none;
+  }
+  
+  .modal-content-mobile {
+    @apply max-h-screen overflow-y-auto;
+  }
+}
+
+/* Optimizaciones para el calendario */
+@media (max-width: 640px) {
+  .calendar-mobile {
+    @apply text-xs;
+  }
+  
+  .calendar-time-slot {
+    @apply py-2;
+  }
+  
+  .calendar-job-card {
+    @apply p-2;
+  }
+}
+
+/* Mejoras para navegación */
+@media (max-width: 1024px) {
+  .nav-mobile {
+    @apply fixed inset-0 z-50;
+  }
+  
+  .nav-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 z-40;
+  }
+}
+
+/* Optimizaciones para tarjetas */
+@media (max-width: 640px) {
+  .card-mobile {
+    @apply rounded-lg shadow-sm;
+  }
+  
+  .card-content-mobile {
+    @apply p-3;
+  }
+}
+
+/* Mejoras para botones */
+@media (max-width: 640px) {
+  .button-mobile {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  .button-group-mobile {
+    @apply flex-col space-y-2 space-x-0;
+  }
+}
+
+/* Optimizaciones para iconos */
+@media (max-width: 640px) {
+  .icon-mobile {
+    @apply w-4 h-4;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .icon-tablet {
+    @apply w-5 h-5;
+  }
+}
+
+@media (min-width: 1025px) {
+  .icon-desktop {
+    @apply w-6 h-6;
+  }
+}
+
+/* Mejoras para espaciado */
+@media (max-width: 640px) {
+  .space-mobile {
+    @apply space-y-2;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .space-tablet {
+    @apply space-y-3;
+  }
+}
+
+@media (min-width: 1025px) {
+  .space-desktop {
+    @apply space-y-4;
+  }
+}
+
+/* Optimizaciones para grid */
+@media (max-width: 640px) {
+  .grid-mobile {
+    @apply grid-cols-1;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .grid-tablet {
+    @apply grid-cols-2;
+  }
+}
+
+@media (min-width: 1025px) {
+  .grid-desktop {
+    @apply grid-cols-3;
+  }
+}
+
+/* Mejoras para flexbox */
+@media (max-width: 640px) {
+  .flex-mobile {
+    @apply flex-col;
+  }
+}
+
+@media (min-width: 641px) {
+  .flex-desktop {
+    @apply flex-row;
+  }
+}
+
+/* Optimizaciones para texto */
+@media (max-width: 640px) {
+  .text-mobile {
+    @apply text-sm leading-relaxed;
+  }
+  
+  .heading-mobile {
+    @apply text-lg leading-tight;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .text-tablet {
+    @apply text-base leading-relaxed;
+  }
+  
+  .heading-tablet {
+    @apply text-xl leading-tight;
+  }
+}
+
+@media (min-width: 1025px) {
+  .text-desktop {
+    @apply text-lg leading-relaxed;
+  }
+  
+  .heading-desktop {
+    @apply text-2xl leading-tight;
+  }
+}
+
+/* Mejoras para sombras */
+@media (max-width: 640px) {
+  .shadow-mobile {
+    @apply shadow-sm;
+  }
+}
+
+@media (min-width: 641px) {
+  .shadow-desktop {
+    @apply shadow-md;
+  }
+}
+
+/* Optimizaciones para bordes */
+@media (max-width: 640px) {
+  .border-mobile {
+    @apply border border-gray-200;
+  }
+}
+
+@media (min-width: 641px) {
+  .border-desktop {
+    @apply border border-gray-300;
+  }
+}
+
+/* Mejoras para animaciones */
+@media (prefers-reduced-motion: reduce) {
+  .animate-mobile {
+    @apply transition-none;
+  }
+}
+
+/* Optimizaciones para accesibilidad */
+@media (max-width: 640px) {
+  .focus-mobile {
+    @apply focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  }
+}
+
+/* Mejoras para impresión */
+@media print {
+  .print-hidden {
+    @apply hidden;
+  }
+  
+  .print-visible {
+    @apply block;
+  }
+}

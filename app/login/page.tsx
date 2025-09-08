@@ -99,7 +99,7 @@ export default function LoginPage() {
         
         console.log("📋 Sesión obtenida:", session);
         
-        const role = session?.user?.role;
+        const role = (session?.user as any)?.role;
         console.log("👤 Rol del usuario:", role);
 
         if (role) {

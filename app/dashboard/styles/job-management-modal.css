@@ -1,0 +1,604 @@
+/* ===== ESTILOS ESPECÍFICOS PARA MODAL DE GESTIÓN DE TRABAJOS ===== */
+
+/* Modal principal con posicionamiento centrado */
+.job-management-modal {
+  @apply bg-white rounded-2xl shadow-2xl;
+}
+
+/* Estilos para el modal centrado */
+[data-radix-dialog-content].job-management-modal {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 9999 !important;
+  height: 92vh !important;
+  max-width: 98vw !important;
+  width: 98vw !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Asegurar que el overlay del modal cubra toda la pantalla */
+[data-radix-dialog-overlay] {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 9998 !important;
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(4px) !important;
+  animation: overlayFadeIn 0.2s ease-out !important;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Animaciones para el modal */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+[data-radix-dialog-content] {
+  animation: modalSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Header del modal */
+.modal-header {
+  @apply border-b border-gray-200 pb-4;
+}
+
+.modal-title {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+/* Contenido del modal */
+.modal-content {
+  @apply p-6;
+}
+
+/* Tabs de navegación */
+.tabs-container {
+  @apply flex space-x-1 bg-gray-100 p-1 rounded-xl;
+}
+
+.tab-button {
+  @apply flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-200;
+}
+
+.tab-button.active {
+  @apply bg-white text-blue-600 shadow-sm;
+}
+
+.tab-button.inactive {
+  @apply text-gray-600 hover:text-gray-900 hover:bg-gray-50;
+}
+
+/* Contenido de tabs */
+.tab-content {
+  @apply min-h-[500px] mt-4;
+}
+
+/* Cards de información */
+.info-card {
+  @apply bg-white border-0 shadow-sm rounded-xl;
+}
+
+.info-card-header {
+  @apply pb-3 border-b border-gray-100;
+}
+
+.info-card-title {
+  @apply text-lg font-semibold text-gray-900 flex items-center gap-2;
+}
+
+.info-card-content {
+  @apply p-4 space-y-4;
+}
+
+/* Campos de formulario */
+.form-field {
+  @apply space-y-2;
+}
+
+.form-label {
+  @apply text-base font-semibold text-gray-900;
+}
+
+.form-input {
+  @apply w-full h-12 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+}
+
+.form-textarea {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none;
+}
+
+/* Canvas de firma */
+.signature-canvas-container {
+  @apply border-2 border-gray-200 rounded-lg overflow-hidden;
+}
+
+.signature-canvas {
+  @apply w-full cursor-crosshair bg-white;
+}
+
+/* Galería de imágenes */
+.image-gallery {
+  @apply grid grid-cols-2 md:grid-cols-3 gap-4;
+}
+
+.image-item {
+  position: relative;
+}
+
+.image-preview {
+  @apply w-full h-32 object-cover rounded-lg border shadow-sm;
+}
+
+.image-remove-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  height: 2rem;
+  width: 2rem;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+  background-color: rgb(239 68 68);
+  color: white;
+  border-radius: 9999px;
+}
+
+.image-item:hover .image-remove-button {
+  opacity: 1;
+}
+
+/* Botones */
+.action-button {
+  @apply h-12 px-6 font-medium transition-all duration-200;
+}
+
+.primary-button {
+  @apply bg-blue-600 hover:bg-blue-700 text-white;
+}
+
+.secondary-button {
+  @apply bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300;
+}
+
+/* Estados de carga */
+.loading-state {
+  @apply flex items-center justify-center py-8;
+}
+
+.loading-spinner {
+  @apply animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  [data-radix-dialog-content].job-management-modal {
+    width: 98vw !important;
+    max-width: none !important;
+    height: 95vh !important;
+    margin: 0 !important;
+  }
+  
+  .modal-content {
+    @apply p-4;
+  }
+  
+  .tabs-container {
+    @apply flex-col space-y-2 space-x-0;
+  }
+  
+  .tab-button {
+    @apply py-2;
+  }
+  
+  .image-gallery {
+    @apply grid-cols-1;
+  }
+}
+
+@media (max-width: 768px) {
+  [data-radix-dialog-content].job-management-modal {
+    width: 100vw !important;
+    max-width: none !important;
+    height: 100vh !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+    border-radius: 0 !important;
+  }
+  
+  .modal-title {
+    @apply text-xl;
+  }
+  
+  .info-card-content {
+    @apply p-3;
+  }
+  
+  .form-input,
+  .form-textarea {
+    @apply h-10;
+  }
+}
+
+@media (max-width: 480px) {
+  [data-radix-dialog-content].job-management-modal {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+    border-radius: 0 !important;
+  }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Efectos hover */
+.hover-lift {
+  @apply transition-transform duration-200 hover:-translate-y-1;
+}
+
+.hover-shadow {
+  @apply transition-shadow duration-200 hover:shadow-lg;
+}
+
+/* Estados de validación */
+.field-error {
+  @apply border-red-500 focus:ring-red-500;
+}
+
+.field-success {
+  @apply border-green-500 focus:ring-green-500;
+}
+
+/* Badges personalizados */
+.status-badge {
+  @apply px-3 py-1 rounded-full text-xs font-medium;
+}
+
+.status-pending {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.status-progress {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.status-completed {
+  @apply bg-green-100 text-green-800;
+}
+
+.status-cancelled {
+  @apply bg-red-100 text-red-800;
+}
+
+/* Scrollbar personalizada para el modal */
+.modal-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-scrollbar::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+.modal-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+
+.modal-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
+
+/* Mejorar el contenido interno de los modales */
+[data-radix-dialog-content] .flex-1 {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+[data-radix-dialog-content] .overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Prevenir scroll del body cuando el modal está abierto */
+body.modal-open {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+}
+
+/* Estilos para elementos sticky dentro del modal */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sticky-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: white;
+  padding: 1rem 0;
+}
+
+.sticky-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem 0;
+}
+
+/* Layout flexbox para el modal */
+.modal-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.modal-content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  flex-shrink: 0;
+  padding: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  background: white;
+}
+
+/* Grid responsivo para el contenido */
+.modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+  height: 100%;
+}
+
+@media (max-width: 1024px) {
+  .modal-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* Contenido de tabs con scroll interno */
+.tab-content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 0;
+}
+
+/* Mejorar la experiencia de scroll */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Estilos específicos para el modal de gestión de trabajos */
+.job-management-modal .flex-col {
+  height: 100%;
+}
+
+.job-management-modal .flex-1 {
+  min-height: 0;
+}
+
+.job-management-modal .overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.job-management-modal .overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.job-management-modal .overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.job-management-modal .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.job-management-modal .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Mejorar la experiencia de scroll */
+.modal-scroll-container {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Estilos para el botón de guardar */
+.save-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.save-button:disabled {
+  opacity: 0.6;
+  transform: none;
+}
+
+.save-button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Animación de carga */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mejorar la experiencia de los tabs */
+.tab-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.tab-button:hover {
+  transform: translateY(-1px);
+}
+
+.tab-button.active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+/* Estilos para el contenido de los tabs */
+.tab-content {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mejorar la experiencia de los campos de formulario */
+.form-field {
+  transition: all 0.2s ease-in-out;
+}
+
+.form-field:focus-within {
+  transform: translateY(-1px);
+}
+
+/* Estilos para el canvas de firma */
+.signature-canvas-container {
+  transition: all 0.2s ease-in-out;
+}
+
+.signature-canvas-container:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Mejorar la experiencia de las imágenes */
+.image-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.image-item:hover {
+  transform: scale(1.02);
+}
+
+/* Estilos para el botón de eliminar imagen */
+.image-remove-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.image-remove-button:hover {
+  transform: scale(1.1);
+  background-color: rgb(220 38 38) !important;
+}
+
+/* Responsive design mejorado */
+@media (max-width: 1024px) {
+  .job-management-modal .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .job-management-modal .overflow-y-auto {
+    max-height: calc(92vh - 250px) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .job-management-modal .overflow-y-auto {
+    max-height: calc(100vh - 300px) !important;
+  }
+  
+  .tab-button {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+}

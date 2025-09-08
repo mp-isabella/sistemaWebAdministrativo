@@ -1,0 +1,179 @@
+/* ===== ESTILOS PARA HEADER DROPDOWN ===== */
+
+.header-dropdown {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  min-width: 14rem;
+}
+
+.header-dropdown .dropdown-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.header-dropdown .dropdown-menu-item:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.header-dropdown .dropdown-menu-item:active {
+  background-color: #e5e7eb;
+}
+
+.header-dropdown .dropdown-menu-separator {
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 0.5rem 0;
+}
+
+/* Estilos para el contenido del dropdown */
+.header-dropdown .dropdown-content {
+  padding: 0.75rem 1rem;
+}
+
+.header-dropdown .user-info {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.header-dropdown .user-name {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.875rem;
+}
+
+.header-dropdown .user-email {
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* Estilos para los botones del dropdown */
+.header-dropdown .dropdown-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #374151;
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+.header-dropdown .dropdown-button:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.header-dropdown .dropdown-button:active {
+  background-color: #e5e7eb;
+}
+
+.header-dropdown .dropdown-button.danger {
+  color: #dc2626;
+}
+
+.header-dropdown .dropdown-button.danger:hover {
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
+/* Iconos en el dropdown */
+.header-dropdown .dropdown-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.75rem;
+  opacity: 0.7;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .header-dropdown {
+    min-width: 12rem;
+    right: 0.5rem;
+  }
+  
+  .header-dropdown .dropdown-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+  
+  .header-dropdown .dropdown-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+    margin-right: 0.5rem;
+  }
+}
+
+/* Animaciones */
+.header-dropdown {
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .header-dropdown {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .header-dropdown .dropdown-menu-item {
+    color: #d1d5db;
+  }
+  
+  .header-dropdown .dropdown-menu-item:hover {
+    background-color: #374151;
+    color: #f9fafb;
+  }
+  
+  .header-dropdown .user-name {
+    color: #f9fafb;
+  }
+  
+  .header-dropdown .user-email {
+    color: #9ca3af;
+  }
+  
+  .header-dropdown .dropdown-button {
+    color: #d1d5db;
+  }
+  
+  .header-dropdown .dropdown-button:hover {
+    background-color: #374151;
+    color: #f9fafb;
+  }
+  
+  .header-dropdown .dropdown-button.danger {
+    color: #fca5a5;
+  }
+  
+  .header-dropdown .dropdown-button.danger:hover {
+    background-color: #7f1d1d;
+    color: #fecaca;
+  }
+}

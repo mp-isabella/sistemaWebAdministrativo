@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
+import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
@@ -16,13 +16,15 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
-    const { name, email, password, roleId } = await request.json()
+    const { name, email, phone, password, roleId, status } = await request.json()
     const { id: workerId } = await params
 
     const updateData: any = {
       name,
       email,
-      roleId
+      phone: phone || null,
+      roleId,
+      isActive: status === "active"
     }
 
     // Solo actualizar contraseña si se proporciona
@@ -70,12 +72,38 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     const workerToDelete = await prisma.user.findUnique({
       where: { id: workerId },
-      include: { role: true }
+      include: { 
+        role: true,
+        assignedJobs: {
+          where: {
+            status: {
+              in: ["PENDING", "IN_PROGRESS"]
+            }
+          }
+        }
+      }
     })
 
-    if (workerToDelete?.role.name === "admin" && adminCount <= 1) {
+    if (!workerToDelete) {
+      return NextResponse.json({ error: "Trabajador no encontrado" }, { status: 404 })
+    }
+
+    if (workerToDelete.role.name === "admin" && adminCount <= 1) {
       return NextResponse.json({ error: "No se puede eliminar el último administrador" }, { status: 400 })
     }
+
+    // Verificar si tiene trabajos pendientes o en progreso
+    if (workerToDelete.assignedJobs.length > 0) {
+      return NextResponse.json({ 
+        error: "No se puede eliminar el trabajador porque tiene trabajos pendientes o en progreso asignados" 
+      }, { status: 400 })
+    }
+
+    // Desasignar todos los trabajos del técnico antes de eliminarlo
+    await prisma.job.updateMany({
+      where: { technicianId: workerId },
+      data: { technicianId: null }
+    })
 
     await prisma.user.delete({
       where: { id: workerId }
