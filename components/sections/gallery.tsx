@@ -1,9 +1,9 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { ArrowLeft, ArrowRight, X, ZoomIn } from "lucide-react";
 import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
-import { X, ZoomIn, ArrowLeft, ArrowRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 
 // Paleta de colores
 const colors = {
@@ -19,22 +19,22 @@ const colors = {
 
 // Array de imágenes optimizadas
 const galleryItems = [
-  { 
+  {
     src: "/evidencia1.webp",
     alt: "Evidencia de trabajo 1 - Detección de fugas",
     sizes: "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
   },
-  { 
+  {
     src: "/evidencia3.webp",
     alt: "Evidencia de trabajo 3 - Reparación de tuberías",
     sizes: "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
   },
-  { 
+  {
     src: "/evidencia4.webp",
     alt: "Evidencia de trabajo 4 - Videoinspección",
     sizes: "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
   },
-  { 
+  {
     src: "/evidencia5.webp",
     alt: "Evidencia de trabajo 5 - Servicios profesionales",
     sizes: "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -45,42 +45,8 @@ export default function Gallery() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const [imagesLoaded, setImagesLoaded] = useState<Set<string>>(new Set());
-  const [modalLoading, setModalLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(false);
-  const [modalKey, setModalKey] = useState(0); // Key para forzar re-render
-  const [imageReady, setImageReady] = useState(false);
-  const modalRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
 
-  // Preload optimizado de imágenes para carga inicial rápida
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Preload con prioridad para la imagen central
-      galleryItems.forEach((item, index) => {
-        const img = new window.Image();
-        
-        // Configurar para máxima calidad
-        img.crossOrigin = 'anonymous';
-        img.decoding = 'async';
-        
-        img.onload = () => {
-          setImagesLoaded(prev => new Set(prev).add(item.src));
-        };
-        
-        // Cargar con prioridad alta para la imagen central
-        if (index === 1) {
-          img.fetchPriority = 'high';
-          img.loading = 'eager';
-        } else {
-          img.fetchPriority = 'low';
-          img.loading = 'lazy';
-        }
-        
-        img.src = item.src;
-      });
-    }
-  }, []);
+  // Sin preload para máxima velocidad
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth !== undefined) {
@@ -88,7 +54,6 @@ export default function Gallery() {
         try {
           setIsMobile(window.innerWidth <= 768);
         } catch (error) {
-          console.warn('Error checking mobile:', error);
           setIsMobile(false);
         }
       };
@@ -96,23 +61,24 @@ export default function Gallery() {
       window.addEventListener('resize', checkMobile);
       return () => window.removeEventListener('resize', checkMobile);
     }
+    return undefined;
   }, []);
-  
+
   // Efecto para manejar el scroll cuando el modal está abierto
   useEffect(() => {
     if (selectedImage) {
       // Prevenir scroll cuando el modal está abierto
       document.body.style.overflow = 'hidden';
-      
+
       // Agregar listener para tecla Escape
       const handleEscape = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
           handleCloseModal();
         }
       };
-      
+
       document.addEventListener('keydown', handleEscape);
-      
+
       return () => {
         document.removeEventListener('keydown', handleEscape);
       };
@@ -133,7 +99,25 @@ export default function Gallery() {
   // Función optimizada para abrir modal
   const handleOpenModal = (imageSrc: string) => {
     setSelectedImage(imageSrc);
-    setImageReady(false);
+  };
+
+  // Navegación en modal para móviles
+  const handleModalNext = () => {
+    const currentIndex = galleryItems.findIndex(item => item.src === selectedImage);
+    const nextIndex = (currentIndex + 1) % galleryItems.length;
+    const nextItem = galleryItems[nextIndex];
+    if (nextItem) {
+      setSelectedImage(nextItem.src);
+    }
+  };
+
+  const handleModalPrev = () => {
+    const currentIndex = galleryItems.findIndex(item => item.src === selectedImage);
+    const prevIndex = (currentIndex - 1 + galleryItems.length) % galleryItems.length;
+    const prevItem = galleryItems[prevIndex];
+    if (prevItem) {
+      setSelectedImage(prevItem.src);
+    }
   };
 
   // Función simple para cerrar modal
@@ -151,7 +135,7 @@ export default function Gallery() {
     <section
       id="gallery"
       className="section-full-height w-full py-12 md:py-20 px-4 md:px-6 relative overflow-hidden touch-optimized"
-      style={{ backgroundColor: colors.white }}
+      style={{ backgroundColor: colors.white, maxWidth: '100vw', overflowX: 'hidden' }}
     >
       {/* Fondos decorativos - reducidos en móvil */}
       <div className="absolute inset-0 opacity-20 md:opacity-30">
@@ -172,7 +156,7 @@ export default function Gallery() {
         </div>
 
         {/* Galería principal - optimizada para móvil */}
-        <div className="flex justify-center items-center gap-2 md:gap-4 lg:gap-8 xl:gap-12 w-full px-2 md:px-4 relative">
+        <div className="flex justify-center items-center gap-2 md:gap-4 lg:gap-8 xl:gap-12 w-full px-2 md:px-4 relative" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
           {/* Flechas - más pequeñas en móvil */}
           <motion.button
             onClick={handlePrev}
@@ -195,92 +179,61 @@ export default function Gallery() {
           </motion.button>
 
           {/* Imágenes de la galería - optimizadas para móvil */}
-          {imagesToDisplay.map((item, index) => (
-            <motion.div
-              key={`${item.src}-${index}`}
-              className={`relative group cursor-pointer overflow-hidden rounded-xl md:rounded-[1.5rem] shadow-lg md:shadow-xl mobile-image-optimized
-              ${index === 1 
-                ? 'w-full md:w-[55%] lg:w-[45%] shadow-xl md:shadow-2xl aspect-[4/3] md:aspect-[3/2]' 
-                : 'w-[15%] md:w-[20%] lg:w-[25%] xl:w-[30%] opacity-30 md:opacity-50 hidden md:block aspect-[4/3]'
-              }
-              `}
-              onClick={() => {
-                if (index === 1) {
-                  handleOpenModal(item.src);
-                } else if (index === 0) {
-                  handlePrev();
-                } else {
-                  handleNext();
-                }
-              }}
-              whileHover={{ 
-                scale: index === 1 ? 1.03 : 1.05,
-                y: index === 1 ? -8 : -5,
-                transition: { duration: 0.3, ease: "easeOut" }
-              }}
-              whileTap={{ 
-                scale: index === 1 ? 0.97 : 0.95,
-                y: index === 1 ? -2 : 0,
-                transition: { duration: 0.1, ease: "easeIn" }
-              }}
-              transition={{ 
-                duration: isMobile ? 0.2 : 0.4, 
-                ease: "easeOut",
-                type: "spring",
-                stiffness: 300,
-                damping: 20
-              }}
-            >
-              <Image
-                src={item.src}
-                alt={item.alt}
-                fill
-                className="object-cover transition-all duration-500 ease-out group-hover:scale-110 pointer-events-none"
-                sizes={item.sizes}
-                priority={index === 1}
-                quality={100}
-                placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-                loading={index === 1 ? "eager" : "lazy"}
-                fetchPriority={index === 1 ? "high" : "low"}
-                style={{
-                  filter: "brightness(1.02) contrast(1.15) saturate(1.2) sharpness(1.1)",
+          {imagesToDisplay.map((item, index) => {
+            if (!item) return null;
+            return (
+              <motion.div
+                key={`${item.src}-${index}`}
+                className={`relative group cursor-pointer overflow-hidden rounded-xl md:rounded-[1.5rem] shadow-lg md:shadow-xl mobile-image-optimized
+                ${index === 1
+                    ? 'w-full md:w-[55%] lg:w-[45%] shadow-xl md:shadow-2xl aspect-[4/3] md:aspect-[3/2]'
+                    : 'w-[15%] md:w-[20%] lg:w-[25%] xl:w-[30%] opacity-30 md:opacity-50 hidden md:block aspect-[4/3]'
+                  }
+                `}
+                onClick={() => {
+                  // En móvil, siempre abrir modal directamente
+                  if (isMobile) {
+                    handleOpenModal(item.src);
+                  } else {
+                    if (index === 1) {
+                      handleOpenModal(item.src);
+                    } else if (index === 0) {
+                      handlePrev();
+                    } else {
+                      handleNext();
+                    }
+                  }
                 }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-all duration-500 ease-out opacity-0 group-hover:opacity-100 flex flex-col justify-end p-3 md:p-6">
-                <motion.div 
-                  initial={{ y: 20, opacity: 0 }} 
-                  animate={{ y: 0, opacity: 1 }} 
-                  transition={{ 
-                    duration: 0.4, 
-                    ease: "easeOut",
-                    delay: 0.1
-                  }} 
-                  className="flex flex-col gap-1 md:gap-2"
-                >
-                  <div className="flex items-center gap-1 md:gap-2 text-white font-semibold text-sm md:text-base" style={{ color: colors.highlight }}>
-                    <motion.div
-                      animate={{ 
-                        scale: [1, 1.1, 1],
-                        rotate: [0, 5, 0]
-                      }}
-                      transition={{ 
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                    >
-                      <ZoomIn size={isMobile ? 14 : 18} />
-                    </motion.div>
+                whileHover={{
+                  scale: index === 1 ? 1.02 : 1.03,
+                  transition: { duration: 0.2 }
+                }}
+                whileTap={{
+                  scale: 0.98,
+                  transition: { duration: 0.1 }
+                }}
+              >
+                <Image
+                  src={item.src}
+                  alt={item.alt}
+                  width={300}
+                  height={200}
+                  className="w-full h-full object-cover"
+                  priority={index === 1}
+                  onLoad={() => {
+                  }}
+                  onError={() => {
+                  }}
+                />
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                  <div className="flex items-center gap-2 text-white font-semibold text-sm">
+                    <ZoomIn size={16} />
                     Ver más
                   </div>
-                </motion.div>
-              </div>
-              
-              {/* Efecto de brillo en hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 ease-out transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%]" />
-            </motion.div>
-          ))}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Indicadores de navegación */}
@@ -289,44 +242,74 @@ export default function Gallery() {
             <button
               key={i}
               onClick={() => setActiveIndex(i)}
-              className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all duration-200 ${
-                i === activeIndex 
-                  ? 'bg-blue-600 scale-110 md:scale-125' 
-                  : 'bg-gray-300 hover:bg-gray-400'
-              }`}
+              className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all duration-200 ${i === activeIndex
+                ? 'bg-blue-600 scale-110 md:scale-125'
+                : 'bg-gray-300 hover:bg-gray-400'
+                }`}
               aria-label={`Ir a imagen ${i + 1}`}
             />
           ))}
         </div>
       </div>
 
-      {/* Modal ultra simple */}
+      {/* Modal optimizado para móviles */}
       {selectedImage && (
-        <div 
-          className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4"
+        <div
+          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center gallery-modal"
           onClick={() => setSelectedImage(null)}
         >
-          <div className="relative max-w-4xl max-h-[80vh]">
-            {imageReady && (
-              <button
-                className="absolute top-4 right-4 w-12 h-12 md:w-14 md:h-14 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center text-black font-bold text-2xl md:text-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 z-10"
-                onClick={() => setSelectedImage(null)}
-              >
-                ✕
-              </button>
-            )}
-            
-            <img
-              src={selectedImage}
-              alt="Imagen ampliada"
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-              onLoad={() => setImageReady(true)}
-              style={{
-                filter: "brightness(1.02) contrast(1.15) saturate(1.2) sharpness(1.1)",
-                imageRendering: "crisp-edges" as any,
+          <div className={`relative w-full h-full flex items-center justify-center ${isMobile ? 'p-4' : 'p-8'}`}>
+            {/* Botón de cerrar */}
+            <button
+              className={`absolute top-4 right-4 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-black font-bold shadow-lg z-20 transition-all ${isMobile ? 'w-10 h-10' : 'w-12 h-12'
+                }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImage(null);
               }}
-            />
+            >
+              <X size={isMobile ? 18 : 20} />
+            </button>
+
+            {/* Imagen principal */}
+            <div className={`relative ${isMobile ? 'w-full h-full' : 'max-w-4xl max-h-[90vh]'} flex items-center justify-center`}>
+              <Image
+                src={selectedImage}
+                alt="Imagen ampliada"
+                width={800}
+                height={600}
+                className={`${isMobile ? 'w-full h-full object-contain' : 'w-full h-full object-contain'} transition-opacity duration-200`}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  maxWidth: isMobile ? '100%' : '90vw',
+                  maxHeight: isMobile ? '100%' : '90vh'
+                }}
+              />
+
+              {/* Botones de navegación para móviles */}
+              {isMobile && (
+                <>
+                  <button
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-black shadow-lg z-20 transition-all"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleModalPrev();
+                    }}
+                  >
+                    <ArrowLeft size={18} />
+                  </button>
+                  <button
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-black shadow-lg z-20 transition-all"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleModalNext();
+                    }}
+                  >
+                    <ArrowRight size={18} />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -1,28 +1,18 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { 
-  ArrowLeft, 
-  Download, 
-  Printer, 
-  Save, 
-  Calculator,
-  User,
-  Building2,
-  Calendar,
-  DollarSign,
-  Edit,
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import CompanyLogo from '@/components/ui/company-logo'
+import { useToast } from '@/hooks/use-toast'
+import {
   Check,
+  Download,
+  Edit,
+  Printer,
   X
 } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
-import Image from 'next/image'
-import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
+import { useRef, useState } from 'react'
 
 interface LiquidationPreviewProps {
   data: any
@@ -33,14 +23,15 @@ interface LiquidationPreviewProps {
   onEdit: () => void
 }
 
-export default function LiquidationPreview({ 
-  data, 
-  technician, 
-  company, 
-  onConfirm, 
-  onCancel, 
-  onEdit 
+export default function LiquidationPreview({
+  data,
+  technician,
+  company,
+  onConfirm,
+  onCancel,
+  onEdit
 }: LiquidationPreviewProps) {
+  
   const { toast } = useToast()
   const [isGenerating, setIsGenerating] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
@@ -56,16 +47,45 @@ export default function LiquidationPreview({
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-CL', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    })
+    if (!dateString) return 'No especificada'
+
+    try {
+      // Handle both ISO date strings and local date strings
+      // If it's in YYYY-MM-DD format, parse it as local date to avoid timezone issues
+      if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = dateString.split('-').map(Number)
+        if (!year || !month || !day) return dateString
+        const date = new Date(year, month - 1, day) // month is 0-indexed
+        return date.toLocaleDateString('es-CL', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        })
+      } else {
+        const date = new Date(dateString)
+
+        // Check if the date is valid
+        if (isNaN(date.getTime())) {
+          
+          return 'Fecha inválida'
+        }
+
+        return date.toLocaleDateString('es-CL', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        })
+      }
+    } catch (error) {
+      
+      return 'Fecha inválida'
+    }
   }
 
-  const getCompanyConfig = (companyType: string) => {
+  const getCompanyConfig = (company: any) => {
+    // Configuraciones hardcodeadas para las empresas específicas
     const configs = {
-      AMESTICA: {
+      'AMESTICA LIMITADA': {
         name: 'AMESTICA LIMITADA',
         displayName: 'AMESTICA LIMITADA',
         service: 'Servicio de detección y reparación de filtraciones de agua potable',
@@ -80,9 +100,9 @@ export default function LiquidationPreview({
           accent: '#f97316'
         }
       },
-      MULTIFUGAS: {
+      'MULTIFUGAS': {
         name: 'MULTIFUGAS',
-        displayName: 'MULTIFUGAS SERVICIOS PROFESIONALES',
+        displayName: 'MULTIFUGAS',
         service: 'Servicio de detección y reparación de filtraciones de agua potable',
         rut: '78.135.216-0',
         address: 'Av. Américo Vespucio 3121, Macul, Santiago.',
@@ -95,14 +115,14 @@ export default function LiquidationPreview({
           accent: '#f97316'
         }
       },
-      SERVIFUGAS: {
+      'SERVIFUGAS SPA': {
         name: 'SERVIFUGAS SPA',
         displayName: 'SERVIFUGAS SPA',
-        service: 'Servicio de detección y reparación de filtraciones de agua potable',
-        rut: '78.135.216-0',
-        address: 'Av. Américo Vespucio 3121, Macul, Santiago.',
-        email: 'servifugas@gmail.com',
-        phone: '+569 78868002',
+        service: 'Servicio de detección de filtraciones en agua potable y reparación de cañerías',
+        rut: '78.135.232-2',
+        address: 'Lo Barnechea 1559.',
+        email: 'Servifugas1@gmail.com',
+        phone: '+569 92492720',
         logo: '/servifugas.png',
         colors: {
           primary: '#059669',
@@ -112,22 +132,46 @@ export default function LiquidationPreview({
       }
     }
 
-    return configs[companyType as keyof typeof configs] || configs.AMESTICA
+    // Si tenemos una empresa, intentar usar la configuración hardcodeada basada en el nombre
+    if (company && company.name) {
+      const hardcodedConfig = configs[company.name as keyof typeof configs]
+      if (hardcodedConfig) {
+        // Si la empresa de BD tiene logo, usarlo; si no, usar el hardcodeado
+        return {
+          ...hardcodedConfig,
+          logo: company.logo || hardcodedConfig.logo,
+          displayName: company.displayName || hardcodedConfig.displayName,
+          service: company.service || hardcodedConfig.service,
+          rut: company.rut || hardcodedConfig.rut,
+          address: company.address || hardcodedConfig.address,
+          email: company.email || hardcodedConfig.email,
+          phone: company.phone || hardcodedConfig.phone,
+          colors: {
+            primary: company.primaryColor || hardcodedConfig.colors.primary,
+            secondary: company.secondaryColor || hardcodedConfig.colors.secondary,
+            accent: company.accentColor || hardcodedConfig.colors.accent
+          }
+        }
+      }
+    }
+
+    // Fallback a AMESTICA si no se encuentra la empresa
+    return configs['AMESTICA LIMITADA']
   }
 
-  const companyConfig = getCompanyConfig(company?.type || 'AMESTICA')
+  const companyConfig = getCompanyConfig(company)
 
   const calculateTotals = () => {
     const totalEarnings = data.items
       ?.filter((item: any) => item.type === 'EARNINGS')
       ?.reduce((sum: number, item: any) => sum + (item.total || 0), 0) || 0
-    
+
     const totalDeductions = data.items
       ?.filter((item: any) => item.type !== 'EARNINGS')
       ?.reduce((sum: number, item: any) => sum + (item.total || 0), 0) || 0
-    
+
     const totalAdvances = data.advances?.reduce((sum: number, advance: any) => sum + (advance.amount || 0), 0) || 0
-    
+
     const netSalary = (data.baseSalary + totalEarnings - totalDeductions - totalAdvances)
 
     return {
@@ -145,9 +189,9 @@ export default function LiquidationPreview({
       const printWindow = window.open('', '_blank')
       if (printWindow) {
         const htmlContent = generatePrintHTML()
-        printWindow.document.write(htmlContent)
+        printWindow.document.write(htmlContent.toString())
         printWindow.document.close()
-        
+
         setTimeout(() => {
           printWindow.print()
         }, 500)
@@ -158,40 +202,57 @@ export default function LiquidationPreview({
   const handleDownloadPDF = async () => {
     setIsGenerating(true)
     try {
-      // Usar el nuevo generador de PDF mejorado
-      const { downloadLiquidationPDF } = await import('@/components/pdf-generator')
-      
-      // Configuración de la empresa
-      const companyConfig = {
-        name: company?.name || 'Empresa',
-        service: 'Servicios de detección y reparación de filtraciones',
-        rut: company?.rut || 'N/A',
-        address: company?.address || 'N/A',
-        email: company?.email || 'N/A',
-        phone: company?.phone || 'N/A'
+      // Usar html2canvas para capturar el mismo estilo que la vista previa
+      const { default: html2canvas } = await import('html2canvas')
+      const { jsPDF } = await import('jspdf')
+
+      if (contentRef.current) {
+        // Esperar un momento para que todos los elementos estén cargados
+        await new Promise(resolve => setTimeout(resolve, 500))
+
+        // Capturar el contenido con el mismo estilo
+        const canvas = await html2canvas(contentRef.current, {
+          scale: 3,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          width: contentRef.current.scrollWidth,
+          height: contentRef.current.scrollHeight
+        })
+
+        const imgData = canvas.toDataURL('image/png')
+        const pdf = new jsPDF('p', 'mm', 'a4')
+
+        // Márgenes del PDF
+        const margin = 15
+        const imgWidth = 210 - (margin * 2)
+        const pageHeight = 295 - (margin * 2)
+        const imgHeight = (canvas.height * imgWidth) / canvas.width
+        let heightLeft = imgHeight
+
+        let position = margin
+
+        pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight)
+        heightLeft -= pageHeight
+
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight + margin
+          pdf.addPage()
+          pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight)
+          heightLeft -= pageHeight
+        }
+
+        const fileName = `liquidacion-${technician?.name || 'tecnico'}-${formatDate(data.periodStart)}.pdf`
+        pdf.save(fileName)
+
+        toast({
+          title: "Éxito",
+          description: "PDF descargado correctamente.",
+        })
       }
-      
-      // Preparar datos para el PDF
-      const liquidationData = {
-        technician: technician,
-        periodStart: data.periodStart,
-        periodEnd: data.periodEnd,
-        totalEarnings: totals.totalEarnings,
-        totalDeductions: totals.totalDeductions,
-        totalAdvances: totals.totalAdvances,
-        netAmount: totals.netSalary,
-        items: data.items
-      }
-      
-      // Generar y descargar PDF
-      downloadLiquidationPDF(liquidationData, companyConfig)
-      
-      toast({
-        title: "Éxito",
-        description: "PDF descargado correctamente.",
-      })
     } catch (error) {
-      console.error('Error downloading PDF:', error)
+      
       toast({
         title: "Error",
         description: "Error al generar el PDF. Intenta nuevamente.",
@@ -203,15 +264,15 @@ export default function LiquidationPreview({
   }
 
   const handleCreateLiquidation = async () => {
+    
     setIsCreating(true)
+
     try {
-      // Llamar a la función onConfirm que viene del componente padre
+      
       await onConfirm()
       
-      // No mostrar toast aquí porque el componente padre ya lo maneja
-      // El toast se mostrará desde la página que usa el formulario
     } catch (error) {
-      console.error('Error creating liquidation:', error)
+      
       toast({
         title: "Error",
         description: "Error al crear la liquidación. Intenta nuevamente.",
@@ -616,16 +677,16 @@ export default function LiquidationPreview({
                     </tr>
                 </thead>
                 <tbody>
-                    ${data.items.map((item: any, index: number) => `
+                    ${data.items.map((item: any, _index: number) => `
                         <tr>
                             <td>${item.description}</td>
                             <td class="text-center">
                                 <span class="badge badge-${item.type.toLowerCase()}">
-                                    ${item.type === 'EARNINGS' ? 'Ganancia' : 
-                                      item.type === 'DEDUCTION' ? 'Deducción' :
-                                      item.type === 'MATERIAL' ? 'Material' :
-                                      item.type === 'FUEL' ? 'Combustible' :
-                                      item.type === 'LOAN' ? 'Préstamo' : 'Anticipo'}
+                                    ${item.type === 'EARNINGS' ? 'Ganancia' :
+        item.type === 'DEDUCTION' ? 'Deducción' :
+          item.type === 'MATERIAL' ? 'Material' :
+            item.type === 'FUEL' ? 'Combustible' :
+              item.type === 'LOAN' ? 'Préstamo' : 'Anticipo'}
                                 </span>
                             </td>
                             <td class="text-center">${item.quantity || '-'}</td>
@@ -655,7 +716,7 @@ export default function LiquidationPreview({
                     </tr>
                 </thead>
                 <tbody>
-                    ${data.advances.map((advance: any, index: number) => `
+                    ${data.advances.map((advance: any, _index: number) => `
                         <tr>
                             <td>${formatDate(advance.date)}</td>
                             <td>${advance.description}</td>
@@ -717,28 +778,31 @@ export default function LiquidationPreview({
   }
 
   return (
-    <div ref={contentRef} className="max-w-5xl mx-auto p-4 space-y-4">
-      {/* Header con logo y información de la empresa */}
-      <Card className="border-0 shadow-none">
-        <CardContent className="p-6">
-          <div className="flex items-start gap-6">
+    <div className="max-w-5xl mx-auto p-4 space-y-4">
+      <div ref={contentRef} className="bg-white p-6 space-y-4" style={{
+        backgroundColor: 'white',
+        margin: '20px',
+        boxShadow: '0 0 0 1px #e5e7eb',
+        minHeight: '280mm'
+      }}>
+        {/* Header con logo y información de la empresa */}
+        <div className="pb-3 border-b-2" style={{ borderColor: companyConfig.colors.primary }}>
+          <div className="flex items-start gap-4">
             {/* Logo a la izquierda */}
-            <div className="relative w-24 h-24 flex-shrink-0">
-              <Image
-                src={companyConfig.logo}
-                alt={`Logo ${companyConfig.name}`}
-                fill
-                className="object-contain"
-              />
-            </div>
-            
+            <CompanyLogo
+              logo={companyConfig.logo}
+              companyName={companyConfig.name}
+              size="xl"
+              className="flex-shrink-0"
+            />
+
             {/* Información de la empresa a la derecha */}
             <div className="flex-1">
-              <h1 className="text-2xl font-bold" style={{ color: companyConfig.colors.primary }}>
+              <h1 className="text-xl font-bold" style={{ color: companyConfig.colors.primary }}>
                 {companyConfig.displayName}
               </h1>
-              <p className="text-sm text-gray-600 mb-2">{companyConfig.service}</p>
-              <div className="space-y-1 text-sm text-gray-600">
+              <p className="text-xs text-gray-600 mb-1">{companyConfig.service}</p>
+              <div className="grid grid-cols-2 gap-x-4 text-xs text-gray-600">
                 <p>RUT: {companyConfig.rut}</p>
                 <p>{companyConfig.address}</p>
                 <p>{companyConfig.email}</p>
@@ -746,24 +810,19 @@ export default function LiquidationPreview({
               </div>
             </div>
           </div>
-          
+
           {/* Título LIQUIDACIÓN */}
-          <div className="mt-4">
-            <h2 className="text-2xl font-bold" style={{ color: companyConfig.colors.primary }}>
+          <div className="text-center py-2">
+            <h2 className="text-xl font-bold" style={{ color: companyConfig.colors.primary }}>
               LIQUIDACIÓN DE SUELDO
             </h2>
           </div>
-          
-          {/* Línea separadora debajo del título */}
-          <div className="mt-2 border-b-2" style={{ borderColor: companyConfig.colors.primary }}></div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Información del técnico y período */}
-      <Card className="shadow-sm">
-        <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2 text-sm">
+        {/* Información del técnico y período */}
+        <div className="bg-gray-50 p-3 rounded">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1 text-xs">
               <div>
                 <span className="font-medium text-gray-600">Técnico:</span>
                 <span className="ml-2">{technician?.name || 'No especificado'}</span>
@@ -781,7 +840,7 @@ export default function LiquidationPreview({
                 <span className="ml-2">{technician?.phone || 'No especificado'}</span>
               </div>
             </div>
-            <div className="space-y-2 text-sm">
+            <div className="space-y-1 text-xs">
               <div>
                 <span className="font-medium text-gray-600">Período:</span>
                 <span className="ml-2">{formatDate(data.periodStart)} - {formatDate(data.periodEnd)}</span>
@@ -796,144 +855,139 @@ export default function LiquidationPreview({
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Items de Liquidación */}
-      {data.items && data.items.length > 0 && (
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-gray-900 mb-3">Items de Liquidación</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-200">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="border border-gray-200 px-3 py-2 text-left font-medium text-sm">Descripción</th>
-                    <th className="border border-gray-200 px-3 py-2 text-center font-medium text-sm">Tipo</th>
-                    <th className="border border-gray-200 px-3 py-2 text-center font-medium text-sm">Cantidad</th>
-                    <th className="border border-gray-200 px-3 py-2 text-right font-medium text-sm">Precio U.</th>
-                    <th className="border border-gray-200 px-3 py-2 text-right font-medium text-sm">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.items.map((item: any, index: number) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="border border-gray-200 px-3 py-2 text-sm">{item.description}</td>
-                      <td className="border border-gray-200 px-3 py-2 text-center text-sm">
-                        <Badge variant={
-                          item.type === 'EARNINGS' ? 'default' :
-                          item.type === 'DEDUCTION' ? 'destructive' :
-                          item.type === 'MATERIAL' ? 'secondary' :
-                          item.type === 'FUEL' ? 'outline' :
-                          item.type === 'LOAN' ? 'secondary' : 'outline'
-                        } className="text-xs">
-                          {item.type === 'EARNINGS' ? 'Ganancia' : 
-                           item.type === 'DEDUCTION' ? 'Deducción' :
-                           item.type === 'MATERIAL' ? 'Material' :
-                           item.type === 'FUEL' ? 'Combustible' :
-                           item.type === 'LOAN' ? 'Préstamo' : 'Anticipo'}
-                        </Badge>
-                      </td>
-                      <td className="border border-gray-200 px-3 py-2 text-center text-sm">{item.quantity || '-'}</td>
-                      <td className="border border-gray-200 px-3 py-2 text-right text-sm">
-                        {item.unitPrice ? formatCurrency(item.unitPrice) : '-'}
-                      </td>
-                      <td className="border border-gray-200 px-3 py-2 text-right font-medium text-sm">
-                        {formatCurrency(item.total)}
-                      </td>
+        {/* Items de Liquidación */}
+        {data.items && data.items.length > 0 && (
+          <Card className="shadow-sm">
+            <CardContent className="p-4">
+              <h3 className="font-semibold text-gray-900 mb-3">Items de Liquidación</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-200">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="border border-gray-200 px-3 py-2 text-left font-medium text-sm">Descripción</th>
+                      <th className="border border-gray-200 px-3 py-2 text-center font-medium text-sm">Tipo</th>
+                      <th className="border border-gray-200 px-3 py-2 text-center font-medium text-sm">Cantidad</th>
+                      <th className="border border-gray-200 px-3 py-2 text-right font-medium text-sm">Precio U.</th>
+                      <th className="border border-gray-200 px-3 py-2 text-right font-medium text-sm">Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                  </thead>
+                  <tbody>
+                    {data.items.map((item: any, index: number) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="border border-gray-200 px-3 py-2 text-sm">{item.description}</td>
+                        <td className="border border-gray-200 px-3 py-2 text-center text-sm">
+                          <Badge variant={
+                            item.type === 'EARNINGS' ? 'default' :
+                              item.type === 'DEDUCTION' ? 'destructive' :
+                                item.type === 'MATERIAL' ? 'secondary' :
+                                  item.type === 'FUEL' ? 'outline' :
+                                    item.type === 'LOAN' ? 'secondary' : 'outline'
+                          } className="text-xs">
+                            {item.type === 'EARNINGS' ? 'Ganancia' :
+                              item.type === 'DEDUCTION' ? 'Deducción' :
+                                item.type === 'MATERIAL' ? 'Material' :
+                                  item.type === 'FUEL' ? 'Combustible' :
+                                    item.type === 'LOAN' ? 'Préstamo' : 'Anticipo'}
+                          </Badge>
+                        </td>
+                        <td className="border border-gray-200 px-3 py-2 text-center text-sm">{item.quantity || '-'}</td>
+                        <td className="border border-gray-200 px-3 py-2 text-right text-sm">
+                          {item.unitPrice ? formatCurrency(item.unitPrice) : '-'}
+                        </td>
+                        <td className="border border-gray-200 px-3 py-2 text-right font-medium text-sm">
+                          {formatCurrency(item.total)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Anticipos */}
-      {data.advances && data.advances.length > 0 && (
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-gray-900 mb-3">Anticipos</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-200">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="border border-gray-200 px-3 py-2 text-left font-medium text-sm">Fecha</th>
-                    <th className="border border-gray-200 px-3 py-2 text-left font-medium text-sm">Descripción</th>
-                    <th className="border border-gray-200 px-3 py-2 text-right font-medium text-sm">Monto</th>
-                    <th className="border border-gray-200 px-3 py-2 text-left font-medium text-sm">Notas</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.advances.map((advance: any, index: number) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="border border-gray-200 px-3 py-2 text-sm">{formatDate(advance.date)}</td>
-                      <td className="border border-gray-200 px-3 py-2 text-sm">{advance.description}</td>
-                      <td className="border border-gray-200 px-3 py-2 text-right font-medium text-sm text-red-600">
-                        -{formatCurrency(advance.amount)}
-                      </td>
-                      <td className="border border-gray-200 px-3 py-2 text-sm">{advance.notes || '-'}</td>
+        {/* Anticipos */}
+        {data.advances && data.advances.length > 0 && (
+          <Card className="shadow-sm">
+            <CardContent className="p-4">
+              <h3 className="font-semibold text-gray-900 mb-3">Anticipos</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-200">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="border border-gray-200 px-3 py-2 text-left font-medium text-sm">Fecha</th>
+                      <th className="border border-gray-200 px-3 py-2 text-left font-medium text-sm">Descripción</th>
+                      <th className="border border-gray-200 px-3 py-2 text-right font-medium text-sm">Monto</th>
+                      <th className="border border-gray-200 px-3 py-2 text-left font-medium text-sm">Notas</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                  </thead>
+                  <tbody>
+                    {data.advances.map((advance: any, index: number) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="border border-gray-200 px-3 py-2 text-sm">{formatDate(advance.date)}</td>
+                        <td className="border border-gray-200 px-3 py-2 text-sm">{advance.description}</td>
+                        <td className="border border-gray-200 px-3 py-2 text-right font-medium text-sm text-red-600">
+                          -{formatCurrency(advance.amount)}
+                        </td>
+                        <td className="border border-gray-200 px-3 py-2 text-sm">{advance.notes || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Resumen */}
-      <Card className="shadow-sm">
-        <CardContent className="p-4">
-          <h3 className="font-semibold text-gray-900 mb-3">Resumen de Liquidación</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <div className="flex justify-between text-base">
+        {/* Resumen */}
+        <div className="bg-gray-50 p-3 rounded">
+          <h3 className="font-semibold text-gray-900 mb-2 text-sm">Resumen de Liquidación</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <div className="flex justify-between text-sm">
                 <span className="font-medium">Sueldo Base:</span>
                 <span className="font-semibold">{formatCurrency(data.baseSalary)}</span>
               </div>
-              <div className="flex justify-between text-base">
+              <div className="flex justify-between text-sm">
                 <span className="font-medium">Total Ganancias:</span>
                 <span className="font-semibold text-green-600">{formatCurrency(totals.totalEarnings)}</span>
               </div>
-              <div className="flex justify-between text-base">
+              <div className="flex justify-between text-sm">
                 <span className="font-medium">Total Deducciones:</span>
                 <span className="font-semibold text-red-600">{formatCurrency(totals.totalDeductions)}</span>
               </div>
-              <div className="flex justify-between text-base">
+              <div className="flex justify-between text-sm">
                 <span className="font-medium">Total Anticipos:</span>
                 <span className="font-semibold text-orange-600">-{formatCurrency(totals.totalAdvances)}</span>
               </div>
             </div>
-            
+
             <div className="pl-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-lg font-bold text-green-600">
                   TOTAL A PAGAR
                 </div>
-                <div className="text-3xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-green-600">
                   {formatCurrency(totals.netSalary)}
                 </div>
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Notas */}
-      {data.notes && (
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-gray-900 mb-3">Notas</h3>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700 whitespace-pre-wrap">{data.notes}</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+        {/* Notas */}
+        {data.notes && (
+          <div className="bg-gray-50 p-3 rounded">
+            <h3 className="font-semibold text-gray-900 mb-1 text-sm">Notas</h3>
+            <p className="text-gray-700 text-sm whitespace-pre-wrap">{data.notes}</p>
+          </div>
+        )}
 
-      {/* Botones de acción */}
+      </div>
+
+      {/* Botones de acción - FUERA del área de captura del PDF */}
       <div className="flex flex-wrap justify-center gap-3 pt-4 border-t">
         <Button variant="outline" onClick={onEdit} size="sm">
           <Edit className="mr-2 h-4 w-4" />
@@ -947,8 +1001,8 @@ export default function LiquidationPreview({
           <Download className="mr-2 h-4 w-4" />
           {isGenerating ? 'Generando...' : 'PDF'}
         </Button>
-        <Button 
-          onClick={handleCreateLiquidation} 
+        <Button
+          onClick={handleCreateLiquidation}
           disabled={isCreating}
           className="bg-green-600 hover:bg-green-700 text-white"
           size="sm"

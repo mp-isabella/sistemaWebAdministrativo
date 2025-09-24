@@ -38,7 +38,7 @@ export default function NewInvoicePage() {
         })
       }
     } catch (error) {
-      console.error('Error creating invoice:', error)
+      
       toast({
         title: "Error",
         description: "Error al crear la factura",
@@ -55,7 +55,7 @@ export default function NewInvoicePage() {
 
   return (
     <RoleRedirect allowedRoles={["admin"]}>
-      <div className="container mx-auto p-6">
+      <div className="w-full p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Nueva Factura</h1>
           <p className="text-gray-600">Crea una nueva factura con el estilo de la empresa seleccionada</p>

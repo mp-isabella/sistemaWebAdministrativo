@@ -54,7 +54,6 @@ export function useMobileDetection(): MobileDetection {
           isTouchDevice,
         });
       } catch (error) {
-        console.warn('Error updating mobile info:', error);
         // Fallback to default values
         setMobileInfo({
           isMobile: false,

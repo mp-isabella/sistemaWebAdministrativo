@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Error fetching cash transactions:', error)
+    
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ transaction }, { status: 201 })
 
   } catch (error) {
-    console.error('Error creating cash transaction:', error)
+    
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

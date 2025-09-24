@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       if (dateTo) where.createdAt.lte = new Date(dateTo)
     }
 
-    const liquidations = await prisma.liquidation.findMany({
+    const liquidations = await (prisma as any).liquidation.findMany({
       where,
       include: {
         technician: {
@@ -65,12 +65,12 @@ export async function GET(request: NextRequest) {
     })
 
     // Mapear liquidaciones al formato esperado
-    const mappedLiquidations = liquidations.map(liquidation => {
+    const mappedLiquidations = liquidations.map((liquidation: any) => {
       // Calcular totales
-      const totalHours = liquidation.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0
-      const totalServices = liquidation.items?.filter(item => item.type === 'EARNINGS').length || 0
-      const totalBonuses = liquidation.items?.filter(item => item.type === 'EARNINGS').reduce((sum, item) => sum + (item.total || 0), 0) || 0
-      const totalDeductions = liquidation.items?.filter(item => item.type === 'DEDUCTION').reduce((sum, item) => sum + (item.total || 0), 0) || 0
+      const totalHours = liquidation.items?.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0) || 0
+      const totalServices = liquidation.items?.filter((item: any) => item.type === 'EARNINGS').length || 0
+      const totalBonuses = liquidation.items?.filter((item: any) => item.type === 'EARNINGS').reduce((sum: number, item: any) => sum + (item.total || 0), 0) || 0
+      const totalDeductions = liquidation.items?.filter((item: any) => item.type === 'DEDUCTION').reduce((sum: number, item: any) => sum + (item.total || 0), 0) || 0
       const finalAmount = liquidation.netSalary || (liquidation.baseSalary + totalBonuses - totalDeductions)
 
       return {
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(mappedLiquidations)
 
   } catch (error) {
-    console.error('Error fetching liquidations:', error)
+    
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
@@ -140,12 +140,14 @@ export async function POST(request: NextRequest) {
     const totalEarnings = items?.filter((item: any) => item.type === 'EARNINGS')
       .reduce((sum: number, item: any) => sum + (item.total || 0), 0) || 0
     
-    const totalDeductions = items?.filter((item: any) => item.type === 'DEDUCTION')
+    const totalDeductions = items?.filter((item: any) => item.type !== 'EARNINGS')
       .reduce((sum: number, item: any) => sum + (item.total || 0), 0) || 0
     
-    const netSalary = parseFloat(baseSalary) + totalEarnings - totalDeductions
+    const totalAdvances = advances?.reduce((sum: number, advance: any) => sum + (advance.amount || 0), 0) || 0
+    
+    const netSalary = parseFloat(baseSalary) + totalEarnings - totalDeductions - totalAdvances
 
-    const liquidation = await prisma.liquidation.create({
+    const liquidation = await (prisma as any).liquidation.create({
       data: {
         liquidationNumber,
         periodStart: new Date(periodStart),
@@ -153,6 +155,7 @@ export async function POST(request: NextRequest) {
         baseSalary: parseFloat(baseSalary),
         totalEarnings,
         totalDeductions,
+        totalAdvances,
         netSalary,
         taxRate: parseFloat(taxRate || 19),
         notes,
@@ -190,7 +193,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(liquidation, { status: 201 })
 
   } catch (error) {
-    console.error('Error creating liquidation:', error)
+    
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

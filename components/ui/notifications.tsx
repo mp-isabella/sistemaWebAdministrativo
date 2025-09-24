@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Bell, X, Check, Trash2, Clock, User, FileText, Calendar } from 'lucide-react';
-import { Button } from './button';
+import { Bell, Check, Clock, FileText, Trash2, User, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { Badge } from './badge';
+import { Button } from './button';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
 
+import useNotifications from '@/hooks/use-notifications';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
-import useNotifications, { Notification, JobNotification } from '@/hooks/use-notifications';
 
 interface NotificationsProps {
   userRole: string;
@@ -18,8 +18,8 @@ const Notifications: React.FC<NotificationsProps> = ({ userRole, userId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const {
     unreadCount,
-    addNotification,
-    addJobNotification,
+    addNotification: _addNotification,
+    addJobNotification: _addJobNotification,
     markAsRead,
     markAllAsRead,
     removeNotification,
@@ -94,7 +94,7 @@ const Notifications: React.FC<NotificationsProps> = ({ userRole, userId }) => {
   const getNotificationMessage = (notification: any) => {
     if (notification.notificationType === 'job') {
       const baseMessage = `${notification.jobTitle} - ${notification.clientName}`;
-      
+
       switch (notification.type) {
         case 'created':
           return `Se ha creado un nuevo trabajo: ${baseMessage}`;
@@ -125,7 +125,7 @@ const Notifications: React.FC<NotificationsProps> = ({ userRole, userId }) => {
     if (minutes < 60) return `Hace ${minutes} min`;
     if (hours < 24) return `Hace ${hours} h`;
     if (days < 7) return `Hace ${days} días`;
-    
+
     return new Date(timestamp).toLocaleDateString('es-CL');
   };
 
@@ -133,11 +133,10 @@ const Notifications: React.FC<NotificationsProps> = ({ userRole, userId }) => {
     if (!notification.read) {
       markAsRead(notification.id, notification.notificationType);
     }
-    
+
     // Aquí podrías agregar navegación al trabajo específico si es necesario
     if (notification.notificationType === 'job' && notification.jobId) {
       // Navegar al trabajo o abrir modal de detalles
-      console.log('Navegar al trabajo:', notification.jobId);
     }
   };
 
@@ -154,8 +153,8 @@ const Notifications: React.FC<NotificationsProps> = ({ userRole, userId }) => {
             >
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
-                <Badge 
-                  variant="destructive" 
+                <Badge
+                  variant="destructive"
                   className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
                 >
                   {unreadCount > 99 ? '99+' : unreadCount}
@@ -196,7 +195,7 @@ const Notifications: React.FC<NotificationsProps> = ({ userRole, userId }) => {
                 </div>
               </div>
             </CardHeader>
-            
+
             <CardContent className="p-0">
               <div className="h-96 overflow-y-auto">
                 {allNotifications.length === 0 ? (
@@ -209,16 +208,15 @@ const Notifications: React.FC<NotificationsProps> = ({ userRole, userId }) => {
                     {allNotifications.map((notification) => (
                       <div
                         key={notification.id}
-                        className={`p-3 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50 ${
-                          !notification.read ? 'bg-blue-50' : ''
-                        }`}
+                        className={`p-3 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50 ${!notification.read ? 'bg-blue-50' : ''
+                          }`}
                         onClick={() => handleNotificationClick(notification)}
                       >
                         <div className="flex items-start gap-3">
                           <div className="flex-shrink-0 mt-0.5">
                             {getNotificationIcon(notification)}
                           </div>
-                          
+
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-1">
                               <h4 className="text-sm font-medium text-gray-900 truncate">
@@ -241,11 +239,11 @@ const Notifications: React.FC<NotificationsProps> = ({ userRole, userId }) => {
                                 </Button>
                               </div>
                             </div>
-                            
+
                             <p className="text-sm text-gray-600 line-clamp-2">
                               {getNotificationMessage(notification)}
                             </p>
-                            
+
                             {!notification.read && (
                               <div className="mt-2">
                                 <Badge variant="secondary" className="text-xs">

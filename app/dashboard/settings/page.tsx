@@ -1,8 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Mail, Save, Settings, User } from "lucide-react";
 import '../styles/unified-design.css';
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Settings, Save, User, Mail } from "lucide-react"
 
 export default function SettingsPage() {
   return (
@@ -41,24 +41,24 @@ export default function SettingsPage() {
                   <User className="mr-2 h-4 w-4" />
                   Nombre
                 </label>
-                <Input 
-                  placeholder="Usuario Demo" 
+                <Input
+                  placeholder="Usuario Demo"
                   className="form-input"
                 />
               </div>
-              
+
               <div className="form-group">
                 <label className="form-label">
                   <Mail className="mr-2 h-4 w-4" />
                   Email
                 </label>
-                <Input 
-                  placeholder="usuario@demo.com" 
-                  type="email" 
+                <Input
+                  placeholder="usuario@demo.com"
+                  type="email"
                   className="form-input"
                 />
               </div>
-              
+
               <Button className="btn-primary w-full">
                 <Save className="mr-2 h-4 w-4" />
                 Guardar Cambios

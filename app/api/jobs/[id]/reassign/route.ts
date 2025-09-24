@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from "next/server"
 
 export async function PATCH(
   request: NextRequest,
@@ -18,8 +18,8 @@ export async function PATCH(
     const { technicianId } = await request.json()
 
     if (!technicianId) {
-      return NextResponse.json({ 
-        error: "ID del técnico es requerido" 
+      return NextResponse.json({
+        error: "ID del técnico es requerido"
       }, { status: 400 })
     }
 
@@ -34,8 +34,8 @@ export async function PATCH(
     })
 
     if (!existingJob) {
-      return NextResponse.json({ 
-        error: "Trabajo no encontrado" 
+      return NextResponse.json({
+        error: "Trabajo no encontrado"
       }, { status: 404 })
     }
 
@@ -46,15 +46,15 @@ export async function PATCH(
     })
 
     if (!newTechnician) {
-      return NextResponse.json({ 
-        error: "Técnico no encontrado" 
+      return NextResponse.json({
+        error: "Técnico no encontrado"
       }, { status: 404 })
     }
 
     // Verificar que el usuario es un técnico
     if (newTechnician.role?.name !== 'TECNICO' && newTechnician.role?.name !== 'tecnico') {
-      return NextResponse.json({ 
-        error: "El usuario seleccionado no es un técnico" 
+      return NextResponse.json({
+        error: "El usuario seleccionado no es un técnico"
       }, { status: 400 })
     }
 
@@ -79,7 +79,7 @@ export async function PATCH(
       // Convertir horarios a minutos para comparación
       const timeToMinutes = (timeStr: string) => {
         const [hours, minutes] = timeStr.split(':').map(Number)
-        return hours * 60 + minutes
+        return (hours || 0) * 60 + (minutes || 0)
       }
 
       const existingStart = timeToMinutes(existingJob.startTime)
@@ -92,8 +92,8 @@ export async function PATCH(
     })
 
     if (hasConflict) {
-      return NextResponse.json({ 
-        error: "El técnico seleccionado tiene conflictos de horario en ese momento" 
+      return NextResponse.json({
+        error: "El técnico seleccionado tiene conflictos de horario en ese momento"
       }, { status: 409 })
     }
 
@@ -118,8 +118,6 @@ export async function PATCH(
       }
     })
 
-    console.log(`✅ Trabajo ${id} reasignado exitosamente a técnico ${newTechnician.name}`)
-
     return NextResponse.json({
       success: true,
       message: "Trabajo reasignado exitosamente",
@@ -127,10 +125,10 @@ export async function PATCH(
     })
 
   } catch (error) {
-    console.error("Error al reasignar trabajo:", error)
-    return NextResponse.json({ 
+    
+    return NextResponse.json({
       success: false,
-      error: "Error interno del servidor" 
+      error: "Error interno del servidor"
     }, { status: 500 })
   }
 }

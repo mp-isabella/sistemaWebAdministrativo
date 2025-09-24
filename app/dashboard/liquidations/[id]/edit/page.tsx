@@ -1,166 +1,136 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { useParams, useRouter } from 'next/navigation'
-import { RoleRedirect } from '@/components/auth/role-redirect'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
-import LiquidationForm from '@/components/forms/liquidation-form'
+import LiquidationForm from '@/components/forms/liquidation-form';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function EditLiquidationPage() {
-  const { data: session } = useSession()
-  const params = useParams()
-  const router = useRouter()
-  const [liquidation, setLiquidation] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const { toast } = useToast()
+  const [liquidation, setLiquidation] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const { data: _session } = useSession();
+  const router = useRouter();
+  const params = useParams();
+  const { toast } = useToast();
+
+  const liquidationId = params.id as string;
 
   useEffect(() => {
-    if (params.id) {
-      fetchLiquidation()
-    }
-  }, [params.id])
-
-  const fetchLiquidation = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch(`/api/liquidations/${params.id}`)
-      
-      if (response.ok) {
-        const data = await response.json()
-        setLiquidation(data)
-      } else {
+    const fetchLiquidation = async () => {
+      try {
+        const response = await fetch(`/api/liquidations/${liquidationId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setLiquidation(data);
+        } else {
+          toast({
+            title: "Error",
+            description: "Error al cargar la liquidación",
+            variant: "destructive"
+          });
+          router.push('/dashboard/liquidations');
+        }
+      } catch (error) {
         toast({
           title: "Error",
-          description: "Liquidación no encontrada",
+          description: "Error de conexión",
           variant: "destructive"
-        })
-        router.push('/dashboard/liquidations')
+        });
+        router.push('/dashboard/liquidations');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching liquidation:', error)
-      toast({
-        title: "Error",
-        description: "Error de conexión",
-        variant: "destructive"
-      })
-    } finally {
-      setLoading(false)
+    };
+
+    if (liquidationId) {
+      fetchLiquidation();
     }
-  }
+  }, [liquidationId, router, toast]);
 
   const handleSubmit = async (data: any) => {
     try {
-      setSaving(true)
-      
-      const response = await fetch(`/api/liquidations/${params.id}`, {
+      setSubmitting(true);
+      const response = await fetch(`/api/liquidations/${liquidationId}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data)
-      })
+        body: JSON.stringify(data),
+      });
 
       if (response.ok) {
-        const result = await response.json()
         toast({
           title: "Éxito",
-          description: "Liquidación actualizada correctamente"
-        })
-        router.push(`/dashboard/liquidations/${result.id}`)
+          description: "Liquidación actualizada correctamente",
+        });
+        router.push('/dashboard/liquidations');
       } else {
-        const error = await response.json()
-        toast({
-          title: "Error",
-          description: error.error || "Error al actualizar liquidación",
-          variant: "destructive"
-        })
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al actualizar la liquidación');
       }
     } catch (error) {
-      console.error('Error updating liquidation:', error)
       toast({
         title: "Error",
-        description: "Error de conexión",
+        description: error instanceof Error ? error.message : "Error al actualizar la liquidación",
         variant: "destructive"
-      })
+      });
     } finally {
-      setSaving(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   const handleCancel = () => {
-    router.push(`/dashboard/liquidations/${params.id}`)
-  }
-
-  if (!session) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">
-          <p className="text-gray-500">Cargando...</p>
-        </div>
-      </div>
-    )
-  }
+    router.push('/dashboard/liquidations');
+  };
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">
+      <div className="w-full p-6">
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-500">Cargando liquidación...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!liquidation) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">
+      <div className="w-full p-6">
+        <div className="text-center py-8">
           <p className="text-gray-500">Liquidación no encontrada</p>
-          <Button onClick={() => router.push('/dashboard/liquidations')} className="mt-4">
-            Volver a Liquidaciones
-          </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
-    <RoleRedirect allowedRoles={["admin"]}>
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            onClick={() => router.push(`/dashboard/liquidations/${params.id}`)}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Editar Liquidación</h1>
-            <p className="text-gray-600">Modificar liquidación {liquidation.liquidationNumber}</p>
-          </div>
+    <div className="w-full p-6 space-y-6">
+      <div className="flex items-center gap-4">
+        <Button
+          variant="outline"
+          onClick={() => router.push('/dashboard/liquidations')}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Volver
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Editar Liquidación</h1>
+          <p className="text-gray-600">Modificar liquidación de {liquidation.technician?.name}</p>
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Información de la Liquidación</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <LiquidationForm
-              liquidation={liquidation}
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
-              loading={saving}
-            />
-          </CardContent>
-        </Card>
       </div>
-    </RoleRedirect>
-  )
+
+      <LiquidationForm
+        liquidation={liquidation}
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        loading={submitting}
+      />
+    </div>
+  );
 }

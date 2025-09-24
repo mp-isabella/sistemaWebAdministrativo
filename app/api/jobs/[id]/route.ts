@@ -1,16 +1,16 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session) {
+    if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
@@ -22,7 +22,9 @@ export async function GET(
         client: true,
         service: true,
         technician: true,
-        createdBy: true
+        createdBy: true,
+        company: true,
+        payments: true
       }
     })
 
@@ -32,28 +34,28 @@ export async function GET(
 
     // Verificar permisos
     const userRole = (session.user as any).role.toLowerCase()
-    
+
     // Los técnicos solo pueden ver sus propios trabajos
-    if (userRole === "tecnico" && job.technicianId !== session.user.id) {
+    if (userRole === "tecnico" && job.technicianId !== (session.user as any).id) {
       return NextResponse.json({ error: "No tienes permisos para ver este trabajo" }, { status: 403 })
     }
 
     return NextResponse.json(job)
 
   } catch (error) {
-    console.error("Error fetching job:", error)
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
 
 export async function PUT(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session) {
+    if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
@@ -62,7 +64,7 @@ export async function PUT(
     }
 
     const { id } = await params
-    const { title, description, clientId, serviceId, technicianId, scheduledAt, startTime, endTime, priority, status } = await request.json()
+    const { title, description, clientId, serviceId, technicianId, scheduledAt, startTime, endTime, priority, status } = await _request.json()
 
     // Verificar que el trabajo existe
     const existingJob = await prisma.job.findUnique({
@@ -97,24 +99,24 @@ export async function PUT(
 
     return NextResponse.json(updatedJob)
   } catch (error) {
-    console.error("Error updating job:", error)
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
 
 export async function PATCH(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session) {
+    if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
     const jobId = params.id
-    const body = await request.json()
+    const body = await _request.json()
 
     // Verificar que el trabajo existe
     const existingJob = await prisma.job.findUnique({
@@ -132,20 +134,28 @@ export async function PATCH(
 
     // Verificar permisos
     const userRole = (session.user as any).role.toLowerCase()
-    
+
     // Los técnicos solo pueden actualizar sus propios trabajos
-    if (userRole === "tecnico" && existingJob.technicianId !== session.user.id) {
+    if (userRole === "tecnico" && existingJob.technicianId !== (session.user as any).id) {
       return NextResponse.json({ error: "Solo puedes modificar tus trabajos asignados" }, { status: 403 })
     }
 
     // Preparar datos para actualizar
     const updateData: any = {}
-    
+
     if (body.status !== undefined) updateData.status = body.status
     if (body.notes !== undefined) updateData.notes = body.notes
     if (body.images !== undefined) updateData.images = body.images
     if (body.signature !== undefined) updateData.signature = body.signature
     if (body.completedAt !== undefined) updateData.completedAt = body.completedAt
+    if (body.technicianId !== undefined) updateData.technicianId = body.technicianId
+    if (body.scheduledAt !== undefined) updateData.scheduledAt = body.scheduledAt ? new Date(body.scheduledAt) : null
+    if (body.startTime !== undefined) updateData.startTime = body.startTime
+    if (body.endTime !== undefined) updateData.endTime = body.endTime
+    if (body.totalBudget !== undefined) {
+      console.log('Updating totalBudget:', body.totalBudget)
+      updateData.totalBudget = body.totalBudget ? Number(body.totalBudget) : null
+    }
 
     // Actualizar el trabajo
     const updatedJob = await prisma.job.update({
@@ -161,19 +171,19 @@ export async function PATCH(
     return NextResponse.json(updatedJob)
 
   } catch (error) {
-    console.error("Error updating job:", error)
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session) {
+    if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
@@ -198,7 +208,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Error deleting job:", error)
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

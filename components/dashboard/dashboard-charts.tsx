@@ -1,20 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
   ArcElement,
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Filler,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
-  Filler,
 } from 'chart.js';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { useEffect, useState } from 'react';
+import { Bar, Doughnut, Line } from 'react-chartjs-2';
 
 // Registrar componentes de Chart.js
 ChartJS.register(
@@ -298,9 +298,8 @@ export function DashboardCharts({ stats }: DashboardChartsProps) {
             <div className="w-2 h-2 sm:w-3 sm:h-3 bg-gradient-to-r from-orange-400 to-yellow-500 rounded-full"></div>
             <span>Tendencia de Trabajos</span>
           </div>
-          <span className={`text-xs sm:text-sm font-medium ${
-            stats.trends.isPositive ? 'text-green-600' : 'text-red-600'
-          }`}>
+          <span className={`text-xs sm:text-sm font-medium ${stats.trends.isPositive ? 'text-green-600' : 'text-red-600'
+            }`}>
             {stats.trends.isPositive ? '↗' : '↘'} {Math.abs(stats.trends.jobsTrend)}%
           </span>
         </h3>

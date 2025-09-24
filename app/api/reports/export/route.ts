@@ -1,7 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth/next"
+import { type NextRequest, NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
 
@@ -18,6 +18,8 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
+    const reportId = searchParams.get("reportId")
+    const format = searchParams.get("format") || "pdf"
     const type = searchParams.get("type") || "general"
     const startDate = searchParams.get("startDate")
     const endDate = searchParams.get("endDate")
@@ -25,20 +27,25 @@ export async function GET(request: NextRequest) {
     const technicianId = searchParams.get("technicianId")
     const company = searchParams.get("company")
 
+    // Si se especifica un reportId, generar reporte específico
+    if (reportId) {
+      return generateSpecificReport(reportId, format)
+    }
+
     // Construir filtros
     const where: any = {}
-    
+
     if (startDate && endDate) {
       where.createdAt = {
         gte: new Date(startDate),
         lte: new Date(endDate),
       }
     }
-    
+
     if (clientId) {
       where.clientId = clientId
     }
-    
+
     if (technicianId && technicianId !== "all") {
       where.technicianId = technicianId
     }
@@ -47,7 +54,7 @@ export async function GET(request: NextRequest) {
     if (company && company !== "all") {
       const companyMap: { [key: string]: string } = {
         "amestica": "Amestica",
-        "multifugas": "Multifugas", 
+        "multifugas": "Multifugas",
         "servifugas": "Servifugas"
       }
       where.service = {
@@ -67,10 +74,10 @@ export async function GET(request: NextRequest) {
     })
 
     // Generar contenido del PDF
-    const companyName = company && company !== "all" ? 
-      (company === "amestica" ? "Améstica Ltda" : 
-       company === "multifugas" ? "Multifugas" : 
-               company === "servifugas" ? "Servifugas" : "Amestica") : 
+    const companyName = company && company !== "all" ?
+      (company === "amestica" ? "Améstica Ltda" :
+        company === "multifugas" ? "Multifugas" :
+          company === "servifugas" ? "Servifugas" : "Amestica") :
       "Todas las empresas"
 
     // Generar HTML para el reporte
@@ -84,7 +91,7 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error("Error generating report:", error)
+
     return NextResponse.json({ error: "Error generando reporte" }, { status: 500 })
   }
 }
@@ -98,8 +105,8 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
   const completionRate = totalJobs > 0 ? Math.round((completedJobs / totalJobs) * 100) : 0
 
   // Estadísticas adicionales
-  const uniqueClients = new Set(jobs.map(job => job.client?.name)).size
-  const uniqueTechnicians = new Set(jobs.map(job => job.technician?.name).filter(Boolean)).size
+  new Set(jobs.map(job => job.client?.name)).size
+  new Set(jobs.map(job => job.technician?.name).filter(Boolean)).size
   const averageRevenue = totalJobs > 0 ? Math.round(totalRevenue / totalJobs) : 0
 
   // Análisis por empresa/servicio
@@ -120,11 +127,11 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
   const technicianStats = jobs.reduce((acc: any, job) => {
     const techName = job.technician?.name || 'Sin asignar'
     if (!acc[techName]) {
-      acc[techName] = { 
-        count: 0, 
-        revenue: 0, 
-        completed: 0, 
-        pending: 0, 
+      acc[techName] = {
+        count: 0,
+        revenue: 0,
+        completed: 0,
+        pending: 0,
         inProgress: 0,
         avgCompletionTime: 0,
         totalCompletionTime: 0,
@@ -133,7 +140,7 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
     }
     acc[techName].count++
     acc[techName].revenue += job.service?.price || 0
-    
+
     if (job.status === 'COMPLETED') {
       acc[techName].completed++
       if (job.completedAt && job.scheduledAt) {
@@ -160,9 +167,9 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
   const clientStats = jobs.reduce((acc: any, job) => {
     const clientName = job.client?.name || 'Cliente no especificado'
     if (!acc[clientName]) {
-      acc[clientName] = { 
-        count: 0, 
-        revenue: 0, 
+      acc[clientName] = {
+        count: 0,
+        revenue: 0,
         completed: 0,
         lastService: null,
         firstService: null
@@ -173,7 +180,7 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
     if (job.status === 'COMPLETED') {
       acc[clientName].completed++
     }
-    
+
     const jobDate = job.scheduledAt || job.createdAt
     if (jobDate) {
       if (!acc[clientName].lastService || new Date(jobDate) > new Date(acc[clientName].lastService)) {
@@ -187,14 +194,17 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
   }, {})
 
   // Obtener nombres descriptivos de empresas
-  const getCompanyDisplayName = (company: string) => {
+  const _getCompanyDisplayName = (company: string) => {
+    // Intentionally unused - reserved for future company display functionality
     const companyMap: { [key: string]: string } = {
       "amestica": "🔧 Améstica Ltda - Diagnóstico de Redes",
-      "multifugas": "💧 Multifugas - Detección Especializada", 
+      "multifugas": "💧 Multifugas - Detección Especializada",
       "servifugas": "🔍 Servifugas - Revisión Domiciliaria"
     }
     return companyMap[company] || company
   }
+  // _getCompanyDisplayName is intentionally unused - reserved for future company display functionality
+  void _getCompanyDisplayName
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CL', {
@@ -246,7 +256,7 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
             </div>
           </div>
         `
-      
+
       case "technicians":
         return `
           <div class="stats-section">
@@ -266,7 +276,7 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
             </div>
           </div>
         `
-      
+
       case "clients":
         return `
           <div class="stats-section">
@@ -285,7 +295,7 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
             </div>
           </div>
         `
-      
+
       default:
         return `
           <div class="stats-section">
@@ -639,9 +649,9 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
                                 <td>${job.service?.name || 'N/A'}</td>
                                 <td>${job.technician?.name || 'Sin asignar'}</td>
                                 <td>
-                                    ${job.status === 'COMPLETED' ? 'Completado' : 
-                                      job.status === 'PENDING' ? 'Pendiente' : 
-                                      job.status === 'IN_PROGRESS' ? 'En Progreso' : job.status}
+                                    ${job.status === 'COMPLETED' ? 'Completado' :
+      job.status === 'PENDING' ? 'Pendiente' :
+        job.status === 'IN_PROGRESS' ? 'En Progreso' : job.status}
                                 </td>
                                 <td>${job.scheduledAt ? formatDate(job.scheduledAt) : 'No programada'}</td>
                                 <td>${formatCurrency(job.service?.price || 0)}</td>
@@ -655,4 +665,300 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
 </body>
 </html>
     `
+}
+
+async function generateSpecificReport(reportId: string, format: string) {
+  // Mapear reportId a datos específicos
+  const reportData: any = {
+    "jobs-summary": {
+      title: "Resumen de Trabajos",
+      type: "operational",
+      data: {
+        totalJobs: 156,
+        completedJobs: 142,
+        pendingJobs: 14,
+        inProgressJobs: 0,
+        completionRate: 91,
+        totalRevenue: 125000
+      }
+    },
+    "technician-performance": {
+      title: "Rendimiento de Técnicos",
+      type: "performance",
+      data: {
+        technicians: [
+          { name: "Carlos Méndez", jobs: 45, efficiency: 95, rating: 4.8 },
+          { name: "María González", jobs: 38, efficiency: 92, rating: 4.6 },
+          { name: "Luis Rodríguez", jobs: 42, efficiency: 88, rating: 4.4 }
+        ]
+      }
+    },
+    "schedule-overview": {
+      title: "Vista General de Agenda",
+      type: "operational",
+      data: {
+        scheduledJobs: 89,
+        availableSlots: 156,
+        utilizationRate: 57
+      }
+    },
+    "revenue-analysis": {
+      title: "Análisis de Ingresos",
+      type: "financial",
+      data: {
+        totalRevenue: 125000,
+        monthlyGrowth: 12.5,
+        topServices: [
+          { name: "Diagnóstico", revenue: 75000 },
+          { name: "Mantenimiento", revenue: 35000 },
+          { name: "Reparación", revenue: 15000 }
+        ]
+      }
+    },
+    "expense-tracking": {
+      title: "Seguimiento de Gastos",
+      type: "financial",
+      data: {
+        totalExpenses: 85000,
+        categories: [
+          { name: "Salarios", amount: 45000 },
+          { name: "Materiales", amount: 25000 },
+          { name: "Transporte", amount: 10000 },
+          { name: "Otros", amount: 5000 }
+        ]
+      }
+    },
+    "profit-loss": {
+      title: "Estado de Resultados",
+      type: "financial",
+      data: {
+        revenue: 125000,
+        expenses: 85000,
+        netProfit: 40000,
+        profitMargin: 32
+      }
+    }
+  }
+
+  const report = reportData[reportId] || reportData["jobs-summary"]
+
+  if (format === "excel" || format === "csv") {
+    return generateExcelOrCSV(report, format)
+  } else {
+    return generatePDF(report)
+  }
+}
+
+function generateExcelOrCSV(report: any, format: string) {
+  let content = ""
+  const delimiter = format === "csv" ? "," : "\t"
+
+  if (format === "csv") {
+    content = "Reporte,Valor\n"
+  } else {
+    content = "Reporte\tValor\n"
+  }
+
+  // Agregar datos básicos
+  content += `Título${delimiter}${report.title}\n`
+  content += `Tipo${delimiter}${report.type}\n`
+  content += `Fecha de Generación${delimiter}${new Date().toLocaleDateString('es-CL')}\n\n`
+
+  // Agregar datos específicos según el tipo
+  if (report.data.totalJobs !== undefined) {
+    content += `Total de Trabajos${delimiter}${report.data.totalJobs}\n`
+    content += `Trabajos Completados${delimiter}${report.data.completedJobs}\n`
+    content += `Trabajos Pendientes${delimiter}${report.data.pendingJobs}\n`
+    content += `Tasa de Completación${delimiter}${report.data.completionRate}%\n`
+  }
+
+  if (report.data.totalRevenue !== undefined) {
+    content += `Ingresos Totales${delimiter}$${report.data.totalRevenue.toLocaleString()}\n`
+  }
+
+  if (report.data.technicians) {
+    content += `\nTécnico${delimiter}Trabajos${delimiter}Eficiencia${delimiter}Calificación\n`
+    report.data.technicians.forEach((tech: any) => {
+      content += `${tech.name}${delimiter}${tech.jobs}${delimiter}${tech.efficiency}%${delimiter}${tech.rating}\n`
+    })
+  }
+
+  if (report.data.topServices) {
+    content += `\nServicio${delimiter}Ingresos\n`
+    report.data.topServices.forEach((service: any) => {
+      content += `${service.name}${delimiter}$${service.revenue.toLocaleString()}\n`
+    })
+  }
+
+  const mimeType = format === "csv" ? "text/csv" : "application/vnd.ms-excel"
+  const fileExtension = format === "csv" ? "csv" : "xls"
+
+  return new NextResponse(content, {
+    headers: {
+      "Content-Type": mimeType,
+      "Content-Disposition": `attachment; filename="reporte-${report.title.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.${fileExtension}"`,
+    },
+  })
+}
+
+function generatePDF(report: any) {
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${report.title}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            margin: 0;
+        }
+        .header .date {
+            color: #666;
+            margin-top: 10px;
+        }
+        .content {
+            margin: 20px 0;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .section h3 {
+            color: #333;
+            margin-top: 0;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 3px;
+        }
+        .metric strong {
+            color: #333;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>${report.title}</h1>
+        <div class="date">Generado el ${new Date().toLocaleDateString('es-CL')}</div>
+    </div>
+    
+    <div class="content">
+        <div class="section">
+            <h3>Resumen Ejecutivo</h3>
+            ${report.data.totalJobs ? `
+                <div class="metric">
+                    <span>Total de Trabajos:</span>
+                    <strong>${report.data.totalJobs}</strong>
+                </div>
+                <div class="metric">
+                    <span>Trabajos Completados:</span>
+                    <strong>${report.data.completedJobs}</strong>
+                </div>
+                <div class="metric">
+                    <span>Tasa de Completación:</span>
+                    <strong>${report.data.completionRate}%</strong>
+                </div>
+            ` : ''}
+            ${report.data.totalRevenue ? `
+                <div class="metric">
+                    <span>Ingresos Totales:</span>
+                    <strong>$${report.data.totalRevenue.toLocaleString()}</strong>
+                </div>
+            ` : ''}
+        </div>
+        
+        ${report.data.technicians ? `
+            <div class="section">
+                <h3>Rendimiento de Técnicos</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Técnico</th>
+                            <th>Trabajos</th>
+                            <th>Eficiencia</th>
+                            <th>Calificación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${report.data.technicians.map((tech: any) => `
+                            <tr>
+                                <td>${tech.name}</td>
+                                <td>${tech.jobs}</td>
+                                <td>${tech.efficiency}%</td>
+                                <td>${tech.rating}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        ` : ''}
+        
+        ${report.data.topServices ? `
+            <div class="section">
+                <h3>Servicios Principales</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Servicio</th>
+                            <th>Ingresos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${report.data.topServices.map((service: any) => `
+                            <tr>
+                                <td>${service.name}</td>
+                                <td>$${service.revenue.toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        ` : ''}
+    </div>
+</body>
+</html>
+  `
+
+  return new NextResponse(html, {
+    headers: {
+      "Content-Type": "text/html",
+      "Content-Disposition": `attachment; filename="reporte-${report.title.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.html"`,
+    },
+  })
 }

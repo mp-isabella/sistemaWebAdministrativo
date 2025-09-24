@@ -1,18 +1,18 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { 
-  Search, 
-  Filter, 
-  ImageIcon, 
-  FileText, 
+import {
   Calendar,
   Download,
   Eye,
+  FileText,
+  Filter,
+  ImageIcon,
+  Search,
   Trash2
 } from "lucide-react";
 import "../styles/unified-design.css";
@@ -116,10 +116,10 @@ export default function EvidencePage() {
 
   const filteredEvidence = evidenceData.filter(evidence => {
     const matchesSearch = evidence.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         evidence.clientName.toLowerCase().includes(searchTerm.toLowerCase());
+      evidence.clientName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === "all" || evidence.type === typeFilter;
     const matchesStatus = statusFilter === "all" || evidence.status === statusFilter;
-    
+
     return matchesSearch && matchesType && matchesStatus;
   });
 
@@ -151,7 +151,7 @@ export default function EvidencePage() {
           </div>
           <div className="unified-card-content">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="form-group">
+              <div className="form-group hidden lg:block">
                 <label className="form-label">Buscar</label>
                 <div className="search-container">
                   <Search className="search-icon" />
@@ -166,8 +166,8 @@ export default function EvidencePage() {
               </div>
               <div className="form-group">
                 <label className="form-label">Tipo</label>
-                <select 
-                  value={typeFilter} 
+                <select
+                  value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
                   className="form-input"
                 >
@@ -179,8 +179,8 @@ export default function EvidencePage() {
               </div>
               <div className="form-group">
                 <label className="form-label">Estado</label>
-                <select 
-                  value={statusFilter} 
+                <select
+                  value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="form-input"
                 >
@@ -239,9 +239,9 @@ export default function EvidencePage() {
                           {getStatusLabel(evidence.status)}
                         </Badge>
                       </div>
-                      
+
                       <p className="text-gray-600 mb-3">{evidence.description}</p>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-gray-600 mb-3">
                         <div className="flex items-center space-x-2">
                           <FileText className="h-4 w-4" />
@@ -261,7 +261,7 @@ export default function EvidencePage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex flex-col space-y-2">
                       <Button
                         variant="outline"

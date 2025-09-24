@@ -42,18 +42,18 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/png',
       },
     ],
-    screenshots: [
-      {
-        src: '/screenshot-wide.png',
-        sizes: '1280x720',
-        type: 'image/png',
-      },
-      {
-        src: '/screenshot-narrow.png',
-        sizes: '750x1334',
-        type: 'image/png',
-      },
-    ],
+    // screenshots: [
+    //   {
+    //     src: '/screenshot-wide.png',
+    //     sizes: '1280x720',
+    //     type: 'image/png',
+    //   },
+    //   {
+    //     src: '/screenshot-narrow.png',
+    //     sizes: '750x1334',
+    //     type: 'image/png',
+    //   },
+    // ],
     shortcuts: [
       {
         name: 'Dashboard',
@@ -62,7 +62,7 @@ export default function manifest(): MetadataRoute.Manifest {
         url: '/dashboard',
         icons: [
           {
-            src: '/icon-192x192.png',
+            src: '/android-chrome-192x192.png',
             sizes: '192x192',
           },
         ],
@@ -74,7 +74,7 @@ export default function manifest(): MetadataRoute.Manifest {
         url: '/dashboard/services/new',
         icons: [
           {
-            src: '/icon-192x192.png',
+            src: '/android-chrome-192x192.png',
             sizes: '192x192',
           },
         ],
@@ -86,7 +86,7 @@ export default function manifest(): MetadataRoute.Manifest {
         url: '/contacto',
         icons: [
           {
-            src: '/icon-192x192.png',
+            src: '/android-chrome-192x192.png',
             sizes: '192x192',
           },
         ],

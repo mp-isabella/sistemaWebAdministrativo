@@ -1,0 +1,802 @@
+/* ===== OPTIMIZACIONES ESPECÍFICAS PARA MENÚ MÓVIL ===== */
+
+/* ===== DEBUGGING Y VISIBILIDAD ===== */
+@media (max-width: 1023px) {
+  /* Asegurar que el menú móvil sea visible cuando está abierto */
+  .mobile-navigation-open {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  /* Forzar cierre del menú móvil */
+  .mobile-navigation-closed {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* Cerrar menú al hacer scroll */
+  .mobile-menu-scroll-close {
+    transform: translateX(-100%) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: transform 0.3s ease, opacity 0.3s ease !important;
+  }
+
+  /* Forzar visibilidad del botón del menú */
+  [data-mobile-menu-button] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* Forzar que el menú móvil sea visible - ESTILO DE EMERGENCIA */
+  [data-mobile-sidebar] {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 320px !important;
+    height: 100vh !important;
+    z-index: 99999 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translateX(0) !important;
+    background: linear-gradient(to bottom, #0f172a, #1e293b, #0f172a) !important;
+    border-right: 1px solid rgba(51, 65, 85, 0.5) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+/* ===== SIDEBAR MÓVIL OPTIMIZADO ===== */
+@media (max-width: 1023px) {
+  /* Sidebar móvil con mejor rendimiento */
+  [data-sidebar] {
+    width: 100vw;
+    max-width: 320px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    will-change: transform;
+  }
+
+  [data-sidebar].translate-x-0 {
+    transform: translateX(0);
+  }
+
+  /* Asegurar que el sidebar móvil sea visible cuando está abierto */
+  [data-mobile-sidebar] {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 320px !important;
+    max-width: 80vw !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    transform: translateX(0) !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    background: linear-gradient(to bottom, #0f172a, #1e293b, #0f172a) !important;
+    border-right: 1px solid rgba(51, 65, 85, 0.5) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Forzar que el menú móvil sea visible en pantallas pequeñas */
+  @media (max-width: 1023px) {
+    [data-mobile-sidebar] {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 320px !important;
+      max-width: 80vw !important;
+      height: 100vh !important;
+      z-index: 9999 !important;
+      transform: translateX(0) !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+  }
+
+  /* Overlay móvil mejorado */
+  .mobile-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    z-index: 40 !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+
+  /* Forzar que el botón del menú móvil sea completamente funcional */
+  .mobile-menu-button,
+  [data-mobile-menu-button] {
+    position: relative !important;
+    z-index: 1000 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.2s ease-in-out !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2) !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* Mejorar el scroll en móviles */
+  [data-sidebar]::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  [data-sidebar]::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+  }
+
+  [data-sidebar]::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+  }
+
+  [data-sidebar]::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Hover y active para el botón del menú móvil */
+  .mobile-menu-button:hover,
+  [data-mobile-menu-button]:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+    transform: scale(1.05) !important;
+  }
+
+  .mobile-menu-button:active,
+  [data-mobile-menu-button]:active {
+    transform: scale(0.95) !important;
+  }
+
+  /* Optimizar elementos de navegación móvil */
+  [data-sidebar] nav {
+    padding: 1rem;
+    gap: 0.5rem;
+  }
+
+  [data-sidebar] nav a {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    min-height: 3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.2s ease-in-out;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Mejorar iconos en móviles */
+  [data-sidebar] nav a div {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  [data-sidebar] nav a svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* Mejorar texto en móviles */
+  [data-sidebar] nav a span {
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  /* Optimizar botón de cierre */
+  [data-menu-button] {
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    min-width: 3rem;
+    min-height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    pointer-events: auto;
+    z-index: 1000;
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  [data-menu-button]:active {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(0.95);
+  }
+
+  [data-menu-button] svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* Botón de cerrar específico para navegación móvil */
+  .mobile-navigation-close-btn {
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    pointer-events: auto !important;
+    z-index: 1000 !important;
+    position: relative !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    margin: 4px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+
+  .mobile-navigation-close-btn:active {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: scale(0.95) !important;
+  }
+
+  /* Mejorar overlay móvil */
+  .mobile-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    z-index: 40 !important;
+    backdrop-filter: blur(2px) !important;
+    -webkit-backdrop-filter: blur(2px) !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  /* Optimizar header móvil */
+  .mobile-header {
+    padding: 0.75rem 1rem;
+    min-height: 3.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  /* Botón hamburguesa optimizado */
+  .mobile-menu-button {
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    min-width: 3rem;
+    min-height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease-in-out;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    pointer-events: auto;
+    z-index: 1000;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .mobile-menu-button:hover {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: scale(1.05);
+  }
+
+  .mobile-menu-button:active {
+    transform: scale(0.95);
+  }
+
+  .mobile-menu-button svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #374151;
+  }
+
+  /* Asegurar que el botón sea visible y clickeable */
+  .mobile-menu-button {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: flex !important;
+    pointer-events: auto !important;
+    z-index: 1000 !important;
+    position: relative !important;
+    cursor: pointer !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2) !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.2s ease-in-out !important;
+  }
+
+  /* Forzar que el botón sea clickeable */
+  [data-mobile-menu-button] {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    z-index: 1000 !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.2s ease-in-out !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2) !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+  }
+
+  [data-mobile-menu-button]:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+    transform: scale(1.05) !important;
+  }
+
+  [data-mobile-menu-button]:active {
+    transform: scale(0.95) !important;
+  }
+}
+
+/* Asegurar que el botón se oculte solo en pantallas grandes */
+@media (min-width: 1024px) {
+  .mobile-menu-button {
+    display: none !important;
+  }
+}
+
+/* Forzar visibilidad del botón en móviles */
+@media (max-width: 1023px) {
+  .mobile-menu-button,
+  [data-mobile-menu-button] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    z-index: 1000 !important;
+    position: relative !important;
+    cursor: pointer !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2) !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.2s ease-in-out !important;
+  }
+}
+
+/* ===== ESTILOS DE DEPURACIÓN PARA EL BOTÓN HAMBURGUESA ===== */
+@media (max-width: 1023px) {
+  /* Asegurar que el botón sea completamente funcional */
+  [data-menu-button] {
+    position: relative !important;
+    z-index: 1000 !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2) !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.2s ease-in-out !important;
+  }
+
+  /* Estilos específicos para el botón del menú móvil */
+  .mobile-menu-button,
+  [data-mobile-menu-button] {
+    position: relative !important;
+    z-index: 1000 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.2s ease-in-out !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2) !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  [data-menu-button]:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+    transform: scale(1.05) !important;
+  }
+
+  [data-menu-button]:active {
+    transform: scale(0.95) !important;
+  }
+
+  /* Hover y active para el botón del menú móvil */
+  .mobile-menu-button:hover,
+  [data-mobile-menu-button]:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+    transform: scale(1.05) !important;
+  }
+
+  .mobile-menu-button:active,
+  [data-mobile-menu-button]:active {
+    transform: scale(0.95) !important;
+  }
+
+  [data-menu-button] svg {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    color: #374151 !important;
+  }
+
+  /* Estilos para los iconos del botón del menú móvil */
+  .mobile-menu-button svg,
+  [data-mobile-menu-button] svg {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    color: #374151 !important;
+  }
+
+  /* Estilos específicos para botones de navegación móvil */
+  [data-mobile-menu-button] {
+    position: relative !important;
+    z-index: 1000 !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2) !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.2s ease-in-out !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  [data-mobile-menu-button]:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+    transform: scale(1.05) !important;
+  }
+
+  [data-mobile-menu-button]:active {
+    transform: scale(0.95) !important;
+  }
+
+  [data-mobile-menu-button] svg {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    color: #374151 !important;
+  }
+
+  /* Estilos para botones de navegación dentro del menú móvil */
+  [data-mobile-sidebar] nav button {
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2) !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    min-height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    z-index: 10 !important;
+  }
+
+  [data-mobile-sidebar] nav button:active {
+    transform: scale(0.98) !important;
+  }
+
+  /* Botón de cerrar del menú móvil */
+  .mobile-navigation-close-btn,
+  [data-mobile-close-button] {
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2) !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    pointer-events: auto !important;
+    z-index: 1000 !important;
+    position: relative !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease-in-out !important;
+  }
+
+  .mobile-navigation-close-btn:hover,
+  [data-mobile-close-button]:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: scale(1.05) !important;
+  }
+
+  .mobile-navigation-close-btn:active,
+  [data-mobile-close-button]:active {
+    transform: scale(0.95) !important;
+    background: rgba(255, 255, 255, 0.3) !important;
+  }
+}
+
+/* ===== OPTIMIZACIONES PARA TABLETS ===== */
+@media (min-width: 640px) and (max-width: 1023px) {
+  [data-sidebar] {
+    max-width: 360px;
+  }
+
+  [data-sidebar] nav a {
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    min-height: 3.5rem;
+  }
+
+  [data-sidebar] nav a div {
+    min-width: 3rem;
+    min-height: 3rem;
+  }
+
+  [data-sidebar] nav a svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  [data-sidebar] nav a span {
+    font-size: 1rem;
+  }
+}
+
+/* ===== OPTIMIZACIONES DE RENDIMIENTO ===== */
+@media (max-width: 1023px) {
+  /* Reducir animaciones en dispositivos de bajo rendimiento */
+  @media (prefers-reduced-motion: reduce) {
+    [data-sidebar] {
+      transition: none;
+    }
+    
+    [data-sidebar] nav a {
+      transition: none;
+    }
+  }
+
+  /* Optimizar para touch */
+  [data-sidebar] nav a {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Mejorar el rendimiento de scroll */
+  [data-sidebar] {
+    contain: layout style paint;
+    will-change: transform;
+  }
+
+  /* Optimizar el overlay */
+  .mobile-overlay {
+    will-change: opacity;
+  }
+}
+
+/* ===== ESTADOS DE FOCUS MEJORADOS ===== */
+@media (max-width: 1023px) {
+  [data-sidebar] nav a:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    background: rgba(59, 130, 246, 0.1);
+  }
+
+  [data-menu-button]:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+
+  .mobile-menu-button:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+}
+
+/* ===== OPTIMIZACIONES DE ACCESIBILIDAD ===== */
+@media (max-width: 1023px) {
+  /* Mejorar contraste en móviles */
+  [data-sidebar] nav a {
+    color: #e2e8f0;
+  }
+
+  [data-sidebar] nav a:hover {
+    color: #ffffff;
+  }
+
+  [data-sidebar] nav a:focus {
+    color: #ffffff;
+  }
+
+  /* Mejorar el contraste del texto activo */
+  [data-sidebar] nav a.bg-gradient-to-r {
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  /* Mejorar el contraste de los iconos */
+  [data-sidebar] nav a svg {
+    opacity: 0.9;
+  }
+
+  [data-sidebar] nav a:hover svg,
+  [data-sidebar] nav a:focus svg {
+    opacity: 1;
+  }
+}
+
+/* ===== OPTIMIZACIONES DE LAYOUT ===== */
+@media (max-width: 1023px) {
+  /* Asegurar que el contenido principal no se desplace */
+  .main-content-mobile {
+    width: 100%;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Optimizar el header móvil */
+  .mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Mejorar el espaciado del contenido */
+  .mobile-content {
+    padding: 1rem;
+    min-height: calc(100vh - 3.5rem);
+  }
+}
+
+/* ===== OPTIMIZACIONES DE TOUCH ===== */
+@media (max-width: 1023px) {
+  /* Mejorar la respuesta táctil */
+  [data-sidebar] nav a {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+  }
+
+  [data-menu-button] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+  }
+
+  .mobile-menu-button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+  }
+
+  /* Mejorar el feedback táctil */
+  [data-sidebar] nav a:active {
+    transform: scale(0.98);
+  }
+
+  [data-menu-button]:active {
+    transform: scale(0.95);
+  }
+
+  .mobile-menu-button:active {
+    transform: scale(0.95);
+  }
+}

@@ -107,7 +107,6 @@ export async function GET(request: NextRequest) {
 
     return pdfBufferPromise;
   } catch (error) {
-    console.error("Error generating report:", error);
     return NextResponse.json({ error: "Error generando reporte" }, { status: 500 });
   }
 }

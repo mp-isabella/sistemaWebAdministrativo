@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Error generating PDF:', error)
+    
     return NextResponse.json({ error: 'Error generando PDF' }, { status: 500 })
   }
 }

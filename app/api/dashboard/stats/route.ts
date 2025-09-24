@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth/next";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     ] = await Promise.all([
       // Total de trabajos
       prisma.job.count(),
-      
+
       // Trabajos activos (pendientes + en progreso)
       prisma.job.count({
         where: {
@@ -35,26 +35,26 @@ export async function GET(request: NextRequest) {
           }
         }
       }),
-      
+
       // Trabajos completados
       prisma.job.count({
         where: {
           status: 'COMPLETED'
         }
       }),
-      
+
       // Total de clientes
       prisma.client.count(),
-      
+
       // Total de trabajadores
       prisma.user.count(),
-      
+
       // Total de cotizaciones
       prisma.quote.count(),
-      
+
       // Total de reportes (liquidaciones)
       prisma.liquidation.count(),
-      
+
       // Trabajos de hoy
       prisma.job.count({
         where: {
@@ -64,21 +64,21 @@ export async function GET(request: NextRequest) {
           }
         }
       }),
-      
+
       // Trabajos pendientes
       prisma.job.count({
         where: {
           status: 'PENDING'
         }
       }),
-      
+
       // Trabajos en progreso
       prisma.job.count({
         where: {
           status: 'IN_PROGRESS'
         }
       }),
-      
+
       // Trabajos cancelados
       prisma.job.count({
         where: {
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
     // Calcular tendencias (comparar con el mes anterior)
     const currentMonth = new Date();
     const lastMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
-    
+
     const [currentMonthJobs, lastMonthJobs] = await Promise.all([
       prisma.job.count({
         where: {
@@ -155,7 +155,7 @@ export async function GET(request: NextRequest) {
       })
     ]);
 
-    const jobsTrend = lastMonthJobs > 0 
+    const jobsTrend = lastMonthJobs > 0
       ? ((currentMonthJobs - lastMonthJobs) / lastMonthJobs * 100).toFixed(1)
       : 0;
 
@@ -193,7 +193,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(stats);
   } catch (error) {
-    console.error("Error fetching dashboard stats:", error);
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }

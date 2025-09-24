@@ -1,34 +1,35 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { 
-  Camera, 
-  CheckCircle, 
-  Clock, 
-  AlertCircle, 
-  X,
-  User,
-  Phone,
+import { Textarea } from "@/components/ui/textarea"
+import { useSignatureCanvas } from "@/hooks/use-signature-canvas"
+import {
+  Camera,
+  // CheckCircle, 
+  Clock,
+  DollarSign,
+  // Calendar,
+  FileText,
   Mail,
   MapPin,
-  DollarSign,
-  Signature,
-  Wrench,
+  Phone,
   Save,
+  Signature,
   Upload,
-  Calendar,
-  FileText
+  User,
+  Wrench,
+  // AlertCircle, 
+  X
 } from "lucide-react"
+import Image from "next/image"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
-import { useSignatureCanvas } from "@/hooks/use-signature-canvas"
 
 interface Job {
   id: string
@@ -61,11 +62,11 @@ interface JobManagementModalProps {
   onJobUpdated: () => void
 }
 
-export default function JobManagementModal({ 
-  job, 
-  isOpen, 
-  onClose, 
-  onJobUpdated 
+export default function JobManagementModal({
+  job,
+  isOpen,
+  onClose,
+  onJobUpdated
 }: JobManagementModalProps) {
   const [loading, setLoading] = useState(false)
   const [currentStatus, setCurrentStatus] = useState(job?.status || "")
@@ -77,11 +78,11 @@ export default function JobManagementModal({
   const [paymentAmount, setPaymentAmount] = useState("")
   const [activeTab, setActiveTab] = useState("status")
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
+
   const {
     canvasRef,
-    isDrawing,
-    hasSignature,
+    isDrawing: _isDrawing,
+    hasSignature: _hasSignature,
     clearCanvas,
     getSignatureData,
     setSignatureData
@@ -173,7 +174,7 @@ export default function JobManagementModal({
       // Simular actualización para datos de ejemplo
       if (job.id.startsWith('JOB-')) {
         await new Promise(resolve => setTimeout(resolve, 1500))
-        
+
         // Mostrar mensaje específico según el estado
         const statusMessages = {
           'PENDING': '✅ Trabajo marcado como Pendiente',
@@ -181,18 +182,21 @@ export default function JobManagementModal({
           'COMPLETED': '✅ Trabajo marcado como Completado',
           'CANCELLED': '✅ Trabajo marcado como Cancelado'
         }
-        
+
         toast.success(statusMessages[currentStatus as keyof typeof statusMessages] || "✅ Trabajo actualizado correctamente")
-        
+
         // Actualizar el estado local del trabajo para reflejar el cambio inmediatamente
-        const updatedJob = {
+        const _updatedJob = {
+          // Intentionally unused - we only need to update the parent component
           ...job,
           status: currentStatus,
           notes: observations,
           images: uploadedImages.join(","),
           signature: signature
         }
-        
+        // _updatedJob is intentionally unused - we only need to update the parent component
+        void _updatedJob
+
         // Notificar al componente padre sobre la actualización
         onJobUpdated()
         onClose()
@@ -216,7 +220,7 @@ export default function JobManagementModal({
 
       if (response.ok) {
         const result = await response.json()
-        
+
         // Mostrar mensaje específico según el estado
         const statusMessages = {
           'PENDING': '✅ Trabajo marcado como Pendiente',
@@ -224,14 +228,13 @@ export default function JobManagementModal({
           'COMPLETED': '✅ Trabajo marcado como Completado',
           'CANCELLED': '✅ Trabajo marcado como Cancelado'
         }
-        
+
         toast.success(statusMessages[currentStatus as keyof typeof statusMessages] || "✅ Trabajo actualizado correctamente")
-        console.log("Trabajo actualizado:", result)
-        
+
         // Notificar al componente padre sobre la actualización
         onJobUpdated()
         onClose()
-        
+
         // Emitir evento personalizado para notificar al calendario
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('jobStatusUpdated', {
@@ -247,7 +250,7 @@ export default function JobManagementModal({
         throw new Error(errorData.error || "Error al actualizar el trabajo")
       }
     } catch (error) {
-      console.error("Error updating job:", error)
+
       toast.error(`❌ Error: ${error instanceof Error ? error.message : "Error al actualizar el trabajo"}`)
     } finally {
       setLoading(false)
@@ -292,7 +295,7 @@ export default function JobManagementModal({
         throw new Error("Error al registrar el pago")
       }
     } catch (error) {
-      console.error("Error recording payment:", error)
+
       toast.error("Error al registrar el pago")
     } finally {
       setLoading(false)
@@ -332,7 +335,7 @@ export default function JobManagementModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent 
+      <DialogContent
         className="job-management-modal !fixed !left-1/2 !top-1/2 !z-[9999] !w-[98vw] !max-w-7xl !h-[92vh] !-translate-x-1/2 !-translate-y-1/2 !bg-white !rounded-2xl !shadow-2xl !border-0 !overflow-hidden"
         style={{
           position: 'fixed',
@@ -423,10 +426,12 @@ export default function JobManagementModal({
                     <Phone className="h-4 w-4 text-green-600" />
                     <span className="text-sm text-gray-700">{job.client.phone}</span>
                   </div>
-                  <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                    <Mail className="h-4 w-4 text-green-600" />
-                    <span className="text-sm text-gray-700">{job.client.email}</span>
-                  </div>
+                  {job.client.email && (
+                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                      <Mail className="h-4 w-4 text-green-600" />
+                      <span className="text-sm text-gray-700">{job.client.email}</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
                     <MapPin className="h-4 w-4 text-green-600" />
                     <span className="text-sm text-gray-700">{job.client.address}</span>
@@ -441,11 +446,10 @@ export default function JobManagementModal({
               <div className="flex space-x-2 bg-gray-100 p-2 rounded-2xl">
                 <button
                   onClick={() => setActiveTab("status")}
-                  className={`flex-1 py-4 px-6 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    activeTab === "status" 
-                      ? "bg-white text-blue-600 shadow-lg" 
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
+                  className={`flex-1 py-4 px-6 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === "status"
+                    ? "bg-white text-blue-600 shadow-lg"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
                 >
                   <div className="flex items-center justify-center gap-2">
                     <Clock className="h-4 w-4" />
@@ -454,11 +458,10 @@ export default function JobManagementModal({
                 </button>
                 <button
                   onClick={() => setActiveTab("evidence")}
-                  className={`flex-1 py-4 px-6 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    activeTab === "evidence" 
-                      ? "bg-white text-blue-600 shadow-lg" 
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
+                  className={`flex-1 py-4 px-6 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === "evidence"
+                    ? "bg-white text-blue-600 shadow-lg"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
                 >
                   <div className="flex items-center justify-center gap-2">
                     <Camera className="h-4 w-4" />
@@ -467,11 +470,10 @@ export default function JobManagementModal({
                 </button>
                 <button
                   onClick={() => setActiveTab("signature")}
-                  className={`flex-1 py-4 px-6 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    activeTab === "signature" 
-                      ? "bg-white text-blue-600 shadow-lg" 
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
+                  className={`flex-1 py-4 px-6 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === "signature"
+                    ? "bg-white text-blue-600 shadow-lg"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
                 >
                   <div className="flex items-center justify-center gap-2">
                     <Signature className="h-4 w-4" />
@@ -480,11 +482,10 @@ export default function JobManagementModal({
                 </button>
                 <button
                   onClick={() => setActiveTab("payment")}
-                  className={`flex-1 py-4 px-6 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    activeTab === "payment" 
-                      ? "bg-white text-blue-600 shadow-lg" 
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
+                  className={`flex-1 py-4 px-6 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === "payment"
+                    ? "bg-white text-blue-600 shadow-lg"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
                 >
                   <div className="flex items-center justify-center gap-2">
                     <DollarSign className="h-4 w-4" />
@@ -524,32 +525,30 @@ export default function JobManagementModal({
                             </SelectItem>
                           </SelectContent>
                         </Select>
-                        
+
                         {/* Mostrar el estado actual con color */}
                         {currentStatus && (
                           <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
                             <span className="text-sm font-medium text-gray-700">Estado actual: </span>
-                            <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold ${
-                              currentStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                            <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold ${currentStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                               currentStatus === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800' :
-                              currentStatus === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                              currentStatus === 'CANCELLED' ? 'bg-red-100 text-red-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              <div className={`w-2 h-2 rounded-full ${
-                                currentStatus === 'PENDING' ? 'bg-yellow-500' :
+                                currentStatus === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                                  currentStatus === 'CANCELLED' ? 'bg-red-100 text-red-800' :
+                                    'bg-gray-100 text-gray-800'
+                              }`}>
+                              <div className={`w-2 h-2 rounded-full ${currentStatus === 'PENDING' ? 'bg-yellow-500' :
                                 currentStatus === 'IN_PROGRESS' ? 'bg-blue-500' :
-                                currentStatus === 'COMPLETED' ? 'bg-green-500' :
-                                currentStatus === 'CANCELLED' ? 'bg-red-500' :
-                                'bg-gray-500'
-                              }`}></div>
+                                  currentStatus === 'COMPLETED' ? 'bg-green-500' :
+                                    currentStatus === 'CANCELLED' ? 'bg-red-500' :
+                                      'bg-gray-500'
+                                }`}></div>
                               {currentStatus === 'PENDING' ? 'Pendiente' :
-                               currentStatus === 'IN_PROGRESS' ? 'En Progreso' :
-                               currentStatus === 'COMPLETED' ? 'Completado' :
-                               currentStatus === 'CANCELLED' ? 'Cancelado' :
-                               currentStatus}
+                                currentStatus === 'IN_PROGRESS' ? 'En Progreso' :
+                                  currentStatus === 'COMPLETED' ? 'Completado' :
+                                    currentStatus === 'CANCELLED' ? 'Cancelado' :
+                                      currentStatus}
                             </span>
-                            
+
                             {/* Botón de prueba rápida */}
                             <div className="mt-3 pt-3 border-t border-gray-200">
                               <p className="text-xs text-gray-600 mb-2">Prueba rápida de estados:</p>
@@ -591,7 +590,7 @@ export default function JobManagementModal({
                           </div>
                         )}
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="observations" className="text-lg font-semibold text-gray-900 mb-3 block">Observaciones</Label>
                         <Textarea
@@ -640,9 +639,11 @@ export default function JobManagementModal({
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                             {uploadedImages.map((image, index) => (
                               <div key={index} className="relative group">
-                                <img
+                                <Image
                                   src={image}
                                   alt={`Evidencia ${index + 1}`}
+                                  width={200}
+                                  height={160}
                                   className="w-full h-40 object-cover rounded-xl border-2 border-gray-200 shadow-lg"
                                 />
                                 <Button
@@ -669,10 +670,10 @@ export default function JobManagementModal({
                       {signature && (
                         <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 bg-gray-50">
                           <Label className="text-lg font-semibold text-gray-900 mb-3 block">Firma Actual</Label>
-                          <img src={signature} alt="Firma" className="max-w-full h-40 object-contain mt-4" />
+                          <Image src={signature} alt="Firma" width={300} height={160} className="max-w-full h-40 object-contain mt-4" />
                         </div>
                       )}
-                      
+
                       <div className="space-y-6">
                         <Label className="text-lg font-semibold text-gray-900 mb-3 block">Firma Digital del Cliente</Label>
                         <div className="border-2 border-gray-200 rounded-xl overflow-hidden shadow-lg">
@@ -777,9 +778,9 @@ export default function JobManagementModal({
             <Button variant="outline" onClick={onClose} className="h-14 px-8 text-lg">
               Cancelar
             </Button>
-            <Button 
-              onClick={handleStatusUpdate} 
-              disabled={loading} 
+            <Button
+              onClick={handleStatusUpdate}
+              disabled={loading}
               className="h-14 px-8 text-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (

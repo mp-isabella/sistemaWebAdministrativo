@@ -1,29 +1,29 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Users, Calendar, Clock, TrendingUp, Download, FileText, DollarSign, Plus, Eye, Wrench, CreditCard, ExternalLink, MapPin } from 'lucide-react'
-import { Bar, Line, Pie } from "react-chartjs-2"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
+  ArcElement,
   BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
   LineElement,
   PointElement,
-  ArcElement,
   Title,
   Tooltip,
-  Legend,
 } from "chart.js"
+import { Calendar, Clock, CreditCard, DollarSign, Eye, FileText, Plus, TrendingUp, Users, Wrench } from 'lucide-react'
 import { useRouter } from "next/navigation"
-import { CalendarEvents } from "@/lib/calendar-events"
-import JobForm from "@/components/forms/job-form"
-import ClientForm from "@/components/forms/client-form"
+import { useEffect, useState } from "react"
+import { Bar, Pie } from "react-chartjs-2"
+// import { CalendarEvents } from "@/lib/calendar-events"
 import CashTransactionForm from "@/components/forms/cash-transaction-form"
+import ClientForm from "@/components/forms/client-form"
 import InvoiceForm from "@/components/forms/invoice-form"
+import JobForm from "@/components/forms/job-form"
 import ReportGeneratorForm from "@/components/forms/report-generator-form"
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend)
@@ -40,12 +40,7 @@ export default function AdminDashboard() {
   })
 
   const [loading, setLoading] = useState(true)
-  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-
-  const showNotification = (type: 'success' | 'error', message: string) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 5000);
-  };
+  const [notification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Modales states
   const [showJobForm, setShowJobForm] = useState(false)
@@ -53,8 +48,7 @@ export default function AdminDashboard() {
   const [showCashForm, setShowCashForm] = useState(false)
   const [showInvoiceForm, setShowInvoiceForm] = useState(false)
   const [showReportForm, setShowReportForm] = useState(false)
-  const [cashTransactionType, setCashTransactionType] = useState<'income' | 'expense'>('income')
-  
+  const [cashTransactionType, _setCashTransactionType] = useState<'income' | 'expense'>('income')
   useEffect(() => {
     fetchDashboardData()
   }, [])
@@ -80,7 +74,7 @@ export default function AdminDashboard() {
         monthlyRevenue: 2500000,
         activeJobs: 8,
       })
-      
+
       setRecentJobs([
         {
           id: "JOB-001",
@@ -111,7 +105,7 @@ export default function AdminDashboard() {
         },
       ])
     } catch (error) {
-      console.error("Error fetching dashboard data:", error)
+      
     } finally {
       setLoading(false)
     }
@@ -194,9 +188,8 @@ export default function AdminDashboard() {
     <div className="w-full space-y-4 sm:space-y-6 md:space-y-8">
       {/* Notificación */}
       {notification && (
-        <div className={`fixed top-4 sm:top-6 right-4 sm:right-6 z-50 p-3 sm:p-4 rounded-xl text-white shadow-lg transform transition-all duration-300 max-w-sm sm:max-w-md ${
-          notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-        }`}>
+        <div className={`fixed top-4 sm:top-6 right-4 sm:right-6 z-50 p-3 sm:p-4 rounded-xl text-white shadow-lg transform transition-all duration-300 max-w-sm sm:max-w-md ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+          }`}>
           <p className="text-sm sm:text-base">{notification.message}</p>
         </div>
       )}
@@ -212,9 +205,9 @@ export default function AdminDashboard() {
               Resumen general del sistema y estadísticas
             </p>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <Button 
+            <Button
               onClick={() => setShowJobForm(true)}
               className="w-full sm:w-auto"
             >
@@ -222,7 +215,7 @@ export default function AdminDashboard() {
               <span className="hidden sm:inline">Nuevo Trabajo</span>
               <span className="sm:hidden">Trabajo</span>
             </Button>
-            <Button 
+            <Button
               onClick={() => setShowClientForm(true)}
               variant="outline"
               className="w-full sm:w-auto"
@@ -453,7 +446,7 @@ export default function AdminDashboard() {
                         color: 'rgba(0, 0, 0, 0.1)',
                       },
                       ticks: {
-                        callback: function(value) {
+                        callback: function (value) {
                           return formatCurrency(value as number).replace('CLP', '');
                         },
                         font: {
@@ -489,8 +482,8 @@ export default function AdminDashboard() {
               <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
               Trabajos Recientes
             </CardTitle>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => router.push('/dashboard/schedule')}
               className="w-full sm:w-auto"
@@ -522,29 +515,27 @@ export default function AdminDashboard() {
                     <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-gray-800 truncate max-w-20 sm:max-w-32">{job.client}</td>
                     <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm text-gray-700 hidden sm:table-cell truncate max-w-24 sm:max-w-40">{job.service}</td>
                     <td className="py-3 px-2 sm:px-4">
-                      <Badge variant="outline" className={`text-xs ${
-                        getStatusColor(job.status) === 'warning' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                      <Badge variant="outline" className={`text-xs ${getStatusColor(job.status) === 'warning' ? 'bg-orange-50 text-orange-700 border-orange-200' :
                         getStatusColor(job.status) === 'primary' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                        getStatusColor(job.status) === 'success' ? 'bg-green-50 text-green-700 border-green-200' :
-                        'bg-red-50 text-red-700 border-red-200'
-                      }`}>
+                          getStatusColor(job.status) === 'success' ? 'bg-green-50 text-green-700 border-green-200' :
+                            'bg-red-50 text-red-700 border-red-200'
+                        }`}>
                         {getStatusText(job.status)}
                       </Badge>
                     </td>
                     <td className="py-3 px-2 sm:px-4 hidden md:table-cell">
-                      <Badge variant="outline" className={`text-xs ${
-                        getPriorityColor(job.priority) === 'danger' ? 'bg-red-50 text-red-700 border-red-200' :
+                      <Badge variant="outline" className={`text-xs ${getPriorityColor(job.priority) === 'danger' ? 'bg-red-50 text-red-700 border-red-200' :
                         getPriorityColor(job.priority) === 'warning' ? 'bg-orange-50 text-orange-700 border-orange-200' :
-                        'bg-green-50 text-green-700 border-green-200'
-                      }`}>
+                          'bg-green-50 text-green-700 border-green-200'
+                        }`}>
                         {getPriorityText(job.priority)}
                       </Badge>
                     </td>
                     <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm text-gray-700 hidden lg:table-cell truncate max-w-24">{job.technician}</td>
                     <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm text-gray-600 hidden md:table-cell">{new Date(job.date).toLocaleDateString('es-CL')}</td>
                     <td className="py-3 px-2 sm:px-4">
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={() => router.push(`/dashboard/my-jobs/${job.id}`)}
                         className="h-8 w-8 p-0"
@@ -570,15 +561,15 @@ export default function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-            <Button 
+            <Button
               onClick={() => setShowCashForm(true)}
               className="h-auto flex-col gap-3 p-4 sm:p-6"
             >
               <CreditCard className="h-6 w-6 sm:h-8 sm:w-8" />
               <span className="text-sm sm:text-base">Registrar Pago</span>
             </Button>
-            
-            <Button 
+
+            <Button
               onClick={() => setShowInvoiceForm(true)}
               variant="outline"
               className="h-auto flex-col gap-3 p-4 sm:p-6"
@@ -586,8 +577,8 @@ export default function AdminDashboard() {
               <FileText className="h-6 w-6 sm:h-8 sm:w-8" />
               <span className="text-sm sm:text-base">Crear Factura</span>
             </Button>
-            
-            <Button 
+
+            <Button
               onClick={() => setShowReportForm(true)}
               variant="outline"
               className="h-auto flex-col gap-3 p-4 sm:p-6"
@@ -595,8 +586,8 @@ export default function AdminDashboard() {
               <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8" />
               <span className="text-sm sm:text-base">Generar Reporte</span>
             </Button>
-            
-            <Button 
+
+            <Button
               onClick={() => router.push('/dashboard/calendar')}
               variant="outline"
               className="h-auto flex-col gap-3 p-4 sm:p-6"
@@ -612,9 +603,9 @@ export default function AdminDashboard() {
       {showJobForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
           <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            <JobForm 
-              onSubmit={() => {}} 
-              onCancel={() => setShowJobForm(false)} 
+            <JobForm
+              onSubmit={() => { }}
+              onCancel={() => setShowJobForm(false)}
             />
           </div>
         </div>
@@ -623,9 +614,9 @@ export default function AdminDashboard() {
       {showClientForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
           <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            <ClientForm 
-              onSubmit={() => {}} 
-              onCancel={() => setShowClientForm(false)} 
+            <ClientForm
+              onSubmit={() => { }}
+              onCancel={() => setShowClientForm(false)}
             />
           </div>
         </div>
@@ -634,10 +625,10 @@ export default function AdminDashboard() {
       {showCashForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
           <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            <CashTransactionForm 
+            <CashTransactionForm
               type={cashTransactionType}
-              onSubmit={() => {}} 
-              onCancel={() => setShowCashForm(false)} 
+              onSubmit={() => { }}
+              onCancel={() => setShowCashForm(false)}
             />
           </div>
         </div>
@@ -646,9 +637,9 @@ export default function AdminDashboard() {
       {showInvoiceForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
           <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            <InvoiceForm 
-              onSubmit={() => {}} 
-              onCancel={() => setShowInvoiceForm(false)} 
+            <InvoiceForm
+              onSubmit={() => { }}
+              onCancel={() => setShowInvoiceForm(false)}
             />
           </div>
         </div>
@@ -657,9 +648,9 @@ export default function AdminDashboard() {
       {showReportForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
           <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            <ReportGeneratorForm 
-              onSubmit={() => {}} 
-              onCancel={() => setShowReportForm(false)} 
+            <ReportGeneratorForm
+              onSubmit={() => { }}
+              onCancel={() => setShowReportForm(false)}
             />
           </div>
         </div>

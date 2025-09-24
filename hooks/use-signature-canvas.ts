@@ -8,8 +8,6 @@ interface UseSignatureCanvasProps {
 }
 
 export function useSignatureCanvas({
-  width = 300,
-  height = 150,
   lineWidth = 2,
   strokeStyle = '#000'
 }: UseSignatureCanvasProps = {}) {
@@ -69,9 +67,11 @@ export function useSignatureCanvas({
           y: e.clientY - rect.top
         }
       } else {
+        const touch = e.touches[0];
+        if (!touch) return { x: 0, y: 0 };
         return {
-          x: e.touches[0].clientX - rect.left,
-          y: e.touches[0].clientY - rect.top
+          x: touch.clientX - rect.left,
+          y: touch.clientY - rect.top
         }
       }
     }

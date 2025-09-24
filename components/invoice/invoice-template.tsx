@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState } from 'react'
+// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Download, Printer, Eye, Edit } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { Download, Edit, Eye, Printer } from 'lucide-react'
 
 interface InvoiceTemplateProps {
   invoice: {
@@ -161,12 +161,12 @@ export default function InvoiceTemplate({ invoice, onEdit, onView }: InvoiceTemp
           const htmlContent = await response.text()
           printWindow.document.write(htmlContent)
           printWindow.document.close()
-          
+
           setTimeout(() => {
             printWindow.print()
           }, 500)
         }
-        
+
         toast({
           title: "Éxito",
           description: `Factura ${invoice.invoiceNumber} generada para impresión`,
@@ -179,7 +179,7 @@ export default function InvoiceTemplate({ invoice, onEdit, onView }: InvoiceTemp
         })
       }
     } catch (error) {
-      console.error('Error printing invoice:', error)
+      
       toast({
         title: "Error",
         description: "Error al imprimir la factura",
@@ -194,16 +194,16 @@ export default function InvoiceTemplate({ invoice, onEdit, onView }: InvoiceTemp
     try {
       // Usar el nuevo generador de PDF mejorado
       const { downloadInvoicePDF } = await import('@/components/pdf-generator')
-      
+
       // Generar y descargar PDF
       downloadInvoicePDF(invoice, companyConfig)
-      
+
       toast({
         title: "Éxito",
         description: `Factura ${invoice.invoiceNumber} descargada`,
       })
     } catch (error) {
-      console.error('Error downloading invoice:', error)
+      
       toast({
         title: "Error",
         description: "Error al descargar la factura",
@@ -255,7 +255,9 @@ export default function InvoiceTemplate({ invoice, onEdit, onView }: InvoiceTemp
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <p><strong>Nombre:</strong> {invoice.client.name}</p>
-            <p><strong>Email:</strong> {invoice.client.email}</p>
+            {invoice.client.email && (
+              <p><strong>Email:</strong> {invoice.client.email}</p>
+            )}
             <p><strong>Teléfono:</strong> {invoice.client.phone}</p>
           </div>
           <div>
@@ -353,17 +355,17 @@ export default function InvoiceTemplate({ invoice, onEdit, onView }: InvoiceTemp
                 Editar
               </Button>
             )}
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handlePrint}
               disabled={isPrinting}
             >
               <Printer className="h-4 w-4 mr-2" />
               {isPrinting ? 'Imprimiendo...' : 'Imprimir'}
             </Button>
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               onClick={handleDownload}
               className={companyConfig.colors.primary}
             >

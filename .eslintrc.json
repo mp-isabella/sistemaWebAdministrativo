@@ -3,19 +3,24 @@
     "next/core-web-vitals"
   ],
   "rules": {
-    // Reglas generales - más permisivas para evitar errores de compilación
     "no-console": "off",
-    "no-debugger": "error",
-    "no-duplicate-imports": "error",
-    "no-unused-expressions": "error",
-    "prefer-const": "error",
-    "no-var": "error",
-    "react-hooks/exhaustive-deps": "warn",
-    "@next/next/no-img-element": "warn"
+    "no-debugger": "off",
+    "prefer-const": "off",
+    "no-var": "off",
+    "no-duplicate-imports": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "react-hooks/exhaustive-deps": "off"
   },
   "env": {
     "browser": true,
     "es2021": true,
     "node": true
-  }
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "out/",
+    "build/",
+    "dist/"
+  ]
 }

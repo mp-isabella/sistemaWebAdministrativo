@@ -1,7 +1,7 @@
 // hooks/use-image-optimization.ts
 // Hook personalizado para optimización de imágenes
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface ImageOptimizationOptions {
   src: string;
@@ -55,11 +55,11 @@ export const useImageOptimization = ({
     if (originalSrc.endsWith('.webp')) {
       return originalSrc;
     }
-    
+
     // Si es JPG/PNG, intentar usar versión WebP
     const baseName = originalSrc.replace(/\.(jpg|jpeg|png|JPG|JPEG|PNG)$/i, '');
     const webpSrc = `${baseName}.webp`;
-    
+
     return webpSrc;
   }, []);
 
@@ -67,7 +67,7 @@ export const useImageOptimization = ({
   const handleLoad = useCallback(() => {
     const endTime = performance.now();
     const loadTime = endTime - startTimeRef.current;
-    
+
     setIsLoaded(true);
     setIsError(false);
     setLoadTime(loadTime);
@@ -85,14 +85,14 @@ export const useImageOptimization = ({
   useEffect(() => {
     if (priority && src) {
       startTimeRef.current = performance.now();
-      
+
       const img = new window.Image();
       img.onload = handleLoad;
       img.onerror = handleError;
       img.src = src;
-      
+
       imgRef.current = img;
-      
+
       return () => {
         if (imgRef.current) {
           imgRef.current.onload = null;
@@ -100,6 +100,7 @@ export const useImageOptimization = ({
         }
       };
     }
+    return undefined;
   }, [src, priority, handleLoad, handleError]);
 
   // Actualizar src optimizado cuando cambie la fuente
@@ -113,7 +114,7 @@ export const useImageOptimization = ({
     setIsLoaded(false);
     setIsError(false);
     setLoadTime(0);
-    
+
     if (imgRef.current) {
       startTimeRef.current = performance.now();
       imgRef.current.src = optimizedSrc;
@@ -129,12 +130,12 @@ export const useImageOptimization = ({
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             startTimeRef.current = performance.now();
-            
+
             const img = new window.Image();
             img.onload = handleLoad;
             img.onerror = handleError;
             img.src = optimizedSrc;
-            
+
             imgRef.current = img;
             observer.unobserve(entry.target);
           }
@@ -181,7 +182,7 @@ export const useImageOptimization = ({
 // Hook para preload de múltiples imágenes
 export const useImagePreloader = (imageUrls: string[]) => {
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
-  const [totalImages, setTotalImages] = useState(imageUrls.length);
+  const [totalImages] = useState(imageUrls.length);
 
   useEffect(() => {
     if (imageUrls.length === 0) return;
@@ -190,12 +191,12 @@ export const useImagePreloader = (imageUrls: string[]) => {
       return new Promise((resolve) => {
         const img = new window.Image();
         img.onload = () => {
-          setLoadedImages(prev => new Set([...prev, url]));
+          setLoadedImages(prev => new Set(Array.from(prev).concat(url)));
           resolve();
         };
         img.onerror = () => {
           // Contar como cargada incluso si falla
-          setLoadedImages(prev => new Set([...prev, url]));
+          setLoadedImages(prev => new Set(Array.from(prev).concat(url)));
           resolve();
         };
         img.src = url;
@@ -226,28 +227,28 @@ export const useResponsiveImage = (src: string, breakpoints: number[] = [640, 76
     const updateImage = () => {
       const width = window.innerWidth;
       let breakpointIndex = 0;
-      
+
       for (let i = 0; i < breakpoints.length; i++) {
-        if (width >= breakpoints[i]) {
+        if (width >= (breakpoints[i] ?? 0)) {
           breakpointIndex = i;
         }
       }
-      
+
       if (breakpointIndex !== currentBreakpoint) {
         setCurrentBreakpoint(breakpointIndex);
-        
+
         // Generar src optimizado para el breakpoint actual
         const baseName = src.replace(/\.(webp|jpg|jpeg|png)$/i, '');
-        const extension = src.match(/\.(webp|jpg|jpeg|png)$/i)?.[1] || 'webp';
+        const extension = src.match(/\.(webp|jpg|jpeg|png)$/i)?.[1] ?? 'webp';
         const newSrc = `${baseName}-${breakpoints[breakpointIndex]}w.${extension}`;
-        
+
         setCurrentSrc(newSrc);
       }
     };
 
     updateImage();
     window.addEventListener('resize', updateImage);
-    
+
     return () => window.removeEventListener('resize', updateImage);
   }, [src, breakpoints, currentBreakpoint]);
 

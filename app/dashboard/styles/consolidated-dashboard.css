@@ -2294,12 +2294,7 @@ body .calendar-sidebar .hidden.lg\:block.mt-6 .grid.grid-cols-7.gap-1.text-cente
   outline-offset: 2px !important;
 }
 /* ===== SOLUCIÓN PARA ANCHO DEL DASHBOARD ===== */
-/* Solo afecta el contenedor max-w-7xl del dashboard */
-
-.dashboard-main .max-w-7xl {
-  max-width: 100% !important;
-  width: 100% !important;
-}
+/* Removed - now using Tailwind classes for full width */
 
 .dashboard-main .dashboard-content {
   padding: 1.5rem !important;

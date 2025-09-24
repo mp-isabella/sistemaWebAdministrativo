@@ -1,8 +1,8 @@
 "use client";
 
-import { ReactNode } from 'react';
 import { useResponsive } from '@/hooks/use-responsive';
 import { cn } from '@/lib/utils';
+import { ReactNode } from 'react';
 
 interface ResponsiveTableProps {
   children: ReactNode;
@@ -266,15 +266,13 @@ export function ResponsiveHybridTable({
   onRowClick,
   stickyHeader = false,
 }: ResponsiveHybridTableProps) {
-  const { isMobile } = useResponsive();
-
   return (
     <div className={className}>
       {/* Vista de tarjetas para móvil */}
       <ResponsiveCardTable
         data={data}
         columns={columns}
-        onRowClick={onRowClick}
+        onRowClick={onRowClick || (() => { })}
         className="mobile-only"
       />
 
@@ -285,7 +283,7 @@ export function ResponsiveHybridTable({
             {columns.map((column) => (
               <ResponsiveTableHeaderCell
                 key={column.key}
-                className={column.headerClassName}
+                className={column.headerClassName || ""}
               >
                 {column.label}
               </ResponsiveTableHeaderCell>
@@ -301,7 +299,7 @@ export function ResponsiveHybridTable({
               {columns.map((column) => (
                 <ResponsiveTableCell
                   key={column.key}
-                  className={column.className}
+                  className={column.className || ""}
                 >
                   {column.render ? column.render(row[column.key], row) : row[column.key]}
                 </ResponsiveTableCell>

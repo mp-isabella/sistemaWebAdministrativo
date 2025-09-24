@@ -1,29 +1,40 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Search, 
-  Plus, 
-  User,
-  Phone,
-  Mail,
-  MapPin,
-  Wrench,
-  Users,
-  Edit,
-  Trash2,
+import { RoleGuard } from '@/components/auth/role-guard';
+import WorkerForm from '@/components/forms/worker-form';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   AlertCircle,
-  CheckCircle,
   Building,
+  // MapPin,
   Calendar,
-  Star,
   Download,
-  Filter,
+  Edit,
+  Mail,
+  MoreVertical,
+  Phone,
+  Plus,
+  Search,
+  Trash2,
+  UserCog,
   X
-} from 'lucide-react';
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Worker {
   id: string;
@@ -31,221 +42,151 @@ interface Worker {
   email: string;
   phone: string;
   role: string;
-  status: 'active' | 'inactive';
-  location: string;
-  specializations?: string[];
-  experience?: number;
-  rating?: number;
-  totalJobs?: number;
-  completedJobs?: number;
+  status?: string;
+  company?: string;
+  joinDate?: string;
   createdAt?: string;
+  updatedAt?: string;
+  isActive?: boolean;
 }
 
-// Mock data - replace with actual API call
-const mockWorkers: Worker[] = [
+const initialWorkers: Worker[] = [
   {
-    id: '1',
+    id: "1",
     name: 'Juan Pérez',
-    email: 'juan.perez@empresa.com',
+    email: 'juan.perez@amestica.com',
     phone: '+56 9 1234 5678',
     role: 'Técnico',
-    status: 'active',
-    location: 'Santiago',
-    specializations: ['Plomería', 'Electricidad'],
-    experience: 5,
-    rating: 4.8,
-    totalJobs: 150,
-    completedJobs: 145,
-    createdAt: '2023-01-15'
+    status: 'activo',
+    company: 'Améstica Ltda',
+    joinDate: '2023-01-15',
+    createdAt: '2023-01-15',
+    updatedAt: '2024-01-15',
   },
   {
-    id: '2',
+    id: "2",
     name: 'María González',
-    email: 'maria.gonzalez@empresa.com',
-    phone: '+56 9 8765 4321',
-    role: 'Técnico',
-    status: 'active',
-    location: 'Providencia',
-    specializations: ['Climatización', 'Mantenimiento'],
-    experience: 3,
-    rating: 4.9,
-    totalJobs: 120,
-    completedJobs: 118,
-    createdAt: '2023-03-20'
+    email: 'maria.gonzalez@amestica.com',
+    phone: '+56 9 2345 6789',
+    role: 'Secretaria',
+    status: 'activo',
+    company: 'Améstica Ltda',
+    joinDate: '2023-03-20',
+    createdAt: '2023-03-20',
+    updatedAt: '2024-01-14',
   },
   {
-    id: '3',
+    id: "3",
     name: 'Carlos Rodríguez',
-    email: 'carlos.rodriguez@empresa.com',
-    phone: '+56 9 5555 1234',
-    role: 'Técnico',
-    status: 'inactive',
-    location: 'Las Condes',
-    specializations: ['Gasfitería'],
-    experience: 7,
-    rating: 4.6,
-    totalJobs: 200,
-    completedJobs: 195,
-    createdAt: '2022-08-10'
-  }
+    email: 'carlos.rodriguez@amestica.com',
+    phone: '+56 9 3456 7890',
+    role: 'Administrador',
+    status: 'activo',
+    company: 'Améstica Ltda',
+    joinDate: '2022-11-10',
+    createdAt: '2022-11-10',
+    updatedAt: '2024-01-20',
+  },
 ];
 
-// Componente de tarjeta de trabajador unificado con el nuevo sistema de diseño
-const WorkerCard = React.memo(({ 
-  worker, 
-  onEdit, 
-  onDelete 
-}: { 
-  worker: Worker; 
-  onEdit: (worker: Worker) => void; 
-  onDelete: (id: string) => void; 
+// Componente de tarjeta de trabajador con diseño profesional usando Tailwind
+const WorkerCard = ({
+  worker,
+  onEdit,
+  onDelete
+}: {
+  worker: Worker;
+  onEdit: (worker: Worker) => void;
+  onDelete: (id: string) => void;
 }) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "badge badge-success";
-      case "inactive":
-        return "badge badge-error";
-      default:
-        return "badge badge-info";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "active":
-        return "Activo";
-      case "inactive":
-        return "Inactivo";
-      default:
-        return status;
+  const getStatusColor = (status: string | boolean | undefined) => {
+    const statusValue = typeof status === 'boolean' ? (status ? 'activo' : 'inactivo') : status;
+    switch (statusValue) {
+      case 'activo': return 'bg-green-100 text-green-800 border-green-200';
+      case 'inactivo': return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'suspendido': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-blue-100 text-blue-800 border-blue-200';
     }
   };
 
   const getRoleColor = (role: string) => {
-    switch (role.toLowerCase()) {
-      case "técnico":
-        return "badge badge-primary";
-      case "secretaria":
-        return "badge badge-warning";
-      case "administrador":
-        return "badge badge-info";
-      default:
-        return "badge badge-secondary";
+    switch (role) {
+      case 'Técnico': return 'bg-green-100 text-green-800 border-green-200';
+      case 'Secretaria': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'Administrador': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   return (
-    <div className="content-card hover:shadow-lg transition-all duration-300 hover:scale-[1.02] will-change-transform">
-      <div className="card-body">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-3">
-              <h3 className="text-lg font-semibold text-gray-800 truncate">
-                {worker.name}
-              </h3>
-              <div className="flex gap-2 flex-shrink-0">
-                <Badge className={getStatusColor(worker.status)}>
-                  {getStatusLabel(worker.status)}
-                </Badge>
-                <Badge className={getRoleColor(worker.role)}>
-                  {worker.role}
-                </Badge>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm text-gray-600 mb-3">
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-blue-500" />
-                <span className="truncate">{worker.email}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-green-500" />
-                <span className="truncate">{worker.phone}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-purple-500" />
-                <span className="truncate">{worker.location}</span>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-gray-600 mb-3">
-              <div className="flex items-center gap-2">
-                <Wrench className="h-4 w-4 text-orange-500" />
-                <span className="truncate">{worker.experience} años exp.</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-yellow-500" />
-                <span className="truncate">{worker.rating}/5.0</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-indigo-500" />
-                <span className="truncate">{worker.totalJobs} trabajos</span>
-              </div>
-            </div>
-            
-            {worker.specializations && worker.specializations.length > 0 && (
-              <div className="mb-3">
-                <p className="text-sm text-gray-600 mb-2">
-                  <strong>Especializaciones:</strong>
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {worker.specializations.map((spec, index) => (
-                    <Badge key={index} className="badge badge-info">
-                      {spec}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            <div className="flex items-center justify-between text-xs text-gray-500">
-              <div className="flex items-center gap-4">
-                <span className="flex items-center gap-1">
-                  <CheckCircle className="h-3 w-3" />
-                  {worker.completedJobs} completados
-                </span>
-                <span className="flex items-center gap-1">
-                  <Building className="h-3 w-3" />
-                  Desde {worker.createdAt ? new Date(worker.createdAt).toLocaleDateString('es-CL') : 'N/A'}
-                </span>
-              </div>
-              <span className="text-gray-400">ID: {worker.id.slice(-8)}</span>
-            </div>
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center space-x-3 sm:space-x-4">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <UserCog className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
           </div>
-          
-          <div className="flex items-center gap-2 ml-4">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => onEdit(worker)}
-              className="btn btn-secondary btn-sm"
-              title="Editar trabajador"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => onDelete(worker.id)}
-              className="btn btn-danger btn-sm"
-              title="Eliminar trabajador"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+          <div>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">{worker.name}</h3>
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <Badge className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(worker.isActive || worker.status)}`}>
+                {typeof worker.isActive === 'boolean' ? (worker.isActive ? 'Activo' : 'Inactivo') : (worker.status || 'Activo')}
+              </Badge>
+              <Badge className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold border ${getRoleColor(worker.role)}`}>
+                {worker.role}
+              </Badge>
+            </div>
           </div>
         </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onEdit(worker)}>
+              <Edit className="h-4 w-4 mr-2" />
+              Editar
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onDelete(worker.id)} className="text-red-600">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Eliminar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center text-gray-600">
+          <Mail className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0" />
+          <span className="text-sm font-medium truncate">{worker.email}</span>
+        </div>
+        <div className="flex items-center text-gray-600">
+          <Phone className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0" />
+          <span className="text-sm font-medium">{worker.phone}</span>
+        </div>
+        <div className="flex items-center text-gray-600">
+          <Building className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0" />
+          <span className="text-sm font-medium">{worker.company || 'Améstica Ltda'}</span>
+        </div>
+        {worker.joinDate && (
+          <div className="flex items-center text-gray-600">
+            <Calendar className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0" />
+            <span className="text-sm font-medium">
+              Ingreso: {new Date(worker.joinDate).toLocaleDateString('es-CL')}
+            </span>
+          </div>
+        )}
+      </div>
+
     </div>
   );
-});
-
-WorkerCard.displayName = 'WorkerCard';
+};
 
 export default function WorkersPage() {
-  const [workers, setWorkers] = useState<Worker[]>(mockWorkers);
-  const [filteredWorkers, setFilteredWorkers] = useState<Worker[]>(mockWorkers);
+  const [workers, setWorkers] = useState<Worker[]>(initialWorkers);
+  const [filteredWorkers, setFilteredWorkers] = useState<Worker[]>(initialWorkers);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showWorkerForm, setShowWorkerForm] = useState(false);
@@ -253,230 +194,216 @@ export default function WorkersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
-  const [locationFilter, setLocationFilter] = useState("all");
 
   // Estados para confirmación de eliminación
   const [deletingWorkerId, setDeletingWorkerId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Referencias para optimización
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Función para cargar trabajadores desde la API
   const fetchWorkers = async () => {
     try {
       setLoading(true);
       setError("");
-      
-      // Aquí iría la llamada real a la API
-      // const response = await fetch('/api/workers');
-      // const data = await response.json();
-      // setWorkers(data);
-      
-      // Por ahora usamos mock data
-      setWorkers(mockWorkers);
+
+      const response = await fetch('/api/workers/technicians');
+
+      if (!response.ok) {
+        throw new Error(`Error al cargar los trabajadores: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setWorkers(data);
     } catch (error) {
-      console.error("Error fetching workers:", error);
-      setError("Error al cargar los trabajadores");
+
+      setError(error instanceof Error ? error.message : "Error al cargar los trabajadores");
     } finally {
       setLoading(false);
     }
   };
 
-  // Función para filtrar trabajadores
-  const filterWorkers = () => {
-    const filtered = workers.filter((worker) => {
-      // Filtrar por término de búsqueda
-      if (searchTerm) {
-        const searchLower = searchTerm.toLowerCase();
-        return (
-          worker.name.toLowerCase().includes(searchLower) ||
-          worker.email.toLowerCase().includes(searchLower) ||
-          worker.phone.toLowerCase().includes(searchLower) ||
-          worker.location.toLowerCase().includes(searchLower) ||
-          (worker.specializations || []).some(spec => 
-            spec.toLowerCase().includes(searchLower)
-          )
-        );
-      }
-      
-      // Filtrar por estado
-      if (statusFilter !== "all" && worker.status !== statusFilter) return false;
-      
-      // Filtrar por rol
-      if (roleFilter !== "all" && worker.role !== roleFilter) return false;
-      
-      // Filtrar por ubicación
-      if (locationFilter !== "all" && worker.location !== locationFilter) return false;
-      
-      return true;
-    });
+  // Función optimizada para filtrar trabajadores
+  const filterWorkers = useCallback(() => {
+    let filtered = workers;
 
-    // Ordenar por nombre
-    filtered.sort((a, b) => a.name.localeCompare(b.name));
+    // Filtro por término de búsqueda
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(worker =>
+        worker.name.toLowerCase().includes(term) ||
+        worker.email.toLowerCase().includes(term) ||
+        worker.phone.includes(term) ||
+        (worker.company || '').toLowerCase().includes(term)
+      );
+    }
+
+    // Filtro por estado
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(worker => {
+        if (typeof worker.isActive === 'boolean') {
+          return statusFilter === 'activo' ? worker.isActive : !worker.isActive;
+        }
+        return worker.status === statusFilter;
+      });
+    }
+
+    // Filtro por rol
+    if (roleFilter !== "all") {
+      filtered = filtered.filter(worker => worker.role === roleFilter);
+    }
 
     setFilteredWorkers(filtered);
-  };
+  }, [workers, searchTerm, statusFilter, roleFilter]);
 
+  // Efecto para aplicar filtros
   useEffect(() => {
     filterWorkers();
-  }, [workers, searchTerm, statusFilter, roleFilter, locationFilter]);
+  }, [filterWorkers]);
 
+  // Función optimizada para búsqueda con debounce
+  const handleSearch = useCallback((value: string) => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setSearchTerm(value);
+    }, 300);
+  }, []);
+
+  // Función para limpiar filtros
+  const clearFilters = useCallback(() => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setRoleFilter("all");
+  }, []);
+
+  // Función para manejar nuevo trabajador
+  const handleNewWorker = useCallback(() => {
+    setEditingWorker(null);
+    setShowWorkerForm(true);
+  }, []);
+
+  // Función para manejar edición de trabajador
+  const handleEditWorker = useCallback((worker: Worker) => {
+    setEditingWorker(worker);
+    setShowWorkerForm(true);
+  }, []);
+
+  // Función para manejar eliminación de trabajador
+  const handleDeleteWorker = useCallback((id: string) => {
+    setDeletingWorkerId(id);
+    setShowDeleteConfirm(true);
+  }, []);
+
+  // Función para confirmar eliminación
+  const confirmDelete = useCallback(async () => {
+    if (!deletingWorkerId) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/workers/technicians/${deletingWorkerId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar el trabajador');
+      }
+
+      setWorkers(prev => prev.filter(worker => worker.id !== deletingWorkerId));
+      setShowDeleteConfirm(false);
+      setDeletingWorkerId(null);
+    } catch (error) {
+
+      setError(error instanceof Error ? error.message : 'Error al eliminar el trabajador');
+    } finally {
+      setLoading(false);
+    }
+  }, [deletingWorkerId]);
+
+  // Función para exportar datos
+  const handleExport = useCallback(() => {
+    // Implementar exportación a Excel
+
+  }, []);
+
+  // Función para manejar envío del formulario
+  const handleFormSubmit = useCallback(async (formData: any) => {
+    try {
+
+      setLoading(true);
+      setError("");
+
+      const url = editingWorker
+        ? `/api/workers/technicians/${editingWorker.id}`
+        : '/api/workers/technicians';
+
+      const method = editingWorker ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          isActive: formData.status === 'active'
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        
+        throw new Error(errorData.error || 'Error al guardar el trabajador');
+      }
+
+      const result = await response.json();
+
+      if (editingWorker) {
+        // Actualizar trabajador existente
+        setWorkers(prev => prev.map(worker =>
+          worker.id === editingWorker.id
+            ? { ...worker, ...result }
+            : worker
+        ));
+      } else {
+        // Agregar nuevo trabajador al principio de la lista
+        setWorkers(prev => [result, ...prev]);
+      }
+
+      setShowWorkerForm(false);
+      setEditingWorker(null);
+    } catch (error) {
+
+      setError(error instanceof Error ? error.message : 'Error al guardar el trabajador');
+    } finally {
+      setLoading(false);
+    }
+  }, [editingWorker]);
+
+  // Función para cancelar formulario
+  const handleFormCancel = useCallback(() => {
+    setShowWorkerForm(false);
+    setEditingWorker(null);
+  }, []);
+
+  // Cargar trabajadores al montar el componente
   useEffect(() => {
     fetchWorkers();
   }, []);
 
-  // Estadísticas optimizadas
-  const stats = {
-    total: workers.length,
-    active: workers.filter(w => w.status === "active").length,
-    inactive: workers.filter(w => w.status === "inactive").length,
-    technicians: workers.filter(w => w.role.toLowerCase() === "técnico").length,
-    totalExperience: workers.reduce((sum, w) => sum + (w.experience || 0), 0),
-    avgRating: workers.reduce((sum, w) => sum + (w.rating || 0), 0) / workers.length || 0
-  };
-
-  // Función para limpiar filtros
-  const clearFilters = () => {
-    setSearchTerm("");
-    setStatusFilter("all");
-    setRoleFilter("all");
-    setLocationFilter("all");
-  };
-
-  // Función para exportar datos
-  const handleExport = () => {
-    const headers = ['Nombre', 'Email', 'Teléfono', 'Rol', 'Estado', 'Ubicación', 'Especializaciones', 'Experiencia', 'Rating', 'Total Trabajos', 'Trabajos Completados', 'Fecha de Ingreso'];
-    const rows = filteredWorkers.map(worker => [
-      worker.name,
-      worker.email,
-      worker.phone,
-      worker.role,
-      worker.status === 'active' ? 'Activo' : 'Inactivo',
-      worker.location,
-      (worker.specializations || []).join(', '),
-      worker.experience || 0,
-      worker.rating || 0,
-      worker.totalJobs || 0,
-      worker.completedJobs || 0,
-      worker.createdAt ? new Date(worker.createdAt).toLocaleDateString('es-CL') : 'N/A'
-    ]);
-
-    const htmlContent = `
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <style>
-            table { border-collapse: collapse; width: 100%; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; font-weight: bold; }
-          </style>
-        </head>
-        <body>
-          <table>
-            <thead>
-              <tr>
-                ${headers.map(header => `<th>${header}</th>`).join('')}
-              </tr>
-            </thead>
-            <tbody>
-              ${rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `;
-
-    const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `Reporte_Trabajadores_${new Date().toISOString().split('T')[0]}.xls`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  // Función para abrir formulario de nuevo trabajador
-  const handleNewWorker = () => {
-    setEditingWorker(null);
-    setShowWorkerForm(true);
-  };
-
-  // Función para editar trabajador
-  const handleEditWorker = (worker: Worker) => {
-    setEditingWorker(worker);
-    setShowWorkerForm(true);
-  };
-
-  // Función para guardar trabajador
-  const handleSaveWorker = async (workerData: any) => {
-    try {
-      if (editingWorker) {
-        // Actualizar trabajador existente
-        const updatedWorkers = workers.map(w => 
-          w.id === editingWorker.id ? { ...w, ...workerData } : w
-        );
-        setWorkers(updatedWorkers);
-      } else {
-        // Crear nuevo trabajador
-        const newWorker: Worker = {
-          id: Date.now().toString(),
-          ...workerData,
-          createdAt: new Date().toISOString()
-        };
-        setWorkers([...workers, newWorker]);
-      }
-      
-      // Resetear estados
-      setShowWorkerForm(false);
-      setEditingWorker(null);
-      
-    } catch (error) {
-      console.error('Error saving worker:', error);
-      setError("Error al guardar el trabajador");
-    }
-  };
-
-  // Función para confirmar eliminación
-  const confirmDelete = (workerId: string) => {
-    setDeletingWorkerId(workerId);
-    setShowDeleteConfirm(true);
-  };
-
-  // Función para cancelar eliminación
-  const cancelDelete = () => {
-    setShowDeleteConfirm(false);
-    setDeletingWorkerId(null);
-  };
-
-  // Función para eliminar trabajador
-  const deleteWorker = async () => {
-    if (!deletingWorkerId) return;
-
-    try {
-      // Aquí iría la llamada real a la API
-      // await fetch(`/api/workers/${deletingWorkerId}`, { method: 'DELETE' });
-      
-      // Por ahora actualizamos el estado local
-      const updatedWorkers = workers.filter(w => w.id !== deletingWorkerId);
-      setWorkers(updatedWorkers);
-      
-      // Cerrar diálogo
-      cancelDelete();
-      
-    } catch (error) {
-      console.error('Error deleting worker:', error);
-      setError("Error al eliminar el trabajador");
-    }
-  };
-
-  // Mostrar loading mientras se cargan los datos
-  if (loading) {
+  // Mostrar estado de carga
+  if (loading && workers.length === 0) {
     return (
-      <div className="dashboard-content">
-        <div className="max-w-7xl mx-auto">
-          <div className="empty-state">
-            <div className="loading-spinner mx-auto"></div>
-            <p className="empty-description">Cargando trabajadores...</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+        <div className="w-full">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Cargando trabajadores...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -484,322 +411,196 @@ export default function WorkersPage() {
   }
 
   return (
-    <div className="dashboard-content">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header Unificado */}
-        <div className="content-card mb-6">
-          <div className="card-header">
-            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h1 className="card-title text-3xl">
+    <RoleGuard requiredPermission="canAccessWorkers">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-3 sm:p-4 lg:p-6">
+        <div className="w-full space-y-4 sm:space-y-6 lg:space-y-8">
+          {/* Header Unificado */}
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6">
+              <div className="space-y-2">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-900 to-indigo-800 bg-clip-text text-transparent">
                   Gestión de <span className="text-blue-600">Trabajadores</span>
                 </h1>
-                <p className="card-subtitle">Administra tu equipo de trabajo y mantén actualizada la información</p>
+                <p className="text-sm sm:text-base lg:text-lg text-gray-600 font-medium">Administra y mantén actualizada la información de tu personal técnico</p>
               </div>
-              <div className="flex gap-3 flex-wrap">
-                <Button onClick={handleNewWorker} className="btn btn-primary btn-lg">
-                  <Plus className="h-5 w-5 mr-2" />
-                  Nuevo Trabajador
+
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <Button onClick={handleNewWorker} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 text-sm sm:text-base">
+                  <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  <span className="hidden sm:inline">Nuevo Trabajador</span>
+                  <span className="sm:hidden">Nuevo</span>
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={handleExport}
-                  className="btn btn-secondary btn-lg"
+                  className="border-2 border-green-200 text-green-700 hover:bg-green-50 px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 text-sm sm:text-base"
                 >
-                  <Download className="h-5 w-5 mr-2" />
-                  Excel
+                  <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  <span className="hidden sm:inline">Exportar Excel</span>
+                  <span className="sm:hidden">Exportar</span>
                 </Button>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Alerta de error */}
-        {error && (
-          <div className="content-card border-red-200 bg-red-50">
-            <div className="card-body">
-              <div className="flex items-center gap-3">
-                <AlertCircle className="h-5 w-5 text-red-500" />
+          {/* Alerta de error */}
+          {error && (
+            <div className="bg-white rounded-2xl shadow-lg border border-red-200 bg-red-50 p-6">
+              <div className="flex items-center">
+                <AlertCircle className="h-5 w-5 text-red-500 mr-3" />
                 <div>
-                  <h3 className="font-semibold text-red-800">Error</h3>
-                  <p className="text-red-700 text-sm">{error}</p>
+                  <h3 className="text-sm font-medium text-red-800">Error</h3>
+                  <p className="text-sm text-red-700 mt-1">{error}</p>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setError("")}
+                  className="ml-auto text-red-500 hover:text-red-700"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Tarjetas de estadísticas */}
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-header">
-              <div>
-                <p className="stat-label">Total Trabajadores</p>
-                <p className="stat-value">{stats.total}</p>
-                <p className="stat-subtitle">En el sistema</p>
-              </div>
-              <div className="stat-icon blue">
-                <Users className="h-6 w-6" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-header">
-              <div>
-                <p className="stat-label">Activos</p>
-                <p className="stat-value">{stats.active}</p>
-                <p className="stat-subtitle">Actualmente activos</p>
-              </div>
-              <div className="stat-icon green">
-                <CheckCircle className="h-6 w-6" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-header">
-              <div>
-                <p className="stat-label">Técnicos</p>
-                <p className="stat-value">{stats.technicians}</p>
-                <p className="stat-subtitle">Especialistas técnicos</p>
-              </div>
-              <div className="stat-icon orange">
-                <Wrench className="h-6 w-6" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Controles de filtro */}
-        <div className="content-card">
-          <div className="card-header">
-            <h3 className="card-title">
-              <Filter className="h-5 w-5 text-blue-600" />
-              Filtros y Búsqueda
-            </h3>
-            <p className="card-subtitle">Personaliza la vista de trabajadores según tus necesidades</p>
-          </div>
-          <div className="card-body">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="form-group">
-                <label className="form-label">Buscar</label>
+          {/* Filtros */}
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 hidden lg:block">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                   <Input
-                    type="text"
-                    placeholder="Buscar trabajador, email..."
+                    placeholder="Buscar trabajadores por nombre, email, teléfono o empresa..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="form-input pl-10"
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="pl-10 h-10 sm:h-12 text-sm sm:text-base lg:text-lg border-2 border-gray-200 focus:border-indigo-500 rounded-xl"
                   />
                 </div>
               </div>
-              <div className="form-group">
-                <label className="form-label">Estado</label>
-                <select 
-                  value={statusFilter} 
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="form-input"
+
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-48 h-10 sm:h-12 border-2 border-gray-200 focus:border-indigo-500 rounded-xl text-sm sm:text-base">
+                    <SelectValue placeholder="Estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los estados</SelectItem>
+                    <SelectItem value="activo">Activo</SelectItem>
+                    <SelectItem value="inactivo">Inactivo</SelectItem>
+                    <SelectItem value="suspendido">Suspendido</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                  <SelectTrigger className="w-full sm:w-48 h-10 sm:h-12 border-2 border-gray-200 focus:border-indigo-500 rounded-xl text-sm sm:text-base">
+                    <SelectValue placeholder="Rol" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los roles</SelectItem>
+                    <SelectItem value="Técnico">Técnico</SelectItem>
+                    <SelectItem value="Secretaria">Secretaria</SelectItem>
+                    <SelectItem value="Administrador">Administrador</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Button
+                  variant="outline"
+                  onClick={clearFilters}
+                  className="h-10 sm:h-12 px-4 sm:px-6 border-2 border-gray-200 hover:border-gray-300 rounded-xl text-sm sm:text-base"
                 >
-                  <option value="all">Todos los estados</option>
-                  <option value="active">Activo</option>
-                  <option value="inactive">Inactivo</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Rol</label>
-                <select 
-                  value={roleFilter} 
-                  onChange={(e) => setRoleFilter(e.target.value)}
-                  className="form-input"
-                >
-                  <option value="all">Todos los roles</option>
-                  <option value="Técnico">Técnico</option>
-                  <option value="Secretaria">Secretaria</option>
-                  <option value="Administrador">Administrador</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Ubicación</label>
-                <select 
-                  value={locationFilter} 
-                  onChange={(e) => setLocationFilter(e.target.value)}
-                  className="form-input"
-                >
-                  <option value="all">Todas las ubicaciones</option>
-                  <option value="Santiago">Santiago</option>
-                  <option value="Providencia">Providencia</option>
-                  <option value="Las Condes">Las Condes</option>
-                </select>
+                  <X className="h-4 w-4 mr-2" />
+                  Limpiar
+                </Button>
               </div>
             </div>
-            <div className="mt-4 flex justify-end">
-              <Button 
-                variant="outline" 
-                onClick={clearFilters}
-                className="btn btn-secondary"
-              >
-                <Filter className="mr-2 h-4 w-4" />
-                Limpiar Filtros
-              </Button>
-            </div>
+          </div>
+
+          {/* Lista de Trabajadores */}
+          <div className="space-y-6">
+            {filteredWorkers.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
+                <UserCog className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No se encontraron trabajadores</h3>
+                <p className="text-gray-600 mb-6">
+                  {searchTerm || statusFilter !== "all" || roleFilter !== "all"
+                    ? "Intenta ajustar los filtros de búsqueda"
+                    : "Comienza agregando tu primer trabajador"}
+                </p>
+                <Button onClick={handleNewWorker} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Agregar Trabajador
+                </Button>
+              </div>
+            ) : (
+              <div className="grid gap-6">
+                {filteredWorkers.map((worker) => (
+                  <WorkerCard
+                    key={worker.id}
+                    worker={worker}
+                    onEdit={handleEditWorker}
+                    onDelete={handleDeleteWorker}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Lista de trabajadores */}
-        <div className="space-y-4">
-          {filteredWorkers.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">
-                <Users className="h-16 w-16" />
-              </div>
-              <h3 className="empty-title">No hay trabajadores</h3>
-              <p className="empty-description">
-                {searchTerm || statusFilter !== "all" || roleFilter !== "all" || locationFilter !== "all"
-                  ? "No se encontraron trabajadores para los filtros seleccionados. Intenta ajustar los criterios de búsqueda."
-                  : "Comienza agregando tu primer trabajador para organizar tu equipo."}
-              </p>
-              <div className="flex gap-3 justify-center">
-                <Button onClick={handleNewWorker} className="btn btn-primary">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Agregar Trabajador
-                </Button>
-                {(searchTerm || statusFilter !== "all" || roleFilter !== "all" || locationFilter !== "all") && (
-                  <Button variant="outline" onClick={clearFilters} className="btn btn-secondary">
-                    <Filter className="mr-2 h-4 w-4" />
-                    Limpiar Filtros
-                  </Button>
-                )}
-              </div>
-            </div>
-          ) : (
-            filteredWorkers.map((worker) => (
-              <WorkerCard
-                key={worker.id}
-                worker={worker}
-                onEdit={handleEditWorker}
-                onDelete={confirmDelete}
-              />
-            ))
-          )}
-        </div>
-
-        {/* Modal para el formulario de trabajador */}
-        {showWorkerForm && (
-          <div className="modal-overlay">
-            <div className="modal w-full max-w-4xl">
-              <div className="modal-header">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-blue-600" />
-                  <h2 className="modal-title">
-                    {editingWorker ? 'Editar Trabajador' : 'Nuevo Trabajador'}
-                  </h2>
-                </div>
-                <button
-                  onClick={() => setShowWorkerForm(false)}
-                  className="modal-close"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-              <div className="modal-body">
-                <p className="text-sm text-gray-600 mb-4">
-                  {editingWorker ? 'Modifica los detalles del trabajador.' : 'Completa el formulario para agregar un nuevo trabajador.'}
+        {/* Modal de confirmación de eliminación */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-8 max-w-md mx-4">
+              <div className="text-center">
+                <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-900 mb-2">¿Eliminar trabajador?</h3>
+                <p className="text-gray-600 mb-6">
+                  Esta acción no se puede deshacer. Se eliminará permanentemente toda la información del trabajador.
                 </p>
-                {/* Aquí iría el formulario de trabajador */}
-                <div className="space-y-4">
-                  <div className="form-group">
-                    <label className="form-label">Nombre</label>
-                    <Input
-                      type="text"
-                      placeholder="Nombre completo"
-                      className="form-input"
-                      defaultValue={editingWorker?.name || ''}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Email</label>
-                    <Input
-                      type="email"
-                      placeholder="email@ejemplo.com"
-                      className="form-input"
-                      defaultValue={editingWorker?.email || ''}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Teléfono</label>
-                    <Input
-                      type="tel"
-                      placeholder="+56 9 1234 5678"
-                      className="form-input"
-                      defaultValue={editingWorker?.phone || ''}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="form-group">
-                      <label className="form-label">Rol</label>
-                      <select className="form-input" defaultValue={editingWorker?.role || 'Técnico'}>
-                        <option value="Técnico">Técnico</option>
-                        <option value="Secretaria">Secretaria</option>
-                        <option value="Administrador">Administrador</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Estado</label>
-                      <select className="form-input" defaultValue={editingWorker?.status || 'active'}>
-                        <option value="active">Activo</option>
-                        <option value="inactive">Inactivo</option>
-                      </select>
-                    </div>
-                  </div>
+                <div className="flex gap-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={confirmDelete}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Eliminar
+                  </Button>
                 </div>
-              </div>
-              <div className="modal-footer">
-                <Button variant="outline" onClick={() => setShowWorkerForm(false)} className="btn btn-secondary">
-                  Cancelar
-                </Button>
-                <Button onClick={() => handleSaveWorker({})} className="btn btn-primary">
-                  Guardar
-                </Button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Modal de confirmación de eliminación */}
-        {showDeleteConfirm && (
-          <div className="modal-overlay">
-            <div className="modal max-w-md">
-              <div className="modal-header">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-red-500" />
-                  <h2 className="modal-title">Confirmar Eliminación</h2>
-                </div>
-                <button
-                  onClick={cancelDelete}
-                  className="modal-close"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-              <div className="modal-body">
-                <p className="text-gray-600">
-                  ¿Estás seguro de que quieres eliminar este trabajador? Esta acción no se puede deshacer.
-                </p>
-              </div>
-              <div className="modal-footer">
-                <Button variant="outline" onClick={cancelDelete} className="btn btn-secondary">
-                  Cancelar
-                </Button>
-                <Button onClick={deleteWorker} className="btn btn-danger">
-                  Eliminar
-                </Button>
+        {/* Modal del formulario de trabajador */}
+        {showWorkerForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl w-full max-w-4xl h-[90vh] overflow-hidden shadow-2xl relative">
+              {/* Botón de cerrar */}
+              <button
+                onClick={handleFormCancel}
+                className="absolute top-6 right-6 z-10 w-12 h-12 bg-white hover:bg-slate-50 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl border border-slate-200"
+                aria-label="Cerrar modal"
+              >
+                <X className="h-6 w-6 text-slate-600 hover:text-slate-800" />
+              </button>
+              <div className="h-full pt-4">
+                <WorkerForm
+                  worker={editingWorker}
+                  onSubmit={handleFormSubmit}
+                  onCancel={handleFormCancel}
+                  loading={loading}
+                />
               </div>
             </div>
           </div>
         )}
       </div>
-    </div>
+    </RoleGuard>
   );
 }

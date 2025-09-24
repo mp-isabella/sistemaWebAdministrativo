@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Pen, RotateCcw, Check, X } from 'lucide-react'
+import { Check, Pen, RotateCcw } from 'lucide-react'
+import Image from "next/image"
+import { useEffect, useRef, useState } from "react"
 
 interface DigitalSignatureProps {
   jobId: string
@@ -14,11 +15,10 @@ interface DigitalSignatureProps {
   onCancel?: () => void // ✅ agrega esto
 }
 
-export default function DigitalSignature({ 
-  jobId, 
-  existingSignature, 
-  onSignatureSaved, 
-  disabled = false 
+export default function DigitalSignature({
+  existingSignature,
+  onSignatureSaved,
+  disabled = false
 }: DigitalSignatureProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
@@ -35,7 +35,7 @@ export default function DigitalSignature({
     // Configurar canvas
     canvas.width = canvas.offsetWidth
     canvas.height = canvas.offsetHeight
-    
+
     ctx.strokeStyle = '#000000'
     ctx.lineWidth = 2
     ctx.lineCap = 'round'
@@ -43,7 +43,7 @@ export default function DigitalSignature({
 
     // Si hay firma existente, cargarla
     if (existingSignature) {
-      const img = new Image()
+      const img = new HTMLImageElement()
       img.onload = () => {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
       }
@@ -53,7 +53,7 @@ export default function DigitalSignature({
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (disabled) return
-    
+
     setIsDrawing(true)
     const canvas = canvasRef.current
     if (!canvas) return
@@ -63,12 +63,14 @@ export default function DigitalSignature({
     if (!ctx) return
 
     let x, y
-    if ('touches' in e) {
+    if ('touches' in e && e.touches[0]) {
       x = e.touches[0].clientX - rect.left
       y = e.touches[0].clientY - rect.top
-    } else {
+    } else if ('clientX' in e) {
       x = e.clientX - rect.left
       y = e.clientY - rect.top
+    } else {
+      return
     }
 
     ctx.beginPath()
@@ -86,13 +88,15 @@ export default function DigitalSignature({
     if (!ctx) return
 
     let x, y
-    if ('touches' in e) {
+    if ('touches' in e && e.touches[0]) {
       e.preventDefault()
       x = e.touches[0].clientX - rect.left
       y = e.touches[0].clientY - rect.top
-    } else {
+    } else if ('clientX' in e) {
       x = e.clientX - rect.left
       y = e.clientY - rect.top
+    } else {
+      return
     }
 
     ctx.lineTo(x, y)
@@ -152,9 +156,11 @@ export default function DigitalSignature({
         {disabled && signatureData ? (
           // Mostrar firma existente (solo lectura)
           <div className="border rounded-lg p-4 bg-gray-50">
-            <img 
-              src={signatureData || "/placeholder.svg"} 
-              alt="Firma digital" 
+            <Image
+              src={signatureData || "/placeholder.svg"}
+              alt="Firma digital"
+              width={300}
+              height={150}
               className="max-w-full h-auto"
             />
           </div>
@@ -192,7 +198,7 @@ export default function DigitalSignature({
                   <RotateCcw className="mr-2 h-4 w-4" />
                   Limpiar
                 </Button>
-                
+
                 <Button
                   type="button"
                   onClick={saveSignature}

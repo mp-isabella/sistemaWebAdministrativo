@@ -10,13 +10,13 @@ export const LAZY_LOADING_CONFIG = {
     threshold: 0.1,
     placeholder: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PC9zdmc+',
   },
-  
+
   // Componentes
   COMPONENTS: {
     rootMargin: '100px',
     threshold: 0.1,
   },
-  
+
   // Scripts
   SCRIPTS: {
     rootMargin: '200px',
@@ -33,7 +33,7 @@ export const CACHE_CONFIG = {
     API: 300, // 5 minutos
     IMAGES: 2592000, // 30 días
   },
-  
+
   // Estrategias de caché
   STRATEGIES: {
     STATIC: 'cache-first',
@@ -56,7 +56,7 @@ export const BUNDLE_CONFIG = {
   // Tamaños máximos de chunks
   MAX_CHUNK_SIZE: 244 * 1024, // 244KB
   MAX_INITIAL_CHUNK_SIZE: 500 * 1024, // 500KB
-  
+
   // Prioridades de carga
   PRIORITIES: {
     CRITICAL: ['dashboard', 'auth', 'layout'],
@@ -75,7 +75,7 @@ export const COMPRESSION_CONFIG = {
     JS: 90,
     HTML: 95,
   },
-  
+
   // Formatos optimizados
   FORMATS: {
     IMAGES: ['webp', 'avif'],
@@ -91,14 +91,14 @@ export const PRELOAD_CONFIG = {
     '/images/logo.webp',
     '/api/dashboard/stats',
   ],
-  
+
   // Recursos para prefetch
   PREFETCH_RESOURCES: [
     '/api/jobs',
     '/api/clients',
     '/api/workers',
   ],
-  
+
   // Timing de preload
   TIMING: {
     IMMEDIATE: 0,
@@ -126,7 +126,7 @@ export const METRICS_CONFIG = {
     FID: 100, // First Input Delay
     CLS: 0.1, // Cumulative Layout Shift
   },
-  
+
   // Métricas personalizadas
   CUSTOM_METRICS: {
     DASHBOARD_LOAD_TIME: 2000,
@@ -144,7 +144,7 @@ export const performanceUtils = {
     const end = performance.now();
     console.log(`${name} took ${end - start} milliseconds`);
   },
-  
+
   // Medir tiempo de una función async
   measureAsyncTime: async (name: string, fn: () => Promise<any>) => {
     const start = performance.now();
@@ -153,17 +153,17 @@ export const performanceUtils = {
     console.log(`${name} took ${end - start} milliseconds`);
     return result;
   },
-  
+
   // Verificar si está en modo de desarrollo
   isDevelopment: () => process.env.NODE_ENV === 'development',
-  
+
   // Verificar si está en modo de producción
   isProduction: () => process.env.NODE_ENV === 'production',
-  
+
   // Obtener información del navegador
   getBrowserInfo: () => {
     if (typeof window === 'undefined') return null;
-    
+
     return {
       userAgent: navigator.userAgent,
       connection: (navigator as any).connection?.effectiveType || 'unknown',
@@ -171,17 +171,17 @@ export const performanceUtils = {
       timing: performance.timing,
     };
   },
-  
+
   // Optimizar imágenes
   optimizeImage: (src: string, width?: number, height?: number, quality?: number) => {
     const params = new URLSearchParams();
     if (width) params.set('w', width.toString());
     if (height) params.set('h', height.toString());
     if (quality) params.set('q', quality.toString());
-    
+
     return `${src}?${params.toString()}`;
   },
-  
+
   // Lazy load de imágenes
   lazyLoadImage: (img: HTMLImageElement, src: string) => {
     const observer = new IntersectionObserver(
@@ -195,10 +195,10 @@ export const performanceUtils = {
       },
       LAZY_LOADING_CONFIG.IMAGES
     );
-    
+
     observer.observe(img);
   },
-  
+
   // Preload de recursos
   preloadResource: (href: string, as: string) => {
     const link = document.createElement('link');
@@ -207,7 +207,7 @@ export const performanceUtils = {
     link.as = as;
     document.head.appendChild(link);
   },
-  
+
   // Prefetch de recursos
   prefetchResource: (href: string) => {
     const link = document.createElement('link');
@@ -221,33 +221,33 @@ export const performanceUtils = {
 export const usePerformance = () => {
   const measureComponentRender = (componentName: string) => {
     const start = performance.now();
-    
+
     return () => {
       const end = performance.now();
       if (performanceUtils.isDevelopment()) {
-        console.log(`${componentName} rendered in ${end - start}ms`);
+        console.log(`${componentName} render took ${end - start} milliseconds`);
       }
     };
   };
-  
+
   const measureApiCall = async (apiName: string, apiCall: () => Promise<any>) => {
     const start = performance.now();
     try {
       const result = await apiCall();
       const end = performance.now();
       if (performanceUtils.isDevelopment()) {
-        console.log(`${apiName} completed in ${end - start}ms`);
+        console.log(`${apiName} API call took ${end - start} milliseconds`);
       }
       return result;
     } catch (error) {
       const end = performance.now();
       if (performanceUtils.isDevelopment()) {
-        console.log(`${apiName} failed in ${end - start}ms`);
+        console.log(`${apiName} API call failed after ${end - start} milliseconds`);
       }
       throw error;
     }
   };
-  
+
   return {
     measureComponentRender,
     measureApiCall,

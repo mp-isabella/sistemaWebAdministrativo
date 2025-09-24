@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useRememberMe } from '@/hooks/useRememberMe';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -38,8 +38,9 @@ export default function LoginForm() {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        
+        await response.json();
+        // _data is intentionally unused as we only need to check if response is ok
+
         // Si "Recordar sesión" está marcado, guardar en localStorage
         saveRememberMe(email, rememberMe);
 
@@ -92,7 +93,7 @@ export default function LoginForm() {
             Accede a tu cuenta administrativa
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>

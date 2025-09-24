@@ -1,15 +1,12 @@
 'use client'
 
-import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
+import CompanyLogo from '@/components/ui/company-logo'
 import { Separator } from '@/components/ui/separator'
-import { Download, Printer, Eye, Check, X, Edit } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import Image from 'next/image'
-import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
+import { Check, Download, Edit, Printer, X } from 'lucide-react'
+import { useRef, useState } from 'react'
 
 interface QuoteItem {
   description: string
@@ -32,6 +29,7 @@ interface QuotePreviewProps {
     companyId: string
     validUntil: string
     taxRate: number
+    discount: number
     notes: string
     items: QuoteItem[]
     technician: string
@@ -70,9 +68,8 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
   const [isGenerating, setIsGenerating] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
-  
+
   // Debug logging
-  console.log('QuotePreview rendered with:', { data, client, company })
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CL', {
@@ -82,66 +79,103 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-CL', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    })
+    if (!dateString) return 'No especificada'
+
+    try {
+      // Handle both ISO date strings and local date strings
+      // If it's in YYYY-MM-DD format, parse it as local date to avoid timezone issues
+      if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = dateString.split('-').map(Number)
+        if (!year || !month || !day) return dateString
+        const date = new Date(year, month - 1, day) // month is 0-indexed
+
+        return date.toLocaleDateString('es-CL', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        })
+      } else {
+        const date = new Date(dateString)
+
+        // Check if the date is valid
+        if (isNaN(date.getTime())) {
+
+          return 'Fecha inválida'
+        }
+
+        return date.toLocaleDateString('es-CL', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        })
+      }
+    } catch (error) {
+
+      return 'Fecha inválida'
+    }
   }
 
-  const getCompanyConfig = (companyType: string) => {
-    const configs = {
-      AMESTICA: {
-        name: 'AMESTICA LIMITADA',
-        displayName: 'AMESTICA LIMITADA',
-        service: 'Servicio de detección y reparación de filtraciones de agua potable',
-        rut: '76.508.960-3',
-        address: 'Hamburgo 1398, Ñuñoa.',
-        email: 'amesticaltda@gmail.com',
-        phone: '222660040',
-        logo: '/amestica.png',
+  // Debug logging for date
+  console.log('Valid until date:', new Date(data.validUntil).toISOString().split('T')[0])
+  console.log('Valid until timestamp:', new Date(data.validUntil).getTime())
+
+  const getCompanyConfig = (company: any) => {
+
+    // Si tenemos una empresa válida, usar sus datos directamente
+    if (company && company.name) {
+
+      // Función para obtener el logo correcto basado en el nombre de la empresa
+      const getCorrectLogo = (companyName: string) => {
+        const name = companyName.toUpperCase()
+        const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+        if (name.includes('AMESTICA')) return `${baseUrl}/amestica.png`
+        if (name.includes('MULTIFUGAS')) return `${baseUrl}/multifugas.png`
+        if (name.includes('SERVIFUGAS')) return `${baseUrl}/servifugas.png`
+        return `${baseUrl}/amestica.png` // fallback
+      }
+
+      return {
+        name: company.name,
+        displayName: company.displayName || company.name,
+        service: company.service || 'Servicio de detección y reparación de filtraciones de agua potable',
+        rut: company.rut || '',
+        address: company.address || '',
+        email: company.email || '',
+        phone: company.phone || '',
+        logo: getCorrectLogo(company.name),
         colors: {
-          primary: '#1e40af',
-          secondary: '#3b82f6',
-          accent: '#f97316'
+          primary: company.primaryColor || '#1e40af',
+          secondary: company.secondaryColor || '#3b82f6',
+          accent: company.accentColor || '#f97316'
         }
-      },
-      MULTIFUGAS: {
-        name: 'MULTIFUGAS',
-        displayName: 'MULTIFUGAS SERVICIOS PROFESIONALES',
-        service: 'Servicio de detección y reparación de filtraciones de agua potable',
-        rut: '78.135.216-0',
-        address: 'Av. Américo Vespucio 3121, Macul, Santiago.',
-        email: 'multifugas@gmail.com',
-        phone: '+569 78868002',
-        logo: '/multifugas.png',
-        colors: {
-          primary: '#1e40af',
-          secondary: '#3b82f6',
-          accent: '#f97316'
-        }
-      },
-             SERVIFUGAS: {
-         name: 'SERVIFUGAS SPA',
-         displayName: 'SERVIFUGAS SPA',
-         service: 'Servicio de detección de filtraciones en agua potable y reparación de cañerías',
-         rut: '78.135.232-2',
-         address: 'Lo Barnechea 1559.',
-         email: 'Servifugas1@gmail.com',
-         phone: '+569 92492720',
-         logo: '/servifugas.png',
-         colors: {
-           primary: '#059669',
-           secondary: '#10b981',
-           accent: '#1e40af'
-         }
-       }
+      }
     }
 
-    return configs[companyType as keyof typeof configs] || configs.AMESTICA
+    // Fallback solo si no hay empresa
+
+    return {
+      name: 'AMESTICA LIMITADA',
+      displayName: 'AMESTICA LIMITADA',
+      service: 'Servicio de detección y reparación de filtraciones de agua potable',
+      rut: '76.508.960-3',
+      address: 'Hamburgo 1398, Ñuñoa.',
+      email: 'amesticaltda@gmail.com',
+      phone: '222660040',
+      logo: '/amestica.png',
+      colors: {
+        primary: '#1e40af',
+        secondary: '#3b82f6',
+        accent: '#f97316'
+      }
+    }
   }
 
-  const companyConfig = getCompanyConfig(company.type)
+  const companyConfig = getCompanyConfig(company)
+
+  // Obtener el logo correcto
+  const correctLogo = companyConfig.logo
+
+  // Debug: Log para verificar la configuración de la empresa
 
   // Calcular totales
   const subtotal = data.items.reduce((sum, item) => {
@@ -149,17 +183,10 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
     const unitPrice = item.unitPrice || 0
     return sum + (quantity * unitPrice)
   }, 0)
-  const tax = subtotal * (data.taxRate / 100)
-  const total = subtotal + tax
-
-  const getServiceTypeLabel = (type: string) => {
-    const types = {
-      deteccion_fugas: 'Detección de Fugas de Agua',
-      destape_alcantarillado: 'Destape de Alcantarillado',
-      videointrospeccion: 'Videoinspección de Ductos'
-    }
-    return types[type as keyof typeof types] || type
-  }
+  const discount = data.discount || 0
+  const subtotalAfterDiscount = subtotal - discount
+  const tax = subtotalAfterDiscount * (data.taxRate / 100)
+  const total = subtotalAfterDiscount + tax
 
   const handlePrint = () => {
     // Crear una nueva ventana para imprimir
@@ -168,7 +195,7 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
       const htmlContent = generatePrintHTML()
       printWindow.document.write(htmlContent)
       printWindow.document.close()
-      
+
       // Esperar un momento para que se cargue el contenido
       setTimeout(() => {
         printWindow.print()
@@ -179,86 +206,32 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
   const handleDownloadPDF = async () => {
     setIsGenerating(true)
     try {
-      // Crear una ventana temporal para renderizar el contenido
-      const printWindow = window.open('', '_blank', 'width=794,height=1123')
-      if (!printWindow) {
-        throw new Error('No se pudo abrir la ventana de impresión')
+      // Usar el nuevo generador de PDF mejorado
+      const { downloadQuotePDF } = await import('@/components/pdf-generator')
+
+      // Preparar datos para el PDF
+      const quoteData = {
+        quoteNumber: `COT-${Date.now()}`,
+        client: client,
+        subtotal: subtotal,
+        discount: discount,
+        tax: tax,
+        total: total,
+        taxRate: data.taxRate,
+        notes: data.notes,
+        items: data.items,
+        validUntil: data.validUntil
       }
-      
-      const htmlContent = generatePrintHTML()
-      printWindow.document.write(htmlContent)
-      printWindow.document.close()
-      
-      // Esperar a que se cargue el contenido y las imágenes
-      await new Promise(resolve => setTimeout(resolve, 3000))
-      
-      // Asegurar que todas las imágenes estén cargadas
-      const images = printWindow.document.querySelectorAll('img')
-      await Promise.all(Array.from(images).map(img => {
-        if (img.complete) return Promise.resolve()
-        return new Promise(resolve => {
-          img.onload = resolve
-          img.onerror = resolve
-        })
-      }))
-      
-      // Configurar el tamaño de la ventana para que coincida con A4
-      printWindow.document.body.style.width = '210mm'
-      printWindow.document.body.style.height = '297mm'
-      printWindow.document.body.style.margin = '0'
-      printWindow.document.body.style.padding = '0'
-      printWindow.document.body.style.overflow = 'hidden'
-      printWindow.document.body.style.position = 'relative'
-      printWindow.document.body.style.left = '0'
-      printWindow.document.body.style.top = '0'
-      printWindow.document.body.style.transform = 'none'
-      printWindow.document.body.style.backgroundColor = '#ffffff'
-      
-      // Asegurar que el contenedor principal mantenga su posición
-      const mainContainer = printWindow.document.querySelector('.main-container') as HTMLElement
-      if (mainContainer) {
-        mainContainer.style.position = 'relative'
-        mainContainer.style.left = '0'
-        mainContainer.style.top = '0'
-        mainContainer.style.transform = 'none'
-        mainContainer.style.width = '100%'
-        mainContainer.style.height = '100%'
-      }
-      
-      // Forzar el reflow del documento
-      void printWindow.document.body.offsetHeight
-      
-      // Esperar un poco más para asegurar que todo esté estable
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Capturar el contenido como imagen con configuración optimizada para mejor calidad
-      const canvas = await html2canvas(printWindow.document.body, {
-        scale: 3, // Aumentar la escala para mejor calidad
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff'
-      })
-      
-      // Crear PDF con tamaño A4 exacto
-      const pdf = new jsPDF('p', 'mm', 'a4')
-      const imgWidth = 210 // Ancho A4 en mm
-      const imgHeight = 297 // Alto A4 en mm
-      
-      // Agregar la imagen al PDF con mejor calidad
-      pdf.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, imgWidth, imgHeight)
-      
-      // Descargar PDF
-      pdf.save(`presupuesto-${client.name}-${formatDate(new Date().toISOString())}.pdf`)
-      
-      // Cerrar ventana temporal
-      printWindow.close()
-      
+
+      // Generar y descargar PDF
+      downloadQuotePDF(quoteData, companyConfig)
+
       toast({
         title: "Éxito",
         description: "PDF descargado correctamente.",
       })
     } catch (error) {
-      console.error('Error downloading PDF:', error)
+
       toast({
         title: "Error",
         description: "Error al generar el PDF. Intenta nuevamente.",
@@ -274,13 +247,13 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
     try {
       // Llamar a la función onConfirm que viene del componente padre
       await onConfirm()
-      
+
       toast({
         title: "Éxito",
         description: "Presupuesto creado correctamente.",
       })
     } catch (error) {
-      console.error('Error creating quote:', error)
+
       toast({
         title: "Error",
         description: "Error al crear el presupuesto. Intenta nuevamente.",
@@ -292,34 +265,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
   }
 
   const generatePrintHTML = () => {
-    const conditions = company.type === 'SERVIFUGAS' ? `
-        <ul>
-            <li>El pago se realizará en dos partes: 50% al inicio del servicio y el 50% restante al finalizar la detección de la filtración.</li>
-            <li>La cañería será dejada a la vista únicamente con la exposición mínima y necesaria.</li>
-            <li>Una vez detectada la filtración, se entregará un presupuesto para su reparación, siempre y cuando esta sea técnicamente viable.</li>
-            <li>Si la filtración se encuentra bajo un mueble o artefacto, será responsabilidad del cliente retirarlo para permitir el acceso a la cañería.</li>
-            <li>No se realizan trabajos de terminación, tales como reposición de cerámicas, madera, u otros materiales.</li>
-            <li>El margen de error en la detección es de aproximadamente 2 metros.</li>
-            <li>Las reparaciones realizadas por nuestra empresa cuentan con una garantía de 3 meses.</li>
-            <li>El presupuesto tendrá una validez de 30 días a partir de su fecha de emisión.</li>
-        </ul>
-    ` : company.type === 'AMESTICA' ? `
-        <ul>
-            <li>Condiciones de pago 100% al inicio para poder coordinar el servicio y enviar al técnico.</li>
-            <li>No se realizan terminaciones, ya sea en cerámicas, madera, entre otros.</li>
-            <li>Nuestra reparación tiene tres meses de garantía a partir de la fecha de realización del servicio.</li>
-            <li>Presupuesto válido hasta 30 días a partir de la fecha de emisión.</li>
-        </ul>
-    ` : `
-        <ul>
-            <li>Se debe cancelar 50% al inicio del servicio y 50% al término de este.</li>
-            <li>No se realiza terminaciones de piso en cemento, cerámica, madera, entre otros.</li>
-            <li>No se retiran los escombros.</li>
-            <li>Una vez terminada la reparación, se hará revisión del medidor para determinar si queda otra filtración.</li>
-            <li>Garantía de tres meses por reparación realizada a partir de la fecha en que se realizó dicho trabajo.</li>
-            <li>Presupuesto valido solo por 30 días a contar de la fecha de emisión.</li>
-        </ul>
-    `
 
     return `
 <!DOCTYPE html>
@@ -347,7 +292,7 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
                  .header { margin-bottom: 20px; }
                  .section { margin-bottom: 16px; }
                  .section-content { padding: 16px; }
-                 .company-logo { width: 120px; height: 120px; }
+                 .company-logo { width: 200px; height: 160px; }
                  .company-name { font-size: 24px; margin-bottom: 6px; }
                  .company-service { font-size: 14px; margin-bottom: 6px; }
                  .company-details { font-size: 13px; }
@@ -443,11 +388,12 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
                margin-bottom: 15px;
            }
                      .company-logo {
-               width: 120px;
-               height: 120px;
+               width: 250px;
+               height: 200px;
                object-fit: contain;
                flex-shrink: 0;
                image-rendering: -webkit-optimize-contrast;
+               display: block;
                image-rendering: crisp-edges;
            }
            .company-info {
@@ -610,7 +556,7 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
      <div class="main-container">
          <div class="header">
                  <div class="company-section">
-             <img src="${companyConfig.logo}" alt="${companyConfig.name}" class="company-logo">
+            <img src="${companyConfig.logo}" alt="${companyConfig.name}" class="company-logo">
              <div class="company-info">
                  <div class="company-name">${companyConfig.displayName}</div>
                  <div class="company-service">${companyConfig.service}</div>
@@ -646,6 +592,12 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
                     <span class="info-label">Contacto:</span>
                     <span class="info-value">${client.phone || 'No especificado'}</span>
                 </div>
+                ${client.email ? `
+                <div class="info-row">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">${client.email}</span>
+                </div>
+                ` : ''}
                 <div class="info-row">
                     <span class="info-label">Técnico:</span>
                     <span class="info-value">${data.technician || 'No asignado'}</span>
@@ -667,8 +619,8 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
                 </thead>
                 <tbody>
                     ${data.items.map(item => {
-                        const itemTotal = (item.quantity || 0) * (item.unitPrice || 0)
-                        return `
+      const itemTotal = (item.quantity || 0) * (item.unitPrice || 0)
+      return `
                             <tr>
                                 <td>${item.quantity || 0}</td>
                                 <td>${item.description || ''}</td>
@@ -676,7 +628,7 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
                                 <td>${formatCurrency(itemTotal)}</td>
                             </tr>
                         `
-                    }).join('')}
+    }).join('')}
                 </tbody>
             </table>
             
@@ -686,6 +638,12 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
                         <span>Neto:</span>
                         <span>${formatCurrency(subtotal)}</span>
                     </div>
+                    ${discount > 0 ? `
+                    <div class="total-row">
+                        <span>Descuento:</span>
+                        <span>-${formatCurrency(discount)}</span>
+                    </div>
+                    ` : ''}
                     <div class="total-row">
                         <span>IVA (${data.taxRate}%):</span>
                         <span>${formatCurrency(tax)}</span>
@@ -711,37 +669,18 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
     </div>
     ` : ''}
 
+    ${data.warranty && data.warranty.trim() !== '' ? `
     <div class="section">
         <div class="section-content">
             <div class="conditions-section">
-                <div class="conditions-title">Condiciones específicas de ${companyConfig.name}:</div>
-                <ul class="conditions-list">
-                                         ${company.type === 'SERVIFUGAS' ? `
-                         <li>El pago se realizará en dos partes: 50% al inicio del servicio y el 50% restante al finalizar la detección de la filtración</li>
-                         <li>La cañería será dejada a la vista únicamente con la exposición mínima y necesaria</li>
-                         <li>Una vez detectada la filtración, se entregará un presupuesto para su reparación, siempre y cuando esta sea técnicamente viable</li>
-                         <li>Si la filtración se encuentra bajo un mueble o artefacto, será responsabilidad del cliente retirarlo para permitir el acceso a la cañería</li>
-                         <li>No se realizan trabajos de terminación, tales como reposición de cerámicas, madera, u otros materiales</li>
-                         <li>El margen de error en la detección es de aproximadamente 2 metros</li>
-                         <li>Las reparaciones realizadas por nuestra empresa cuentan con una garantía de 3 meses</li>
-                         <li>El presupuesto tendrá una validez de 30 días a partir de su fecha de emisión</li>
-                     ` : company.type === 'AMESTICA' ? `
-                         <li>Condiciones de pago 100% al inicio para poder coordinar el servicio y enviar al técnico.</li>
-                         <li>No se realizan terminaciones, ya sea en cerámicas, madera, entre otros.</li>
-                         <li>Nuestra reparación tiene tres meses de garantía a partir de la fecha de realización del servicio.</li>
-                         <li>Presupuesto válido hasta 30 días a partir de la fecha de emisión.</li>
-                     ` : `
-                         <li>Se debe cancelar 50% al inicio del servicio y 50% al término de este.</li>
-                         <li>No se realiza terminaciones de piso en cemento, cerámica, madera, entre otros.</li>
-                         <li>No se retiran los escombros.</li>
-                         <li>Una vez terminada la reparación, se hará revisión del medidor para determinar si queda otra filtración.</li>
-                         <li>Garantía de tres meses por reparación realizada a partir de la fecha en que se realizó dicho trabajo.</li>
-                         <li>Presupuesto valido solo por 30 días a contar de la fecha de emisión.</li>
-                     `}
-                </ul>
+                <div class="conditions-title">Garantía y Condiciones del Servicio:</div>
+                <div class="conditions-list">
+                    ${data.warranty.replace(/\n/g, '<br>')}
+                </div>
             </div>
         </div>
-             </div>
+    </div>
+    ` : ''}
      </div>
  </body>
 </html>
@@ -750,110 +689,120 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
 
   return (
     <div ref={contentRef} className="max-w-5xl mx-auto p-4 space-y-4">
-                           {/* Header con logo y información de la empresa */}
-        <Card className="border-0 shadow-none">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-6">
-              {/* Logo a la izquierda */}
-              <div className="relative w-24 h-24 flex-shrink-0">
-                <Image
-                  src={companyConfig.logo}
-                  alt={`Logo ${companyConfig.name}`}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-              
-              {/* Información de la empresa a la derecha */}
-              <div className="flex-1">
-                                 <h1 className="text-2xl font-bold text-blue-600">
-                   {companyConfig.displayName}
-                 </h1>
-                <p className="text-sm text-gray-600 mb-2">{companyConfig.service}</p>
-                <div className="space-y-1 text-sm text-gray-600">
-                  <p>RUT: {companyConfig.rut}</p>
-                  <p>{companyConfig.address}</p>
-                  <p>{companyConfig.email}</p>
-                  <p>Fono: {companyConfig.phone}</p>
-                </div>
-              </div>
-            </div>
-            
-                        {/* Título COTIZACIÓN */}
-            <div className="mt-4">
-                             <h2 className="text-2xl font-bold text-blue-600">
-                 COTIZACIÓN
-               </h2>
-            </div>
-            
-                         {/* Línea separadora debajo del título */}
-             <div className="mt-2 border-b-2 border-blue-600"></div>
-          </CardContent>
-        </Card>
+      {/* Header con logo y información de la empresa */}
+      <Card className="border-0 shadow-none">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-6">
+            {/* Logo a la izquierda */}
+            <CompanyLogo
+              logo={correctLogo}
+              companyName={companyConfig.name}
+              size="xxl"
+              className="flex-shrink-0"
+            />
 
-                           {/* Información del cliente */}
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="font-medium text-gray-600">Señor (a):</span>
-                <span className="ml-2">{client.name}</span>
-              </div>
-              <div>
-                <span className="font-medium text-gray-600">Dirección:</span>
-                <span className="ml-2">{client.address || 'No especificada'}</span>
-              </div>
-              <div>
-                <span className="font-medium text-gray-600">Fecha:</span>
-                <span className="ml-2">{formatDate(data.validUntil)}</span>
-              </div>
-              <div>
-                <span className="font-medium text-gray-600">Contacto:</span>
-                <span className="ml-2">{client.phone || 'No especificado'}</span>
-              </div>
-              <div>
-                <span className="font-medium text-gray-600">Técnico:</span>
-                <span className="ml-2">{data.technician || 'No asignado'}</span>
+            {/* Información de la empresa a la derecha */}
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold text-blue-600">
+                {companyConfig.displayName}
+              </h1>
+              <p className="text-sm text-gray-600 mb-2">{companyConfig.service}</p>
+              <div className="space-y-1 text-sm text-gray-600">
+                <p>RUT: {companyConfig.rut}</p>
+                <p>{companyConfig.address}</p>
+                <p>{companyConfig.email}</p>
+                <p>Fono: {companyConfig.phone}</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-             {/* Servicios */}
-       <Card className="shadow-sm">
-         <CardContent className="p-4">
-           <div className="overflow-x-auto">
-             <table className="w-full border-collapse border border-gray-200">
-               <thead>
-                 <tr className="bg-gray-50">
-                   <th className="border border-gray-200 px-3 py-2 text-center font-medium text-sm">Cantidad</th>
-                   <th className="border border-gray-200 px-3 py-2 text-left font-medium text-sm">Detalle</th>
-                   <th className="border border-gray-200 px-3 py-2 text-right font-medium text-sm">Precio U.</th>
-                   <th className="border border-gray-200 px-3 py-2 text-right font-medium text-sm">Valor</th>
-                 </tr>
-               </thead>
-               <tbody>
-                 {data.items.map((item, index) => {
-                   const itemTotal = (item.quantity || 0) * (item.unitPrice || 0)
-                   return (
-                     <tr key={index} className="hover:bg-gray-50">
-                       <td className="border border-gray-200 px-3 py-2 text-center text-sm">{item.quantity || 0}</td>
-                       <td className="border border-gray-200 px-3 py-2 text-sm">{item.description || ''}</td>
-                       <td className="border border-gray-200 px-3 py-2 text-right text-sm">{formatCurrency(item.unitPrice || 0)}</td>
-                       <td className="border border-gray-200 px-3 py-2 text-right font-medium text-sm">{formatCurrency(itemTotal)}</td>
-                     </tr>
-                   )
-                 })}
-               </tbody>
-             </table>
-           </div>
-          
+          {/* Título COTIZACIÓN */}
+          <div className="mt-4">
+            <h2 className="text-2xl font-bold text-blue-600">
+              COTIZACIÓN
+            </h2>
+          </div>
+
+          {/* Línea separadora debajo del título */}
+          <div className="mt-2 border-b-2 border-blue-600"></div>
+        </CardContent>
+      </Card>
+
+      {/* Información del cliente */}
+      <Card className="shadow-sm">
+        <CardContent className="p-4">
+          <div className="space-y-2 text-sm">
+            <div>
+              <span className="font-medium text-gray-600">Señor (a):</span>
+              <span className="ml-2">{client.name}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-600">Dirección:</span>
+              <span className="ml-2">{client.address || 'No especificada'}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-600">Fecha:</span>
+              <span className="ml-2">{formatDate(data.validUntil)}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-600">Contacto:</span>
+              <span className="ml-2">{client.phone || 'No especificado'}</span>
+            </div>
+            {client.email && (
+              <div>
+                <span className="font-medium text-gray-600">Email:</span>
+                <span className="ml-2">{client.email}</span>
+              </div>
+            )}
+            <div>
+              <span className="font-medium text-gray-600">Técnico:</span>
+              <span className="ml-2">{data.technician || 'No asignado'}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Servicios */}
+      <Card className="shadow-sm">
+        <CardContent className="p-4">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-200">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="border border-gray-200 px-3 py-2 text-center font-medium text-sm">Cantidad</th>
+                  <th className="border border-gray-200 px-3 py-2 text-left font-medium text-sm">Detalle</th>
+                  <th className="border border-gray-200 px-3 py-2 text-right font-medium text-sm">Precio U.</th>
+                  <th className="border border-gray-200 px-3 py-2 text-right font-medium text-sm">Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.items.map((item, index) => {
+                  const itemTotal = (item.quantity || 0) * (item.unitPrice || 0)
+                  return (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="border border-gray-200 px-3 py-2 text-center text-sm">{item.quantity || 0}</td>
+                      <td className="border border-gray-200 px-3 py-2 text-sm">{item.description || ''}</td>
+                      <td className="border border-gray-200 px-3 py-2 text-right text-sm">{formatCurrency(item.unitPrice || 0)}</td>
+                      <td className="border border-gray-200 px-3 py-2 text-right font-medium text-sm">{formatCurrency(itemTotal)}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+
           <div className="mt-4 flex justify-end">
             <div className="w-72 space-y-2">
               <div className="flex justify-between text-base">
                 <span className="font-medium">Neto:</span>
                 <span className="font-semibold">{formatCurrency(subtotal)}</span>
               </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-base">
+                  <span className="font-medium">Descuento:</span>
+                  <span className="font-semibold text-orange-600">-{formatCurrency(discount)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-base">
                 <span className="font-medium">IVA ({data.taxRate}%):</span>
                 <span className="font-semibold text-red-600">{formatCurrency(tax)}</span>
@@ -880,73 +829,50 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
         </Card>
       )}
 
-             {/* Condiciones generales */}
-       <Card className="shadow-sm">
-         <CardContent className="p-4">
-           <div className="bg-yellow-50 p-4 rounded-lg">
-             <h4 className="font-medium text-yellow-800 mb-2">
-               Condiciones específicas de {companyConfig.name}:
-             </h4>
-                           {company.type === 'SERVIFUGAS' ? (
-                <ul className="text-yellow-700 space-y-1 text-sm">
-                  <li>El pago se realizará en dos partes: 50% al inicio del servicio y el 50% restante al finalizar la detección de la filtración</li>
-                  <li>La cañería será dejada a la vista únicamente con la exposición mínima y necesaria</li>
-                  <li>Una vez detectada la filtración, se entregará un presupuesto para su reparación, siempre y cuando esta sea técnicamente viable</li>
-                  <li>Si la filtración se encuentra bajo un mueble o artefacto, será responsabilidad del cliente retirarlo para permitir el acceso a la cañería</li>
-                  <li>No se realizan trabajos de terminación, tales como reposición de cerámicas, madera, u otros materiales</li>
-                  <li>El margen de error en la detección es de aproximadamente 2 metros</li>
-                  <li>Las reparaciones realizadas por nuestra empresa cuentan con una garantía de 3 meses</li>
-                  <li>El presupuesto tendrá una validez de 30 días a partir de su fecha de emisión</li>
-                </ul>
-              ) : company.type === 'AMESTICA' ? (
-                <ul className="text-yellow-700 space-y-1 text-sm">
-                  <li>Condiciones de pago 100% al inicio para poder coordinar el servicio y enviar al técnico.</li>
-                  <li>No se realizan terminaciones, ya sea en cerámicas, madera, entre otros.</li>
-                  <li>Nuestra reparación tiene tres meses de garantía a partir de la fecha de realización del servicio.</li>
-                  <li>Presupuesto válido hasta 30 días a partir de la fecha de emisión.</li>
-                </ul>
-              ) : (
-                <ul className="text-yellow-700 space-y-1 text-sm">
-                  <li>Se debe cancelar 50% al inicio del servicio y 50% al término de este.</li>
-                  <li>No se realiza terminaciones de piso en cemento, cerámica, madera, entre otros.</li>
-                  <li>No se retiran los escombros.</li>
-                  <li>Una vez terminada la reparación, se hará revisión del medidor para determinar si queda otra filtración.</li>
-                  <li>Garantía de tres meses por reparación realizada a partir de la fecha en que se realizó dicho trabajo.</li>
-                  <li>Presupuesto valido solo por 30 días a contar de la fecha de emisión.</li>
-                </ul>
-              )}
-           </div>
-         </CardContent>
-       </Card>
+      {/* Garantía y Condiciones - Mostrar si hay contenido en el campo de garantía */}
+      {data.warranty && data.warranty.trim() !== '' && (
+        <Card className="shadow-sm">
+          <CardContent className="p-4">
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <h4 className="font-medium text-yellow-800 mb-2">
+                Garantía y Condiciones del Servicio:
+              </h4>
+              <div className="text-yellow-700 text-sm whitespace-pre-wrap">
+                {data.warranty}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Botones de acción */}
-        <div className="flex flex-wrap justify-center gap-3 pt-4 border-t">
-          <Button variant="outline" onClick={onEdit} size="sm">
-            <Edit className="mr-2 h-4 w-4" />
-            Editar
-          </Button>
-          <Button variant="outline" onClick={handlePrint} size="sm">
-            <Printer className="mr-2 h-4 w-4" />
-            Imprimir
-          </Button>
-          <Button variant="outline" onClick={handleDownloadPDF} disabled={isGenerating} size="sm">
-            <Download className="mr-2 h-4 w-4" />
-            {isGenerating ? 'Generando...' : 'PDF'}
-          </Button>
-          <Button 
-            onClick={handleCreateQuote} 
-            disabled={isCreating}
-            className="bg-green-600 hover:bg-green-700 text-white"
-            size="sm"
-          >
-            <Check className="mr-2 h-4 w-4" />
-            {isCreating ? 'Creando...' : 'Crear'}
-          </Button>
-          <Button variant="outline" onClick={onCancel} size="sm">
-            <X className="mr-2 h-4 w-4" />
-            Cancelar
-          </Button>
-        </div>
+      {/* Botones de acción */}
+      <div className="flex flex-wrap justify-center gap-3 pt-4 border-t">
+        <Button variant="outline" onClick={onEdit} size="sm">
+          <Edit className="mr-2 h-4 w-4" />
+          Editar
+        </Button>
+        <Button variant="outline" onClick={handlePrint} size="sm">
+          <Printer className="mr-2 h-4 w-4" />
+          Imprimir
+        </Button>
+        <Button variant="outline" onClick={handleDownloadPDF} disabled={isGenerating} size="sm">
+          <Download className="mr-2 h-4 w-4" />
+          {isGenerating ? 'Generando...' : 'PDF'}
+        </Button>
+        <Button
+          onClick={handleCreateQuote}
+          disabled={isCreating}
+          className="bg-green-600 hover:bg-green-700 text-white"
+          size="sm"
+        >
+          <Check className="mr-2 h-4 w-4" />
+          {isCreating ? 'Creando...' : 'Crear'}
+        </Button>
+        <Button variant="outline" onClick={onCancel} size="sm">
+          <X className="mr-2 h-4 w-4" />
+          Cancelar
+        </Button>
+      </div>
     </div>
   )
 }

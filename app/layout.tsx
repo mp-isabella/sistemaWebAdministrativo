@@ -1,22 +1,22 @@
 // app/layout.tsx
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import "./floating-buttons.css";
-import "./no-text-cursor.css";
-import "./utilities-no-text-cursor.css";
-import "./components-no-text-cursor.css";
+import CustomSessionProvider from "@/components/auth/session-provider";
+import { ChangeProtectionProvider } from "@/components/providers/change-protection-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { ChangeProtectionProvider } from "@/components/providers/change-protection-provider";
-import CustomSessionProvider from "@/components/auth/session-provider";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./components-no-text-cursor.css";
+import "./floating-buttons.css";
+import "./globals.css";
+import "./no-text-cursor.css";
+import "./utilities-no-text-cursor.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Améstica Ltda. - Servicios de Plomería y Mantención",
+  title: "Améstica Ltda. - Detección de Fugas de Agua",
   description: "Empresa especializada en detección de fugas, destapes de alcantarillado y videoinspección de tuberías. Servicios profesionales en Santiago y Ñuble.",
-  keywords: "plomería, detección de fugas, destapes, videoinspección, tuberías, Santiago, Ñuble",
+  keywords: "detección de fugas, destapes, videoinspección, tuberías, Santiago, Ñuble",
   authors: [{ name: "Améstica Ltda." }],
   creator: "Améstica Ltda.",
   publisher: "Améstica Ltda.",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"),
   openGraph: {
-    title: "Améstica Ltda. - Servicios de Plomería Profesional",
+    title: "Améstica Ltda. - Detección de Fugas de Agua",
     description: "Especialistas en detección de fugas, destapes y videoinspección de tuberías",
     url: "/",
     siteName: "Améstica Ltda.",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Améstica Ltda. - Servicios de Plomería Profesional",
+    title: "Améstica Ltda. - Detección de Fugas de Agua",
     description: "Especialistas en detección de fugas, destapes y videoinspección de tuberías",
   },
   robots: {
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: process.env.GOOGLE_SITE_VERIFICATION,
+    google: process.env.GOOGLE_SITE_VERIFICATION || '',
   },
 };
 
@@ -81,7 +81,7 @@ export default function RootLayout({
           >
             <ChangeProtectionProvider>
               {children}
-              <Toaster 
+              <Toaster
                 position="top-right"
                 richColors
                 closeButton

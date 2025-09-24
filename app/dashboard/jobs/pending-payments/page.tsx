@@ -1,26 +1,25 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { 
-  DollarSign, 
-  CheckCircle, 
-  Clock, 
-  User, 
-  Building, 
-  Calendar,
-  Search,
-  RefreshCw,
-  Loader2,
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useToast } from "@/hooks/use-toast"
+import {
   AlertCircle,
-  Eye
+  Building,
+  Calendar,
+  DollarSign,
+  Loader2,
+  RefreshCw,
+  Search,
+  // CheckCircle, 
+  // Clock, 
+  User,
 } from "lucide-react"
 import { useSession } from "next-auth/react"
-import { useToast } from "@/hooks/use-toast"
+import { useCallback, useEffect, useState } from "react"
 import "../../styles/unified-design.css"
 
 interface Job {
@@ -57,7 +56,7 @@ interface Job {
 export default function PendingPaymentsPage() {
   const { data: session, status } = useSession()
   const { toast } = useToast()
-  
+
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -65,17 +64,17 @@ export default function PendingPaymentsPage() {
   const [processingJob, setProcessingJob] = useState<string | null>(null)
 
   // Cargar trabajos completados pendientes de pago
-  const loadPendingPayments = async () => {
+  const loadPendingPayments = useCallback(async () => {
     setLoading(true)
     try {
       const response = await fetch('/api/jobs?status=COMPLETED&pendingPayment=true')
       const data = await response.json()
-      
+
       if (data.jobs) {
         setJobs(data.jobs)
       }
     } catch (error) {
-      console.error('Error loading pending payments:', error)
+      
       toast({
         title: "Error",
         description: "Error al cargar trabajos pendientes de pago",
@@ -84,13 +83,13 @@ export default function PendingPaymentsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [toast])
 
   useEffect(() => {
     if (status === "authenticated") {
       loadPendingPayments()
     }
-  }, [status])
+  }, [status, loadPendingPayments])
 
   // Verificar si el usuario tiene permisos
   if (status === "loading") {
@@ -105,7 +104,7 @@ export default function PendingPaymentsPage() {
     )
   }
 
-  if (status === "unauthenticated" || !['admin', 'secretaria'].includes((session?.user as any)?.role?.toLowerCase() || '')) {
+  if (status === "unauthenticated" || !['administrador', 'secretaria'].includes((session?.user as any)?.role?.toLowerCase() || '')) {
     return (
       <div className="dashboard-container">
         <div className="dashboard-content">
@@ -148,7 +147,7 @@ export default function PendingPaymentsPage() {
         })
       }
     } catch (error) {
-      console.error('Error marking as paid:', error)
+      
       toast({
         title: "Error",
         description: "Error de conexión",
@@ -161,7 +160,7 @@ export default function PendingPaymentsPage() {
 
   // Filtrar trabajos
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = 
+    const matchesSearch =
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -213,7 +212,7 @@ export default function PendingPaymentsPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="space-y-2 hidden lg:block">
                 <label className="text-sm font-medium text-gray-700">Buscar</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />

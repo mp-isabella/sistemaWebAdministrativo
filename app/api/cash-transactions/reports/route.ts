@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    
+
     // Filtros combinados
     const type = searchParams.get('type')
     const category = searchParams.get('category')
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     const where: any = {}
-    
+
     if (type) where.type = type
     if (category) where.category = category
     if (paymentMethod) where.paymentMethod = paymentMethod
@@ -86,23 +86,23 @@ export async function GET(request: NextRequest) {
       const groups: any = {}
 
       filteredTransactions.forEach(transaction => {
-        let key = ''
+        let key: string = ''
 
         switch (groupBy) {
           case 'category':
-            key = transaction.category
+            key = transaction.category ?? 'Sin categoría'
             break
           case 'paymentMethod':
-            key = transaction.paymentMethod
+            key = transaction.paymentMethod ?? 'Sin método'
             break
           case 'technician':
             key = transaction.createdBy.name || 'Sin nombre'
             break
           case 'date':
-            key = transaction.date.toISOString().split('T')[0] // YYYY-MM-DD
+            key = transaction.date?.toISOString().split('T')[0] || '' // YYYY-MM-DD
             break
           case 'month':
-            key = `${transaction.date.getFullYear()}-${String(transaction.date.getMonth() + 1).padStart(2, '0')}`
+            key = `${transaction.date?.getFullYear() || 0}-${String((transaction.date?.getMonth() || 0) + 1).padStart(2, '0')}`
             break
           default:
             key = 'Sin agrupar'
@@ -180,7 +180,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(responseData)
 
   } catch (error) {
-    console.error('Error generating cash transaction report:', error)
+    
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

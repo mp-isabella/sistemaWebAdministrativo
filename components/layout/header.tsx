@@ -1,19 +1,19 @@
-
 "use client"
 
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
-import { Menu, X } from "lucide-react";
-import { FaFacebookF, FaInstagram, FaTiktok, FaYoutube } from "react-icons/fa";
+import Image from "next/image";
+// import { Button } from "@/components/ui/button"
 import { useSmoothScroll } from "@/hooks/use-smooth-scroll";
+import { Menu, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { FaFacebookF, FaInstagram, FaTiktok, FaYoutube } from "react-icons/fa";
+import { useIsClient } from '../../hooks/use-hydration-safe';
 
 export default function Header() {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const isClient = useIsClient();
   const { scrollToSection } = useSmoothScroll();
 
   const navigationItems = [
@@ -26,23 +26,18 @@ export default function Header() {
   ];
 
   const socialMediaLinks = [
-  { icon: <FaFacebookF />, url: 'https://www.facebook.com/share/1AwoWrjqxf/' },
-  { icon: <FaInstagram />, url: 'https://www.instagram.com/amestica.ltda?igsh=OW15dHN4OW52cnJo' },
-  { icon: <FaYoutube />, url: 'https://youtube.com/@amestica_ltda?si=NLRlH1aa4swqSoUQ' },
-  { icon: <FaTiktok />, url: 'https://www.tiktok.com/@amesticaltda?is_from_webapp=1&sender_device=pc' },
-];
-
-  // Set mounted state
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    { icon: <FaFacebookF />, url: 'https://www.facebook.com/www.amestica.cl/?locale=es_LA' },
+    { icon: <FaInstagram />, url: 'https://www.instagram.com/amestica.cl' },
+    { icon: <FaYoutube />, url: 'https://www.youtube.com/@amestica.cl' },
+    { icon: <FaTiktok />, url: 'https://www.tiktok.com/@amestica.cl' },
+  ];
 
   // Optimización: Detectar scroll con throttling
   useEffect(() => {
-    if (!isMounted || typeof window === 'undefined') return;
-    
+    if (!isClient) return;
+
     let ticking = false;
-    
+
     const handleScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
@@ -55,33 +50,95 @@ export default function Header() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isMounted]);
+  }, [isClient]);
 
   const handleNavigationClick = useCallback((href: string) => {
-    if (!isMounted || typeof window === 'undefined' || typeof document === 'undefined') return;
-    
-    console.log('handleNavigationClick called with:', href);
-    
-    // Usar el hook de smooth scroll para consistencia
-    if (href.startsWith('#')) {
+    if (!isClient) return;
+
+    // Caso especial para "Inicio"
+    if (href === '#hero') {
+
+      // Método múltiple para asegurar que funcione
+      const scrollToTop = () => {
+        if (typeof window === 'undefined') return;
+
+        // Si ya estamos en el tope, hacer un pequeño scroll para mostrar el movimiento
+        if (window.scrollY === 0) {
+
+          // Hacer un pequeño scroll hacia abajo y luego regresar al tope
+          window.scrollTo({
+            top: 100,
+            behavior: 'smooth'
+          });
+
+          setTimeout(() => {
+            if (typeof window !== 'undefined') {
+              window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+              });
+            }
+
+          }, 300);
+
+          return;
+        }
+
+        // Método 1: Scroll directo
+        window.scrollTo(0, 0);
+
+        // Método 2: Scroll suave
+        setTimeout(() => {
+          if (typeof window !== 'undefined') {
+            window.scrollTo({
+              top: 0,
+              behavior: 'smooth'
+            });
+          }
+
+        }, 50);
+
+        // Método 3: Fallback agresivo
+        setTimeout(() => {
+          if (typeof window !== 'undefined' && window.scrollY > 0) {
+
+            if (typeof document !== 'undefined') {
+              document.documentElement.scrollTop = 0;
+              document.body.scrollTop = 0;
+            }
+            window.scrollTo(0, 0);
+
+          }
+        }, 200);
+      };
+
+      try {
+        scrollToTop();
+      } catch (error) {
+
+        // Último recurso
+        if (typeof document !== 'undefined') {
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        }
+      }
+    } else if (href.startsWith('#')) {
       scrollToSection(href);
     } else {
       router.push(href);
     }
-    
-    // Cerrar el menú móvil si está abierto
+
     setIsMenuOpen(false);
-  }, [isMounted, router, scrollToSection]);
+  }, [isClient, scrollToSection, router]);
 
   return (
     <>
-      <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-lg' 
-          : 'bg-white shadow-md'
-      }`}>
+      <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled
+        ? 'bg-white/95 backdrop-blur-md shadow-lg'
+        : 'bg-white shadow-md'
+        }`}>
         <div className="flex items-center justify-between py-2 px-3 md:px-6 lg:px-12">
-          
+
           {/* Logo optimizado para móvil */}
           <div className="flex items-center">
             <Image
@@ -104,11 +161,9 @@ export default function Header() {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log(`🖱️ Click en ${item.name} con href: ${item.href}`);
-                  
+
                   if (item.href === '#hero') {
-                    console.log('🚀 INICIO - Scroll al tope');
-                    
+
                     // Scroll directo y confiable al tope
                     if (typeof window !== 'undefined') {
                       window.scrollTo(0, 0);
@@ -117,12 +172,12 @@ export default function Header() {
                       document.documentElement.scrollTop = 0;
                       document.body.scrollTop = 0;
                     }
-                    console.log('🚀 Scroll ejecutado');
+
                   } else {
                     handleNavigationClick(item.href);
                   }
                 }}
-                className="text-sm md:text-base lg:text-lg text-gray-700 hover:text-blue-700 font-medium relative group transition-colors duration-200 focus:outline-none rounded cursor-pointer"
+                className="text-sm md:text-base lg:text-lg text-gray-700 hover:text-blue-700 font-medium relative group transition-colors duration-200 focus:outline-none  rounded cursor-pointer"
                 aria-label={`Navegar a ${item.name}`}
                 onMouseDown={(e) => e.preventDefault()}
               >
@@ -162,9 +217,8 @@ export default function Header() {
 
       {/* Menú móvil optimizado */}
       <aside
-        className={`fixed top-0 left-0 w-full h-full bg-white z-[40] p-6 md:p-8 transition-transform duration-300 transform ${
-          isMenuOpen ? "translate-x-0" : "-translate-x-full"
-        } md:hidden`}
+        className={`fixed top-0 left-0 w-full h-full bg-white z-[40] p-6 md:p-8 transition-transform duration-300 transform ${isMenuOpen ? "translate-x-0" : "-translate-x-full"
+          } md:hidden`}
         aria-hidden={!isMenuOpen}
       >
         {/* Botón cerrar dentro del menú */}
@@ -179,7 +233,7 @@ export default function Header() {
         </div>
 
         {/* Enlaces optimizados para móvil */}
-        <nav className="flex flex-col items-center space-y-6 mt-12" role="navigation">
+        <nav className="flex flex-col items-center space-y-4 md:space-y-6 mt-8 md:mt-12" role="navigation">
           {navigationItems.map((item) => (
             <button
               key={item.name}
@@ -187,20 +241,18 @@ export default function Header() {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log(`📱 Click móvil en ${item.name} con href: ${item.href}`);
-                
+
                 if (item.href === '#hero') {
-                  console.log('🚀 INICIO móvil - Scroll al tope');
-                  
+
                   // Scroll directo y confiable al tope
                   window.scrollTo(0, 0);
                   document.documentElement.scrollTop = 0;
                   document.body.scrollTop = 0;
-                  console.log('🚀 Scroll móvil ejecutado');
+
                 } else {
                   handleNavigationClick(item.href);
                 }
-                
+
                 setIsMenuOpen(false);
               }}
               className="text-lg md:text-xl text-gray-700 font-medium focus:outline-none rounded px-4 py-3 cursor-pointer w-full text-center"
@@ -213,7 +265,7 @@ export default function Header() {
         </nav>
 
         {/* Redes sociales en menú móvil optimizadas */}
-        <div className="flex justify-center space-x-6 mt-10">
+        <div className="flex justify-center space-x-4 md:space-x-6 mt-8 md:mt-10">
           {socialMediaLinks.map(({ icon, url }, index) => (
             <a
               key={index}

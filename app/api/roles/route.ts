@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from "next/server"
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -18,13 +18,13 @@ export async function GET(request: NextRequest) {
     })
 
     // Asegurar que no hay duplicados (por si acaso)
-    const uniqueRoles = roles.filter((role, index, self) => 
+    const uniqueRoles = roles.filter((role, index, self) =>
       index === self.findIndex(r => r.name.toUpperCase() === role.name.toUpperCase())
     )
 
     return NextResponse.json(uniqueRoles)
   } catch (error) {
-    console.error("Error fetching roles:", error)
+    
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

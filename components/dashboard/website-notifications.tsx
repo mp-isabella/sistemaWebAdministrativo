@@ -1,23 +1,23 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Bell, 
-  Mail, 
-  MapPin, 
-  Phone, 
-  User, 
-  Calendar, 
-  CheckCircle, 
-  X, 
-  Trash2,
-  Eye,
-  EyeOff
-} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
+import {
+  Bell,
+  Calendar,
+  CheckCircle,
+  Eye,
+  EyeOff,
+  Mail,
+  MapPin,
+  Phone,
+  // X, 
+  Trash2,
+  User
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface WebsiteNotification {
   id: string;
@@ -54,10 +54,8 @@ export default function WebsiteNotifications() {
         const data = await response.json();
         setNotifications(data);
       } else {
-        console.error('Error fetching notifications:', response.statusText);
       }
     } catch (error) {
-      console.error('Error fetching notifications:', error);
     } finally {
       setLoading(false);
     }
@@ -74,9 +72,9 @@ export default function WebsiteNotifications() {
       });
 
       if (response.ok) {
-        setNotifications(prev => 
-          prev.map(notification => 
-            notification.id === id 
+        setNotifications(prev =>
+          prev.map(notification =>
+            notification.id === id
               ? { ...notification, isRead: true, status: 'read' }
               : notification
           )
@@ -87,7 +85,6 @@ export default function WebsiteNotifications() {
         });
       }
     } catch (error) {
-      console.error('Error marking notification as read:', error);
       toast({
         title: "Error",
         description: "No se pudo marcar la notificación como leída.",
@@ -110,7 +107,6 @@ export default function WebsiteNotifications() {
         });
       }
     } catch (error) {
-      console.error('Error deleting notification:', error);
       toast({
         title: "Error",
         description: "No se pudo eliminar la notificación.",
@@ -144,7 +140,7 @@ export default function WebsiteNotifications() {
     if (isRead) {
       return <Badge variant="secondary">Leída</Badge>;
     }
-    
+
     switch (status) {
       case 'unread':
         return <Badge variant="destructive">Nueva</Badge>;
@@ -211,11 +207,10 @@ export default function WebsiteNotifications() {
           {notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`border rounded-lg p-4 transition-all duration-200 ${
-                notification.isRead 
-                  ? 'bg-gray-50 border-gray-200' 
-                  : 'bg-blue-50 border-blue-200'
-              }`}
+              className={`border rounded-lg p-4 transition-all duration-200 ${notification.isRead
+                ? 'bg-gray-50 border-gray-200'
+                : 'bg-blue-50 border-blue-200'
+                }`}
             >
               {/* Header de la notificación */}
               <div className="flex items-start justify-between mb-3">
@@ -278,7 +273,7 @@ export default function WebsiteNotifications() {
                       <span className="text-gray-600">{notification.service}</span>
                     </div>
                   )}
-                  
+
                   {(notification.region || notification.commune) && (
                     <div className="flex items-center gap-2 text-sm">
                       <MapPin className="h-4 w-4 text-gray-500" />
@@ -287,7 +282,7 @@ export default function WebsiteNotifications() {
                       </span>
                     </div>
                   )}
-                  
+
                   {notification.address && (
                     <div className="flex items-center gap-2 text-sm">
                       <MapPin className="h-4 w-4 text-gray-500" />

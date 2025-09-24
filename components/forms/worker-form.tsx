@@ -1,17 +1,23 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { User, Mail, Phone, Shield, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, Shield, User } from 'lucide-react'
+import { useCallback, useEffect, useState } from "react"
 
 interface Role {
   id: string;
   name: string;
+}
+
+interface Company {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
 }
 
 interface WorkerFormProps {
@@ -26,6 +32,7 @@ interface FormData {
   email: string
   phone: string
   role: string
+  company: string
   status: string
   password: string
   confirmPassword: string
@@ -34,16 +41,19 @@ interface FormData {
 export default function WorkerForm({ worker, onSubmit, onCancel, loading = false }: WorkerFormProps) {
   // Estados principales
   const [roles, setRoles] = useState<Role[]>([])
+  const [companies, setCompanies] = useState<Company[]>([])
   const [rolesLoading, setRolesLoading] = useState(true)
+  const [companiesLoading, setCompaniesLoading] = useState(true)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [showPassword, setShowPassword] = useState(false)
-  
+  const [initialValuesSet, setInitialValuesSet] = useState(false)
+
   // Estado del formulario
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     phone: "",
     role: "",
+    company: "",
     status: "active",
     password: "",
     confirmPassword: ""
@@ -53,51 +63,127 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
   const fetchRoles = useCallback(async () => {
     try {
       setRolesLoading(true)
-      console.log('🔄 Cargando roles...')
-      
+
       const response = await fetch('/api/roles')
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
-      
+
       const data = await response.json()
-      console.log('✅ Roles cargados:', data)
-      
+
       setRoles(data)
-      
+
       // Si es un nuevo trabajador y no hay rol seleccionado, seleccionar el primero
       if (!worker && data.length > 0 && !formData.role) {
         setFormData(prev => ({ ...prev, role: data[0].name }))
-        console.log('🎯 Rol inicial seleccionado:', data[0].name)
+
       }
-      
+
+      // En modo edición, no cambiar el rol si ya está establecido
+      if (worker && formData.role) {
+
+      }
+
     } catch (error) {
-      console.error('❌ Error cargando roles:', error)
+
       setErrors(prev => ({ ...prev, role: "Error al cargar roles" }))
     } finally {
       setRolesLoading(false)
     }
   }, [worker, formData.role])
 
+  // Cargar empresas al montar el componente
+  const fetchCompanies = useCallback(async () => {
+    try {
+      setCompaniesLoading(true)
+
+      const response = await fetch('/api/companies')
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+
+      // Filtrar empresas duplicadas por nombre
+      const uniqueCompanies = data ? data.filter((company: any, index: number, self: any[]) =>
+        index === self.findIndex((c: any) => c.name === company.name)
+      ) : []
+
+      // console.log('Unique companies:', uniqueCompanies)
+      setCompanies(uniqueCompanies)
+
+      // Si es un nuevo trabajador y no hay empresa seleccionada, seleccionar la primera
+      if (!worker && uniqueCompanies.length > 0 && !formData.company) {
+        setFormData(prev => ({ ...prev, company: uniqueCompanies[0].name }))
+
+      }
+
+      // En modo edición, no cambiar la empresa si ya está establecida
+      if (worker && formData.company) {
+
+      }
+
+    } catch (error) {
+
+      setErrors(prev => ({ ...prev, company: "Error al cargar empresas" }))
+    } finally {
+      setCompaniesLoading(false)
+    }
+  }, [worker, formData.company])
+
   // Cargar roles al montar el componente
   useEffect(() => {
     fetchRoles()
   }, [fetchRoles])
 
+  // Cargar empresas al montar el componente
+  useEffect(() => {
+    fetchCompanies()
+  }, [fetchCompanies])
+
+  // Asegurar que los datos del trabajador se establezcan cuando las opciones estén cargadas
+  useEffect(() => {
+    if (worker && companies.length > 0 && roles.length > 0 && !initialValuesSet) {
+      // Verificar que los valores del trabajador existan en las opciones disponibles
+      const validCompany = companies.find(c => c.name === worker.company)
+      const validRole = roles.find(r => r.name === worker.role)
+
+      if (validCompany && validRole) {
+        setFormData(prev => ({
+          ...prev,
+          company: worker.company || "",
+          role: worker.role || ""
+        }))
+        setInitialValuesSet(true)
+
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          rolesDisponibles: roles.map(r => r.name)
+        }))
+        setInitialValuesSet(true) // Marcar como establecido para evitar reintentos
+      }
+    }
+  }, [worker, companies, roles, initialValuesSet])
+
   // Actualizar formulario cuando cambie el worker
   useEffect(() => {
     if (worker) {
-      // Modo edición
-      setFormData({
+      // Modo edición - asegurar que los datos se carguen correctamente
+      const newFormData = {
         name: worker.name || "",
         email: worker.email || "",
         phone: worker.phone || "",
-        role: worker.role?.name || "",
+        role: worker.role || "", // El rol viene como string directamente
+        company: worker.company || "",
         status: worker.isActive ? "active" : "inactive",
         password: "",
         confirmPassword: ""
-      })
-      console.log('📝 Formulario cargado para edición:', worker.name)
+      }
+
+      setFormData(newFormData)
+      setInitialValuesSet(false) // Resetear para permitir establecer valores iniciales
+
     } else {
       // Modo creación - limpiar formulario
       setFormData({
@@ -105,11 +191,13 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
         email: "",
         phone: "",
         role: "",
+        company: "",
         status: "active",
         password: "",
         confirmPassword: ""
       })
-      console.log('🆕 Formulario limpiado para nuevo trabajador')
+      setInitialValuesSet(false)
+
     }
     setErrors({})
   }, [worker])
@@ -117,7 +205,7 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
   // Manejador de cambios en el formulario
   const handleChange = useCallback((field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-    
+
     // Limpiar error del campo si existe
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }))
@@ -140,9 +228,19 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
       newErrors.email = "Email inválido"
     }
 
-    // Validar rol
-    if (!formData.role) {
+    // Validar teléfono
+    if (!formData.phone.trim()) {
+      newErrors.phone = "El teléfono es requerido"
+    }
+
+    // Validar rol - solo requerido si no hay rol establecido
+    if (!formData.role || formData.role.trim() === "") {
       newErrors.role = "El rol es requerido"
+    }
+
+    // Validar empresa
+    if (!formData.company || formData.company.trim() === "") {
+      newErrors.company = "La empresa es requerida"
     }
 
     // Validar contraseña (solo para nuevos trabajadores)
@@ -152,12 +250,20 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
       newErrors.password = "La contraseña debe tener al menos 6 caracteres"
     }
 
-    // Validar confirmación de contraseña
-    if (formData.password && formData.password !== formData.confirmPassword) {
+    // Validar confirmación de contraseña (solo para nuevos trabajadores)
+    if (!worker && formData.password && formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Las contraseñas no coinciden"
     }
 
-    console.log('🔍 Validación del formulario:', { formData, errors: newErrors })
+    // Log detallado de errores
+    if (Object.keys(newErrors).length > 0) {
+      Object.entries(newErrors).forEach(([field, error]) => {
+        console.log(`Error en campo ${field}: ${error}`)
+      })
+    } else {
+      console.log("Formulario válido")
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }, [formData, worker])
@@ -165,11 +271,9 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
   // Manejador de envío del formulario
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
-    
-    console.log('📤 Enviando formulario...')
-    
+
     if (!validateForm()) {
-      console.log('❌ Formulario inválido, no se envía')
+
       return
     }
 
@@ -180,33 +284,17 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
     }
     delete submitData.confirmPassword
 
-    console.log('✅ Datos a enviar:', submitData)
     onSubmit(submitData)
-  }, [formData, validateForm, onSubmit])
+  }, [formData, validateForm, onSubmit, worker])
 
   // Función para obtener nombre legible del rol
   const getRoleName = useCallback((roleName: string) => {
     const roleMap: { [key: string]: string } = {
-      'ADMIN': 'Administrador',
+      'ADMINISTRADOR': 'Administrador',
       'SECRETARIA': 'Secretaria',
       'TECNICO': 'Técnico'
     }
     return roleMap[roleName.toUpperCase()] || roleName
-  }, [])
-
-  // Función para limpiar formulario
-  const clearForm = useCallback(() => {
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      role: "",
-      status: "active",
-      password: "",
-      confirmPassword: ""
-    })
-    setErrors({})
-    console.log('🧹 Formulario limpiado')
   }, [])
 
   return (
@@ -237,7 +325,7 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
               </div>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Nombre */}
             <div className="space-y-4">
@@ -305,6 +393,36 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
               )}
             </div>
 
+            {/* Empresa */}
+            <div className="space-y-4">
+              <Label htmlFor="company" className="text-sm font-semibold text-slate-700">
+                Empresa
+                <span className="text-red-500 font-bold">*</span>
+              </Label>
+              <select
+                id="company"
+                value={formData.company}
+                onChange={(e) => handleChange("company", e.target.value)}
+                disabled={companiesLoading}
+                className="h-14 w-full text-base border-2 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 shadow-sm font-medium px-4 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="">
+                  {companiesLoading ? "Cargando empresas..." : "Seleccionar empresa"}
+                </option>
+                {companies.map((company) => (
+                  <option key={company.id} value={company.name}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
+              {errors.company && (
+                <Alert variant="destructive" className="py-3 rounded-lg">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="text-sm">{errors.company}</AlertDescription>
+                </Alert>
+              )}
+            </div>
+
             {/* Rol */}
             <div className="space-y-4">
               <Label htmlFor="role" className="text-sm font-semibold text-slate-700">
@@ -315,12 +433,17 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
                 id="role"
                 value={formData.role}
                 onChange={(e) => handleChange("role", e.target.value)}
-                className="h-14 w-full text-base border-2 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 shadow-sm font-medium px-4 bg-white"
+                disabled={rolesLoading}
+                className="h-14 w-full text-base border-2 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 shadow-sm font-medium px-4 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="">Seleccionar rol</option>
-                <option value="Administrador">Administrador</option>
-                <option value="Secretaria">Secretaria</option>
-                <option value="Técnico">Técnico</option>
+                <option value="">
+                  {rolesLoading ? "Cargando roles..." : "Seleccionar rol"}
+                </option>
+                {roles.map((role) => (
+                  <option key={role.id} value={role.name}>
+                    {getRoleName(role.name)}
+                  </option>
+                ))}
               </select>
               {errors.role && (
                 <Alert variant="destructive" className="py-3 rounded-lg">
@@ -345,33 +468,35 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
               </div>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Estado */}
-            <div className="space-y-4">
-              <Label htmlFor="status" className="text-sm font-semibold text-slate-700">
-                Estado
-                <span className="text-red-500 font-bold">*</span>
-              </Label>
-              <select
-                id="status"
-                value={formData.status}
-                onChange={(e) => handleChange("status", e.target.value)}
-                className="h-14 w-full text-base border-2 rounded-xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 shadow-sm font-medium px-4 bg-white"
-              >
-                <option value="active">Activo</option>
-                <option value="inactive">Inactivo</option>
-              </select>
-              {errors.status && (
-                <Alert variant="destructive" className="py-3 rounded-lg">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription className="text-sm">{errors.status}</AlertDescription>
-                </Alert>
-              )}
-            </div>
+            {/* Estado - Solo visible al editar */}
+            {worker && (
+              <div className="space-y-4">
+                <Label htmlFor="status" className="text-sm font-semibold text-slate-700">
+                  Estado
+                  <span className="text-red-500 font-bold">*</span>
+                </Label>
+                <select
+                  id="status"
+                  value={formData.status}
+                  onChange={(e) => handleChange("status", e.target.value)}
+                  className="h-14 w-full text-base border-2 rounded-xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 shadow-sm font-medium px-4 bg-white"
+                >
+                  <option value="active">Activo</option>
+                  <option value="inactive">Inactivo</option>
+                </select>
+                {errors.status && (
+                  <Alert variant="destructive" className="py-3 rounded-lg">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription className="text-sm">{errors.status}</AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            )}
 
             {/* Contraseña */}
-            <div className="space-y-4">
+            <div className={`space-y-4 ${!worker ? 'md:col-span-2' : ''}`}>
               <Label htmlFor="password" className="text-sm font-semibold text-slate-700">
                 Contraseña
                 {!worker && <span className="text-red-500 font-bold">*</span>}
@@ -434,7 +559,7 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 h-14 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
+              className="flex-1 h-14 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
             >
               {loading ? (
                 <div className="flex items-center gap-3">

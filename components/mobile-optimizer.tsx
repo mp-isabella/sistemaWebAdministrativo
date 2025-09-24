@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface MobileOptimizerProps {
   children: React.ReactNode;
@@ -9,29 +9,28 @@ interface MobileOptimizerProps {
   enableAnimationOptimizations?: boolean;
 }
 
-export default function MobileOptimizer({ 
-  children, 
+export default function MobileOptimizer({
+  children,
   enableFormOptimizations = true,
   enableImageOptimizations = true,
   enableAnimationOptimizations = true
 }: MobileOptimizerProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
-  const [isOptimized, setIsOptimized] = useState(false);
   const [viewportHeight, setViewportHeight] = useState(0);
 
   // Función optimizada para detectar dispositivos móviles
   const updateMobileInfo = useCallback(() => {
     if (typeof window === 'undefined') return;
-    
+
     const width = window.innerWidth;
     const height = window.innerHeight;
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    
+
     // Detección más precisa de dispositivos móviles
     const mobile = width <= 768 || (width <= 1024 && isTouchDevice);
     const tablet = width > 768 && width <= 1024 && isTouchDevice;
-    
+
     setIsMobile(mobile);
     setIsTablet(tablet);
     setViewportHeight(height);
@@ -40,7 +39,7 @@ export default function MobileOptimizer({
   // Actualizar información del dispositivo solo después de la hidratación
   useEffect(() => {
     updateMobileInfo();
-    
+
     const handleResize = () => {
       updateMobileInfo();
     };
@@ -62,7 +61,7 @@ export default function MobileOptimizer({
   // Optimizaciones específicas para móvil
   useEffect(() => {
     if (!isMobile && !isTablet) return;
-    
+
     if (enableImageOptimizations) {
       // Optimizar imágenes de fondo y contenido
       const images = document.querySelectorAll('img, [style*="background-image"]');
@@ -70,7 +69,7 @@ export default function MobileOptimizer({
         if (element instanceof HTMLImageElement) {
           element.loading = 'lazy';
           element.decoding = 'async';
-          
+
           // Agregar clases de optimización para móvil
           element.classList.add('mobile-optimized');
         }
@@ -120,11 +119,14 @@ export default function MobileOptimizer({
           }
         }
       `;
-      
+
       // Evitar duplicar estilos
       const existingStyle = document.getElementById('mobile-optimizations');
       if (!existingStyle) {
-        document.head.appendChild(style);
+        try {
+          document.head.appendChild(style);
+        } catch (error) {
+        }
       }
     }
 
@@ -136,13 +138,12 @@ export default function MobileOptimizer({
       }
     }
 
-    setIsOptimized(true);
   }, [isMobile, isTablet, enableFormOptimizations, enableImageOptimizations, enableAnimationOptimizations]);
 
   // Optimizaciones de rendimiento para scroll
   useEffect(() => {
     if (!isMobile) return;
-    
+
     let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
@@ -161,7 +162,7 @@ export default function MobileOptimizer({
   // Optimizaciones de memoria y caché
   useEffect(() => {
     if (!isMobile) return;
-    
+
     // Limpiar caché de imágenes no utilizadas
     const cleanupImages = () => {
       const images = document.querySelectorAll('img[data-src]');
@@ -180,14 +181,14 @@ export default function MobileOptimizer({
   // Optimizaciones específicas para formularios móviles
   useEffect(() => {
     if (!isMobile || !enableFormOptimizations) return;
-    
+
     // Mejorar experiencia de formularios en móvil
     const inputs = document.querySelectorAll('input, textarea, select');
     inputs.forEach((input) => {
       if (input instanceof HTMLElement) {
         // Agregar clases de optimización para móvil
         input.classList.add('mobile-form-input');
-        
+
         // Prevenir zoom en iOS
         if (input instanceof HTMLInputElement) {
           input.style.fontSize = '16px';
@@ -199,16 +200,16 @@ export default function MobileOptimizer({
   // Optimizaciones de viewport para móviles
   useEffect(() => {
     if (!isMobile || !viewportHeight) return;
-    
+
     // Ajustar altura del viewport para móviles
     const setVH = () => {
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);
     };
-    
+
     setVH();
     window.addEventListener('resize', setVH);
-    
+
     return () => window.removeEventListener('resize', setVH);
   }, [isMobile, viewportHeight]);
 

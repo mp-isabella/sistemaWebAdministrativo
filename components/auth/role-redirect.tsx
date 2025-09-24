@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { getDefaultRoute } from "@/lib/roles"
 
 interface RoleRedirectProps {
   children: ReactNode
@@ -18,29 +19,32 @@ export function RoleRedirect({ children, allowedRoles }: RoleRedirectProps) {
     if (status === "loading") return
 
     if (status === "unauthenticated") {
-      console.log("🔒 Usuario no autenticado, redirigiendo a login...")
+      
       router.replace("/login")
       return
     }
 
     if (status === "authenticated" && session) {
-      const role = (session?.user as any)?.role
-      console.log("👤 Usuario autenticado con rol:", role)
-      
-      if (allowedRoles && !allowedRoles.includes(role || "")) {
-        console.log("🚫 Rol no autorizado, redirigiendo...")
-        // Redirigir si el rol no tiene permiso
-        if (role === "TECNICO") {
-          router.replace("/dashboard/my-jobs")
-        } else if (role === "SECRETARIA") {
-          router.replace("/dashboard/schedule")
-        } else {
-          router.replace("/dashboard")
+      const role = (session?.user as any)?.role?.toLowerCase()
+
+      if (allowedRoles) {
+        // Normalizar roles permitidos a minúsculas
+        const normalizedAllowedRoles = allowedRoles.map(r => r.toLowerCase())
+        
+        // Verificar si el rol está permitido (incluyendo equivalencias admin/administrador)
+        const isAuthorized = normalizedAllowedRoles.includes(role || "") || 
+          (role === "admin" && normalizedAllowedRoles.includes("administrador")) ||
+          (role === "administrador" && normalizedAllowedRoles.includes("admin"))
+        
+        if (!isAuthorized) {
+          
+          // Redirigir a la ruta por defecto del rol
+          const defaultRoute = getDefaultRoute(role)
+          router.replace(defaultRoute)
+          return
         }
-        return
       }
-      
-      console.log("✅ Acceso autorizado")
+
       setReady(true)
     }
   }, [status, session, allowedRoles, router])

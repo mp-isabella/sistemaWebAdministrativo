@@ -37,7 +37,6 @@ export function usePersistentState<T>(
         }
       }
     } catch (error) {
-      console.warn(`Error loading persistent state for key "${key}":`, error);
     } finally {
       setIsLoaded(true);
     }
@@ -56,7 +55,6 @@ export function usePersistentState<T>(
           try {
             localStorage.setItem(key, serialize(nextState));
           } catch (error) {
-            console.warn(`Error saving persistent state for key "${key}":`, error);
           }
         }
 
@@ -72,7 +70,6 @@ export function usePersistentState<T>(
       try {
         localStorage.removeItem(key);
       } catch (error) {
-        console.warn(`Error clearing persistent state for key "${key}":`, error);
       }
     }
     setState(initialValue);

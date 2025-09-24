@@ -1,15 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { useRouter, useParams } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, Download, Edit, Trash2, Send, Check, X, Clock } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
 import QuoteTemplate from '@/components/quote/quote-template'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { useToast } from '@/hooks/use-toast'
+import { ArrowLeft, Check, Clock, Download, Edit, Send, Trash2, X } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { useParams, useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
 
 interface QuoteItem {
   id: string
@@ -73,13 +73,7 @@ export default function QuoteDetailPage() {
   const [downloading, setDownloading] = useState(false)
   const [showTemplate, setShowTemplate] = useState(false)
 
-  useEffect(() => {
-    if (session && params.id) {
-      fetchQuote()
-    }
-  }, [session, params.id])
-
-  const fetchQuote = async () => {
+  const fetchQuote = useCallback(async () => {
     try {
       const response = await fetch(`/api/quotes/${params.id}`)
       if (response.ok) {
@@ -94,7 +88,7 @@ export default function QuoteDetailPage() {
         router.push('/dashboard/quotes')
       }
     } catch (error) {
-      console.error('Error fetching quote:', error)
+      
       toast({
         title: "Error",
         description: "Error al cargar el presupuesto",
@@ -104,7 +98,13 @@ export default function QuoteDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id, toast, router])
+
+  useEffect(() => {
+    if (session && params.id) {
+      fetchQuote()
+    }
+  }, [session, params.id, fetchQuote])
 
   const downloadPDF = async () => {
     if (!quote) return
@@ -112,7 +112,7 @@ export default function QuoteDetailPage() {
     setDownloading(true)
     try {
       const response = await fetch(`/api/quotes/${quote.id}/export-pdf`)
-      
+
       if (response.ok) {
         const blob = await response.blob()
         const url = window.URL.createObjectURL(blob)
@@ -123,7 +123,7 @@ export default function QuoteDetailPage() {
         a.click()
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
-        
+
         toast({
           title: "Éxito",
           description: "Presupuesto descargado correctamente",
@@ -136,7 +136,7 @@ export default function QuoteDetailPage() {
         })
       }
     } catch (error) {
-      console.error('Error downloading PDF:', error)
+      
       toast({
         title: "Error",
         description: "Error al descargar el PDF",
@@ -177,7 +177,7 @@ export default function QuoteDetailPage() {
         })
       }
     } catch (error) {
-      console.error('Error updating status:', error)
+      
       toast({
         title: "Error",
         description: "Error al actualizar el estado",
@@ -212,7 +212,7 @@ export default function QuoteDetailPage() {
         })
       }
     } catch (error) {
-      console.error('Error deleting quote:', error)
+      
       toast({
         title: "Error",
         description: "Error al eliminar el presupuesto",
@@ -230,13 +230,13 @@ export default function QuoteDetailPage() {
       EXPIRED: { label: 'Expirado', variant: 'outline' as const, icon: Clock }
     }
 
-    const config = statusConfig[status as keyof typeof statusConfig] || { 
-      label: status, 
-      variant: 'secondary' as const, 
-      icon: Clock 
+    const config = statusConfig[status as keyof typeof statusConfig] || {
+      label: status,
+      variant: 'secondary' as const,
+      icon: Clock
     }
     const IconComponent = config.icon
-    
+
     return (
       <Badge variant={config.variant} className="flex items-center gap-1">
         <IconComponent className="h-3 w-3" />
@@ -281,7 +281,7 @@ export default function QuoteDetailPage() {
 
   if (!quote) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="w-full p-6">
         <div className="text-center">
           <p className="text-gray-500">Presupuesto no encontrado</p>
           <Button onClick={() => router.push('/dashboard/quotes')} className="mt-4">
@@ -294,10 +294,10 @@ export default function QuoteDetailPage() {
 
   if (showTemplate) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="w-full p-6">
         <div className="flex items-center gap-4 mb-6">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setShowTemplate(false)}
             className="flex items-center gap-2"
           >
@@ -309,8 +309,8 @@ export default function QuoteDetailPage() {
             <p className="text-gray-600">Vista previa del presupuesto para impresión</p>
           </div>
         </div>
-        
-        <QuoteTemplate 
+
+        <QuoteTemplate
           quote={quote}
           onEdit={() => router.push(`/dashboard/quotes/${quote.id}/edit`)}
           onView={() => setShowTemplate(false)}
@@ -320,12 +320,12 @@ export default function QuoteDetailPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="w-full p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => router.push('/dashboard/quotes')}
             className="flex items-center gap-2"
           >
@@ -337,25 +337,18 @@ export default function QuoteDetailPage() {
             <p className="text-gray-600">Detalles completos del presupuesto</p>
           </div>
         </div>
-        
+
         <div className="flex gap-2">
           {getStatusBadge(quote.status)}
-          <Button 
-            variant="outline"
-            onClick={() => setShowTemplate(true)}
-            className="flex items-center gap-2"
-          >
-            Vista de Presupuesto
-          </Button>
-          <Button 
-            onClick={downloadPDF} 
+          <Button
+            onClick={downloadPDF}
             disabled={downloading}
             className="flex items-center gap-2"
           >
             <Download className="h-4 w-4" />
             {downloading ? 'Generando...' : 'Descargar PDF'}
           </Button>
-          <Button 
+          <Button
             variant="outline"
             onClick={() => router.push(`/dashboard/quotes/${quote.id}/edit`)}
             className="flex items-center gap-2"
@@ -363,7 +356,7 @@ export default function QuoteDetailPage() {
             <Edit className="h-4 w-4" />
             Editar
           </Button>
-          <Button 
+          <Button
             variant="destructive"
             onClick={deleteQuote}
             className="flex items-center gap-2"
@@ -413,9 +406,9 @@ export default function QuoteDetailPage() {
                   </div>
                 )}
               </div>
-              
+
               <Separator />
-              
+
               <div>
                 <p className="text-sm font-medium text-gray-500">Creado por</p>
                 <p className="text-lg">{quote.createdBy.name}</p>
@@ -445,35 +438,35 @@ export default function QuoteDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-500">Nombre</p>
-                  <p className="text-lg font-semibold">{quote.client.name}</p>
+                  <p className="text-lg font-semibold">{quote.client?.name || 'No especificado'}</p>
                 </div>
-                {quote.client.company && (
+                {quote.client?.company && (
                   <div>
                     <p className="text-sm font-medium text-gray-500">Empresa</p>
                     <p className="text-lg">{quote.client.company}</p>
                   </div>
                 )}
-                {quote.client.rut && (
+                {quote.client?.rut && (
                   <div>
                     <p className="text-sm font-medium text-gray-500">RUT</p>
                     <p className="text-lg">{quote.client.rut}</p>
                   </div>
                 )}
-                {quote.client.email && (
+                {quote.client?.email && (
                   <div>
                     <p className="text-sm font-medium text-gray-500">Email</p>
                     <p className="text-lg">{quote.client.email}</p>
                   </div>
                 )}
-                {quote.client.phone && (
+                {quote.client?.phone && (
                   <div>
                     <p className="text-sm font-medium text-gray-500">Teléfono</p>
                     <p className="text-lg">{quote.client.phone}</p>
                   </div>
                 )}
               </div>
-              
-              {quote.client.address && (
+
+              {quote.client?.address && (
                 <>
                   <Separator />
                   <div>
@@ -502,7 +495,7 @@ export default function QuoteDetailPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {quote.items.map((item, index) => (
+                    {quote.items.map((item, _index) => (
                       <tr key={item.id} className="border-b">
                         <td className="py-3 px-4">
                           <div>
@@ -574,7 +567,7 @@ export default function QuoteDetailPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               {quote.status === 'DRAFT' && (
-                <Button 
+                <Button
                   onClick={() => updateStatus('SENT')}
                   className="w-full flex items-center gap-2"
                 >
@@ -582,17 +575,17 @@ export default function QuoteDetailPage() {
                   Marcar como Enviado
                 </Button>
               )}
-              
+
               {quote.status === 'SENT' && (
                 <div className="space-y-2">
-                  <Button 
+                  <Button
                     onClick={() => updateStatus('ACCEPTED')}
                     className="w-full flex items-center gap-2 bg-green-600 hover:bg-green-700"
                   >
                     <Check className="h-4 w-4" />
                     Aceptar Presupuesto
                   </Button>
-                  <Button 
+                  <Button
                     onClick={() => updateStatus('REJECTED')}
                     variant="destructive"
                     className="w-full flex items-center gap-2"
@@ -602,9 +595,9 @@ export default function QuoteDetailPage() {
                   </Button>
                 </div>
               )}
-              
+
               {quote.status === 'ACCEPTED' && (
-                <Button 
+                <Button
                   onClick={() => router.push(`/dashboard/invoices/new?quoteId=${quote.id}`)}
                   className="w-full flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
                 >

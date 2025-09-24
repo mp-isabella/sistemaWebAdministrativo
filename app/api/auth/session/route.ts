@@ -21,7 +21,7 @@ export async function GET() {
     
     return NextResponse.json(null)
   } catch (error) {
-    console.error("Error en /api/auth/session:", error)
+    
     return NextResponse.json(null)
   }
 }

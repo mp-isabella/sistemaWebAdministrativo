@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from "next/server"
 
 interface InvoiceItem {
   description: string
@@ -37,7 +37,7 @@ interface Invoice {
 }
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -453,8 +453,8 @@ export async function GET(
     })
 
   } catch (error) {
-    console.error("Error generating invoice PDF:", error)
-    return NextResponse.json({ 
+    
+    return NextResponse.json({
       error: "Error interno del servidor"
     }, { status: 500 })
   }

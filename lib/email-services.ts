@@ -77,8 +77,6 @@ export const sendQuoteEmail = async (data: EmailData): Promise<{
   message: string;
   service?: string;
 }> => {
-  console.log('📧 Iniciando envío de cotización...');
-  
   // Validación básica
   if (!data.nombre || !data.email || !data.telefono || !data.servicio) {
     return {
@@ -121,19 +119,15 @@ export const sendQuoteEmail = async (data: EmailData): Promise<{
       const result = await response.json();
       return result.success === true;
     } catch (error) {
-      console.log('FormSubmit error:', error);
       return false;
     }
   };
 
-
   // Usar solo FormSubmit como método principal
   try {
-    console.log(`📧 Enviando con FormSubmit...`);
     const success = await sendViaFormSubmit();
     
     if (success) {
-      console.log(`✅ Cotización enviada exitosamente vía FormSubmit`);
       return {
         success: true,
         message: `✅ Cotización enviada exitosamente a ${DESTINATION_EMAIL}`,
@@ -141,12 +135,9 @@ export const sendQuoteEmail = async (data: EmailData): Promise<{
       };
     }
   } catch (error) {
-    console.log(`❌ FormSubmit falló:`, error);
   }
 
   // Si FormSubmit falla, guardar localmente
-  console.log('⚠️ FormSubmit falló, guardando localmente...');
-  
   try {
     const cotizaciones = JSON.parse(localStorage.getItem('cotizaciones') || '[]');
     const nuevaCotizacion = {
@@ -159,26 +150,16 @@ export const sendQuoteEmail = async (data: EmailData): Promise<{
     localStorage.setItem('cotizaciones', JSON.stringify(cotizaciones));
 
     // Log detallado para el administrador
-    console.log('📧 NUEVA COTIZACIÓN GUARDADA LOCALMENTE:');
-    console.log('========================================');
-    console.log(`Para: ${DESTINATION_EMAIL}`);
-    console.log(`De: ${data.nombre} (${data.email})`);
-    console.log(`Teléfono: ${data.telefono}`);
-    console.log(`Servicio: ${serviceNames[data.servicio] || data.servicio}`);
-    console.log(`Ubicación: ${data.region}, ${data.comuna}`);
-    console.log(`Dirección: ${data.direccion}`);
+    console.log('Cotización guardada localmente:', nuevaCotizacion);
     if (data.mensaje) {
-      console.log(`Mensaje: ${data.mensaje}`);
+      console.log('Mensaje del cliente:', data.mensaje);
     }
-    console.log('========================================');
-
     return {
       success: true,
       message: '⚠️ El servicio de email está temporalmente no disponible. Tu cotización se ha guardado y será procesada manualmente. Te contactaremos pronto al número proporcionado.',
       service: 'Local Storage'
     };
   } catch (storageError) {
-    console.error('Error guardando en localStorage:', storageError);
     return {
       success: false,
       message: '❌ Error al procesar la cotización. Por favor, intenta nuevamente o contacta directamente al +56 9 4200 8410.'

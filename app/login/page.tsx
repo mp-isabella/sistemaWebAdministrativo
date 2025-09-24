@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { signIn, getSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getDefaultRoute } from "@/lib/roles";
 import { Eye, EyeOff, Lock, User } from "lucide-react";
+import { getSession, signIn } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,10 +24,10 @@ export default function LoginPage() {
   // Timeout para evitar que se quede colgado
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    
+
     if (loading) {
       timeoutId = setTimeout(() => {
-        console.error("⏰ Timeout en login - tomó más de 15 segundos");
+
         setError("Tiempo de espera agotado. Por favor, verifica tu conexión e intenta nuevamente.");
         setLoading(false);
       }, 15000);
@@ -43,9 +44,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      console.log("🚀 Iniciando proceso de login...");
-      console.log("📝 Credenciales:", { email: formData.email, password: formData.password });
-      
+
       // Verificar que las credenciales no estén vacías
       if (!formData.email.trim() || !formData.password.trim()) {
         setError("Por favor, completa todos los campos.");
@@ -59,14 +58,17 @@ export default function LoginPage() {
         redirect: false,
       });
 
-      console.log("📊 Resultado del signIn:", result);
-
       if (result?.error) {
-        console.error("❌ Error en login:", result.error);
-        
+
         // Mensajes de error más específicos
-        if (result.error.includes("CredentialsSignin")) {
+        if (result.error.includes("CredentialsSignin") || result.error.includes("Contraseña inválida")) {
           setError("Credenciales inválidas. Verifica tu email y contraseña.");
+        } else if (result.error.includes("Usuario no encontrado")) {
+          setError("No existe una cuenta con este email. Verifica tu dirección de correo.");
+        } else if (result.error.includes("Usuario inactivo")) {
+          setError("Tu cuenta está inactiva. Contacta al administrador para obtener acceso.");
+        } else if (result.error.includes("Error de conexión a base de datos")) {
+          setError("Error de conexión. Por favor, intenta nuevamente en unos momentos.");
         } else if (result.error.includes("timeout")) {
           setError("Tiempo de espera agotado. Verifica tu conexión.");
         } else {
@@ -77,58 +79,44 @@ export default function LoginPage() {
       }
 
       if (result?.ok) {
-        console.log("✅ Login exitoso, obteniendo sesión...");
-        
+
         // Intentar obtener la sesión varias veces si es necesario
         let session = null;
         let attempts = 0;
         const maxAttempts = 5;
-        
+
         while (!session && attempts < maxAttempts) {
           try {
             session = await getSession();
             if (!session) {
-              console.log(`🔄 Intento ${attempts + 1}: Sesión no disponible, esperando...`);
+
               await new Promise(resolve => setTimeout(resolve, 1000));
             }
           } catch (error) {
-            console.error(`❌ Error al obtener sesión (intento ${attempts + 1}):`, error);
+            console.error('Error getting session:', error);
           }
           attempts++;
         }
-        
-        console.log("📋 Sesión obtenida:", session);
-        
+
         const role = (session?.user as any)?.role;
-        console.log("👤 Rol del usuario:", role);
 
         if (role) {
-          // Redirigir según el rol (convertir a minúsculas para comparación)
-          const userRole = role.toLowerCase();
-          let redirectPath = "/dashboard";
-          
-          if (userRole === "admin") {
-            redirectPath = "/dashboard";
-          } else if (userRole === "tecnico") {
-            redirectPath = "/dashboard/my-jobs";
-          } else if (userRole === "secretaria") {
-            redirectPath = "/dashboard/billing";
-          }
-          
-          console.log(`🔄 Redirigiendo a: ${redirectPath}`);
+          // Usar la función centralizada para obtener la ruta por defecto
+          const redirectPath = getDefaultRoute(role);
+
           router.push(redirectPath);
         } else {
-          console.error("❌ No se pudo obtener el rol del usuario");
+
           setError("Error al obtener información del usuario. Por favor, intenta nuevamente.");
           setLoading(false);
         }
       } else {
-        console.error("❌ Login falló sin error específico");
+
         setError("Error al iniciar sesión. Por favor, intenta nuevamente.");
         setLoading(false);
       }
     } catch (error) {
-      console.error("💥 Error inesperado en login:", error);
+
       setError("Error inesperado. Por favor, intenta nuevamente.");
       setLoading(false);
     }
@@ -139,8 +127,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" style={{ margin: 0, padding: '3rem 1rem' }}>
+      <div className="max-w-md w-full space-y-8" style={{ margin: '0 auto', maxWidth: '28rem' }}>
         {/* Header */}
         <div className="text-center">
           <Image

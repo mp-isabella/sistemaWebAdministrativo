@@ -1,27 +1,27 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffect, useState } from "react"
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+// import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { 
-  Wrench, 
-  Clock, 
-  CheckCircle, 
-  AlertCircle, 
-  MapPin, 
-  Camera, 
-  FileText, 
-  TrendingUp,
+import {
+  AlertCircle,
   Calendar,
-  User,
-  Phone,
+  CheckCircle,
+  Clock,
+  // Camera, 
+  FileText,
   Mail,
-  Settings
+  MapPin,
+  Phone,
+  Settings,
+  TrendingUp,
+  User,
+  Wrench
 } from "lucide-react"
-import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import JobManagementModal from "./job-management-modal"
 
 interface Job {
@@ -156,7 +156,7 @@ export default function TecnicoDashboard() {
 
       setLoading(false)
     } catch (error) {
-      console.error("Error fetching técnico data:", error)
+      
       setLoading(false)
     }
   }
@@ -248,17 +248,17 @@ export default function TecnicoDashboard() {
                 Gestión de trabajos asignados
               </p>
             </div>
-            
+
             <div className="header-actions">
-              <Button 
-                onClick={() => router.push('/dashboard/my-jobs')} 
+              <Button
+                onClick={() => router.push('/dashboard/my-jobs')}
                 className="btn-modern primary lg"
               >
                 <Wrench className="h-5 w-5" />
                 Mis Trabajos
               </Button>
-              <Button 
-                onClick={() => router.push('/dashboard/calendar')} 
+              <Button
+                onClick={() => router.push('/dashboard/calendar')}
                 className="btn-modern secondary lg"
               >
                 <Calendar className="h-5 w-5" />
@@ -375,10 +375,10 @@ export default function TecnicoDashboard() {
                 <Calendar className="h-6 w-6 text-indigo-600" />
                 <h2 className="card-title">Trabajos de Hoy</h2>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => router.push('/dashboard/my-jobs')} 
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push('/dashboard/my-jobs')}
                 className="btn-modern secondary"
               >
                 Ver Todos
@@ -397,7 +397,7 @@ export default function TecnicoDashboard() {
                         {getPriorityBadge(job.priority)}
                       </div>
                       <p className="text-gray-600 mb-4">{job.description}</p>
-                      
+
                       {/* Información del Cliente */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div className="space-y-3">
@@ -431,16 +431,16 @@ export default function TecnicoDashboard() {
 
                   {/* Botones de Acción */}
                   <div className="flex space-x-3">
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="btn-modern primary"
                       onClick={() => handleJobAction(job.id, 'manage')}
                     >
                       <Settings className="mr-2 h-4 w-4" />
                       Gestionar Trabajo
                     </Button>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="btn-modern secondary"
                     >
                       <FileText className="mr-2 h-4 w-4" />
@@ -478,16 +478,16 @@ export default function TecnicoDashboard() {
                     </p>
                   </div>
                   <div className="flex space-x-3">
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="btn-modern secondary"
                       onClick={() => handleJobAction(job.id, 'manage')}
                     >
                       <Settings className="mr-2 h-4 w-4" />
                       Gestionar
                     </Button>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="btn-modern secondary"
                     >
                       <FileText className="mr-2 h-4 w-4" />

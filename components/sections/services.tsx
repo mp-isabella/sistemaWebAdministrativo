@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import { X, Droplets, Search, Camera, ArrowRight } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowRight, Camera, Droplets, Search, X } from "lucide-react";
 import Image from "next/image";
+import React, { useEffect, useState } from "react";
 
 const colors = {
   dark: "#002D71",
-  medium: "#014C90", 
+  medium: "#014C90",
   strong: "#016AAB",
   soft: "#5692C8",
   light: "#9ABCE1",
@@ -54,6 +54,7 @@ export default function Services() {
   const [modalData, setModalData] = useState<Service | null>(null);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [imageErrors, setImageErrors] = useState<number[]>([]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -156,13 +157,30 @@ export default function Services() {
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        priority={idx === 0}
-                        quality={90}
+                        priority={idx < 3}
+                        quality={95}
+                        loading={idx < 3 ? "eager" : "lazy"}
+                        placeholder="blur"
+                        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                        onError={() => {
+                          setImageErrors(prev => prev.includes(idx) ? prev : [...prev, idx]);
+                        }}
+                        onLoad={() => {
+                          setImageErrors(prev => prev.filter(errorIdx => errorIdx !== idx));
+                        }}
                       />
                       <div
                         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-500"
                         style={{ background: `linear-gradient(to top, ${colors.dark}60, transparent 80%)` }}
                       />
+                      {imageErrors.includes(idx) && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                          <div className="text-center text-gray-500">
+                            <div className="text-2xl mb-2">📷</div>
+                            <div className="text-sm">Imagen no disponible</div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="p-4 sm:p-6 text-left flex flex-col flex-grow">
@@ -212,9 +230,8 @@ export default function Services() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className={`max-w-2xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col ${
-                isMobile ? 'mx-2' : ''
-              }`}
+              className={`max-w-2xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col ${isMobile ? 'mx-2' : ''
+                }`}
               onClick={(e) => e.stopPropagation()}
             >
               <div
@@ -245,9 +262,8 @@ export default function Services() {
               </div>
 
               <div className="p-4 md:p-6 flex-grow">
-                <div className={`relative w-full rounded-xl overflow-hidden mb-4 ${
-                  isMobile ? 'h-48' : 'h-56 md:h-80'
-                }`}>
+                <div className={`relative w-full rounded-xl overflow-hidden mb-4 ${isMobile ? 'h-48' : 'h-56 md:h-80'
+                  }`}>
                   <Image
                     src={modalData.img}
                     alt={modalData.title}
@@ -255,6 +271,14 @@ export default function Services() {
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 66vw"
                     quality={95}
+                    priority
+                    loading="eager"
+                    placeholder="blur"
+                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                    onError={() => {
+                    }}
+                    onLoad={() => {
+                    }}
                   />
                 </div>
                 <p className="text-gray-700 text-sm md:text-base leading-relaxed text-justify">

@@ -7,7 +7,7 @@ export const CalendarEvents = {
         detail: jobData
       })
       window.dispatchEvent(event)
-      console.log('📢 Evento newJobCreated disparado')
+      
     }
   },
 
@@ -18,7 +18,7 @@ export const CalendarEvents = {
         detail: jobData
       })
       window.dispatchEvent(event)
-      console.log('📢 Evento jobUpdated disparado')
+      
     }
   },
 
@@ -29,7 +29,7 @@ export const CalendarEvents = {
         detail: { jobId }
       })
       window.dispatchEvent(event)
-      console.log('📢 Evento jobDeleted disparado')
+      
     }
   },
 
@@ -38,7 +38,7 @@ export const CalendarEvents = {
     if (typeof window !== 'undefined') {
       const event = new CustomEvent('refreshCalendar')
       window.dispatchEvent(event)
-      console.log('📢 Evento refreshCalendar disparado')
+      
     }
   },
 
@@ -49,7 +49,7 @@ export const CalendarEvents = {
         detail: workerData
       })
       window.dispatchEvent(event)
-      console.log('📢 Evento workerCreated disparado')
+      
     }
   },
 
@@ -60,7 +60,7 @@ export const CalendarEvents = {
         detail: workerData
       })
       window.dispatchEvent(event)
-      console.log('📢 Evento workerUpdated disparado')
+      
     }
   },
 
@@ -71,7 +71,7 @@ export const CalendarEvents = {
         detail: { workerId }
       })
       window.dispatchEvent(event)
-      console.log('📢 Evento workerDeleted disparado')
+      
     }
   }
 }

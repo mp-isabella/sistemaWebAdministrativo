@@ -23,7 +23,7 @@ const serviceNames: Record<string, string> = {
 export const sendViaWorkingService = async (data: WorkingEmailData): Promise<boolean> => {
   try {
     const serviceName = serviceNames[data.servicio] || data.servicio;
-    
+
     // Crear un mensaje de notificación
     const notificationMessage = `
 🔥 NUEVA COTIZACIÓN - AMÉSTICA LTDA.
@@ -67,7 +67,6 @@ Améstica Ltda. - Servicios Profesionales
 
     return response.ok;
   } catch (error) {
-    console.log('Working service error:', error);
     return false;
   }
 };
@@ -76,7 +75,7 @@ Améstica Ltda. - Servicios Profesionales
 export const sendViaRealEmailService = async (data: WorkingEmailData): Promise<boolean> => {
   try {
     const serviceName = serviceNames[data.servicio] || data.servicio;
-    
+
     // Usar un servicio de email que funciona
     const emailData = {
       to: DESTINATION_EMAIL,
@@ -109,7 +108,6 @@ Fecha: ${new Date().toLocaleString('es-CL')}
 
     return response.ok;
   } catch (error) {
-    console.log('Real email service error:', error);
     return false;
   }
 };
@@ -118,25 +116,6 @@ Fecha: ${new Date().toLocaleString('es-CL')}
 export const sendViaWorkingWebhook = async (data: WorkingEmailData): Promise<boolean> => {
   try {
     const serviceName = serviceNames[data.servicio] || data.servicio;
-    
-    const webhookData = {
-      timestamp: new Date().toISOString(),
-      type: 'cotizacion',
-      destination: DESTINATION_EMAIL,
-      client: {
-        name: data.nombre,
-        email: data.email,
-        phone: data.telefono
-      },
-      service: {
-        type: serviceName,
-        region: data.region,
-        comuna: data.comuna,
-        address: data.direccion
-      },
-      message: data.mensaje || '',
-      formType: data.formType
-    };
 
     // Usar un webhook que funciona
     const response = await fetch('https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX', {
@@ -162,7 +141,6 @@ export const sendViaWorkingWebhook = async (data: WorkingEmailData): Promise<boo
 
     return response.ok;
   } catch (error) {
-    console.log('Working webhook error:', error);
     return false;
   }
 };
@@ -171,12 +149,12 @@ export const sendViaWorkingWebhook = async (data: WorkingEmailData): Promise<boo
 export const sendViaSimpleEmail = async (data: WorkingEmailData): Promise<boolean> => {
   try {
     const serviceName = serviceNames[data.servicio] || data.servicio;
-    
+
     // Usar un servicio de email simple que funciona
     const emailData = {
       to: DESTINATION_EMAIL,
       from: 'noreply@amesticaltda.com',
-      subject: `🔥 Nueva Cotización: ${serviceName} - ${data.nombre}`,
+      subject: `Nueva Cotización: ${serviceName} - ${data.nombre}`,
       text: `
 Nueva cotización recibida:
 
@@ -204,7 +182,6 @@ Fecha: ${new Date().toLocaleString('es-CL')}
 
     return response.ok;
   } catch (error) {
-    console.log('Simple email error:', error);
     return false;
   }
 };
@@ -215,8 +192,6 @@ export const sendWorkingEmail = async (data: WorkingEmailData): Promise<{
   message: string;
   service?: string;
 }> => {
-  console.log('📧 Iniciando envío de cotización...');
-  
   // Validación básica
   if (!data.nombre || !data.email || !data.telefono || !data.servicio) {
     return {
@@ -244,11 +219,9 @@ export const sendWorkingEmail = async (data: WorkingEmailData): Promise<{
 
   for (const service of services) {
     try {
-      console.log(`📧 Intentando envío con ${service.name}...`);
       const success = await service.fn(data);
-      
+
       if (success) {
-        console.log(`✅ Cotización enviada exitosamente vía ${service.name}`);
         return {
           success: true,
           message: `✅ Cotización enviada exitosamente a ${DESTINATION_EMAIL} vía ${service.name}`,
@@ -256,13 +229,10 @@ export const sendWorkingEmail = async (data: WorkingEmailData): Promise<{
         };
       }
     } catch (error) {
-      console.log(`❌ ${service.name} falló:`, error);
     }
   }
 
   // Si todos fallan, guardar localmente
-  console.log('⚠️ Todos los servicios fallaron, guardando localmente...');
-  
   try {
     const cotizaciones = JSON.parse(localStorage.getItem('cotizaciones') || '[]');
     const nuevaCotizacion = {
@@ -275,26 +245,16 @@ export const sendWorkingEmail = async (data: WorkingEmailData): Promise<{
     localStorage.setItem('cotizaciones', JSON.stringify(cotizaciones));
 
     // Log detallado
-    console.log('📧 NUEVA COTIZACIÓN GUARDADA LOCALMENTE:');
-    console.log('========================================');
-    console.log(`Para: ${DESTINATION_EMAIL}`);
-    console.log(`De: ${data.nombre} (${data.email})`);
-    console.log(`Teléfono: ${data.telefono}`);
-    console.log(`Servicio: ${serviceNames[data.servicio] || data.servicio}`);
-    console.log(`Ubicación: ${data.region}, ${data.comuna}`);
-    console.log(`Dirección: ${data.direccion}`);
+    console.log('Error processing quote: All email services failed');
     if (data.mensaje) {
-      console.log(`Mensaje: ${data.mensaje}`);
+      console.log('Message:', data.mensaje);
     }
-    console.log('========================================');
-
     return {
       success: true,
       message: '⚠️ Los servicios de email están temporalmente no disponibles. Tu cotización se ha guardado y será procesada manualmente. Te contactaremos pronto al número proporcionado.',
       service: 'Local Storage'
     };
   } catch (storageError) {
-    console.error('Error guardando en localStorage:', storageError);
     return {
       success: false,
       message: '❌ Error al procesar la cotización. Por favor, intenta nuevamente o contacta directamente al +56 9 4200 8410.'

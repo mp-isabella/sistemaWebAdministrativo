@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import ResponsiveContainer, { ResponsiveFlex, ResponsiveGrid } from "@/components/ui/responsive-container";
+import ResponsiveModal from "@/components/ui/responsive-modal";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useResponsive } from "@/hooks/use-responsive";
+import { cn } from "@/lib/utils";
+import { Building, ChevronLeft, ChevronRight, Clock, DollarSign, Filter, Mail, Phone, Plus, RefreshCw, User, Wrench, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Clock, User, Building, Wrench, Plus, Filter, RefreshCw, ChevronLeft, ArrowUp, X, Phone, Mail, MessageCircle, DollarSign, FileText, ChevronRight } from "lucide-react";
-import { useResponsive } from "@/hooks/use-responsive";
-import ResponsiveContainer, { ResponsiveGrid, ResponsiveFlex } from "@/components/ui/responsive-container";
-import ResponsiveModal from "@/components/ui/responsive-modal";
-import { cn } from "@/lib/utils";
+import { useCallback, useEffect, useState } from "react";
 
 interface Job {
   id: string;
@@ -48,9 +48,9 @@ interface Technician {
 }
 
 export default function ResponsiveCalendar() {
-  const { data: session } = useSession();
-  const { isMobile, isTablet, isDesktop } = useResponsive();
-  
+  const { data: _session } = useSession();
+  const { isMobile } = useResponsive();
+
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTechnician, setSelectedTechnician] = useState("todos");
   const [selectedStatus, setSelectedStatus] = useState("todos");
@@ -60,7 +60,7 @@ export default function ResponsiveCalendar() {
   const [error, setError] = useState("");
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [showJobModal, setShowJobModal] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [_currentTime, _setCurrentTime] = useState(new Date());
   const [showReassignModal, setShowReassignModal] = useState(false);
   const [reassigningJob, setReassigningJob] = useState<Job | null>(null);
   const [selectedNewTechnician, setSelectedNewTechnician] = useState<string>("");
@@ -94,7 +94,7 @@ export default function ResponsiveCalendar() {
   // Actualizar el tiempo actual cada minuto
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(new Date());
+      _setCurrentTime(new Date());
     }, 60000);
 
     return () => clearInterval(timer);
@@ -137,7 +137,7 @@ export default function ResponsiveCalendar() {
     const matchesStatus = selectedStatus === "todos" || job.status === selectedStatus;
     const jobDate = new Date(job.scheduledAt);
     const matchesDate = jobDate.toDateString() === selectedDate.toDateString();
-    
+
     return matchesTechnician && matchesStatus && matchesDate;
   });
 
@@ -220,7 +220,6 @@ export default function ResponsiveCalendar() {
         setSelectedNewTechnician("");
       }
     } catch (err) {
-      console.error('Error al reasignar trabajo:', err);
     } finally {
       setIsReassigning(false);
     }
@@ -259,7 +258,7 @@ export default function ResponsiveCalendar() {
       <div className="space-y-4 sm:space-y-6">
         {/* Header del Calendario */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6">
-          <ResponsiveFlex 
+          <ResponsiveFlex
             direction="responsive"
             justify="between"
             align="center"
@@ -270,7 +269,7 @@ export default function ResponsiveCalendar() {
               <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
                 Calendario de Trabajos
               </h1>
-              <ResponsiveFlex 
+              <ResponsiveFlex
                 direction="responsive"
                 align="center"
                 gap="sm"
@@ -307,7 +306,7 @@ export default function ResponsiveCalendar() {
             </div>
 
             {/* Botones de acción */}
-            <ResponsiveFlex 
+            <ResponsiveFlex
               direction="responsive"
               align="center"
               gap="sm"
@@ -347,7 +346,7 @@ export default function ResponsiveCalendar() {
           {/* Filtros - Desktop */}
           {!isMobile && (
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <ResponsiveGrid 
+              <ResponsiveGrid
                 cols={{ mobile: 1, tablet: 2, desktop: 3 }}
                 gap="md"
               >
@@ -435,7 +434,7 @@ export default function ResponsiveCalendar() {
                 {timeSlots.map((timeSlot) => {
                   const jobsInSlot = getJobsByTimeSlot(timeSlot);
                   const isCurrent = isCurrentTimeSlot(timeSlot);
-                  
+
                   return (
                     <div key={timeSlot} className="space-y-2">
                       <div className={cn(
@@ -446,7 +445,7 @@ export default function ResponsiveCalendar() {
                         {timeSlot}
                         {isCurrent && <Badge variant="secondary" className="text-xs">Ahora</Badge>}
                       </div>
-                      
+
                       {jobsInSlot.length > 0 ? (
                         <div className="space-y-2">
                           {jobsInSlot.map((job) => (
@@ -468,7 +467,7 @@ export default function ResponsiveCalendar() {
                                     {job.status}
                                   </Badge>
                                 </div>
-                                
+
                                 <div className="space-y-1 text-xs text-gray-600">
                                   <div className="flex items-center gap-1">
                                     <User className="w-3 h-3" />
@@ -524,7 +523,7 @@ export default function ResponsiveCalendar() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {timeSlots.map((timeSlot) => {
                     const isCurrent = isCurrentTimeSlot(timeSlot);
-                    
+
                     return (
                       <tr key={timeSlot} className={cn(
                         "hover:bg-gray-50",
@@ -539,11 +538,11 @@ export default function ResponsiveCalendar() {
                             {isCurrent && <Badge variant="secondary" className="text-xs">Ahora</Badge>}
                           </div>
                         </td>
-                        
+
                         {technicians.length > 0 ? (
                           technicians.map((tech) => {
                             const techJobs = getJobsByTimeSlot(timeSlot).filter(job => job.technician?.id === tech.id);
-                            
+
                             return (
                               <td key={tech.id} className="px-4 py-3 border-r border-gray-200">
                                 {techJobs.length > 0 ? (
@@ -648,7 +647,7 @@ export default function ResponsiveCalendar() {
                   {selectedJob.status}
                 </Badge>
               </div>
-              
+
               {selectedJob.description && (
                 <p className="text-sm sm:text-base text-gray-600">
                   {selectedJob.description}
@@ -806,7 +805,7 @@ export default function ResponsiveCalendar() {
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
             <Button
               variant="outline"

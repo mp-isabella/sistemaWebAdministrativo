@@ -1,15 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from "next-auth/next"
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
@@ -23,7 +23,6 @@ export async function GET(
             service: {
               select: {
                 name: true,
-                category: true,
                 price: true
               }
             },
@@ -35,11 +34,6 @@ export async function GET(
             }
           },
           orderBy: { createdAt: 'desc' }
-        },
-        _count: {
-          select: {
-            jobs: true
-          }
         }
       }
     })
@@ -50,17 +44,17 @@ export async function GET(
 
     const clientWithStats = {
       ...client,
-      totalServices: client._count.jobs,
-      totalSpent: client.jobs.reduce((sum, job) => sum + (job.service?.price || 0), 0),
-      completedJobs: client.jobs.filter(job => job.status === 'COMPLETED').length,
-      pendingJobs: client.jobs.filter(job => ['PENDING', 'IN_PROGRESS'].includes(job.status)).length,
+      totalServices: client.jobs.length,
+      totalSpent: client.jobs.reduce((sum: number, job: any) => sum + (job.service?.price || 0), 0),
+      completedJobs: client.jobs.filter((job: any) => job.status === 'COMPLETED').length,
+      pendingJobs: client.jobs.filter((job: any) => ['PENDING', 'IN_PROGRESS'].includes(job.status)).length,
       averageRating: 0 // No hay campo rating en el schema
     }
 
     return NextResponse.json(clientWithStats)
 
   } catch (error) {
-    console.error('Error fetching client:', error)
+
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }
@@ -73,45 +67,32 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-     console.log('🔄 PUT /api/clients/[id] - Iniciando actualización');
-    
     const session = await getServerSession(authOptions)
-    console.log('🔐 Sesión obtenida:', session ? 'Sí' : 'No');
-    
     if (!session) {
-      console.log('❌ No hay sesión válida');
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
-    
-    console.log('👤 Usuario autenticado:', session.user?.name, 'Rol:', session.user?.role);
 
     // Verificar permisos (admin o secretaria)
-    if (!['admin', 'secretaria'].includes((session.user as any).role)) {
-      console.log('❌ Sin permisos para actualizar cliente');
+    const userRole = (session.user as any).role;
+    if (!['admin', 'administrador', 'ADMINISTRADOR', 'secretaria', 'SECRETARIA'].includes(userRole)) {
       return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
     }
 
     const body = await request.json()
-    console.log('📥 Datos recibidos:', body);
-    
-    const { 
-      name, 
-      email, 
-      phone, 
-      address, 
-      rut, 
-      company, 
-      notes,
+    const {
+      name,
+      email,
+      phone,
+      address,
+      company,
+      status,
       region,
       commune,
-      preferredTimeStart,
-      preferredTimeEnd,
-      preferredDays
+      rut
     } = body
 
     // Validaciones
     if (!name || !phone || !address) {
-      console.log('❌ Validación fallida - campos requeridos faltantes');
       return NextResponse.json(
         { error: 'Campos requeridos: nombre, teléfono, dirección' },
         { status: 400 }
@@ -119,7 +100,6 @@ export async function PUT(
     }
 
     if (email && !/\S+@\S+\.\S+/.test(email)) {
-      console.log('❌ Validación fallida - email inválido');
       return NextResponse.json(
         { error: 'Email inválido' },
         { status: 400 }
@@ -127,44 +107,32 @@ export async function PUT(
     }
 
     const { id } = await params
-    console.log('🔍 Buscando cliente con ID:', id);
-    
     // Verificar que el cliente existe
     const existingClient = await prisma.client.findUnique({
       where: { id }
     })
 
     if (!existingClient) {
-      console.log('❌ Cliente no encontrado con ID:', id);
       return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
     }
-    
-    console.log('✅ Cliente encontrado:', existingClient.name);
-
     // Verificar email único si se cambió
     if (email && email !== existingClient.email) {
-      console.log('🔍 Verificando email único:', email);
-      const emailExists = await prisma.client.findUnique({
-        where: { email }
+      const emailExists = await prisma.client.findFirst({
+        where: {
+          email,
+          id: { not: id }
+        }
       })
 
       if (emailExists) {
-        console.log('❌ Email ya existe:', email);
         return NextResponse.json(
           { error: 'Ya existe un cliente con este email' },
           { status: 400 }
         )
       }
     }
-
-    console.log('💾 Actualizando cliente en base de datos...');
-    
     // Manejar el email - si no se proporciona, mantener el existente
     const emailToUpdate = email || existingClient.email;
-    
-    console.log('💾 Actualizando cliente en base de datos...');
-    console.log('📧 Email a actualizar:', emailToUpdate);
-    
     const updatedClient = await prisma.client.update({
       where: { id },
       data: {
@@ -172,22 +140,63 @@ export async function PUT(
         email: emailToUpdate,
         phone,
         address,
-        rut: rut || null,
         company: company || null,
-        notes: notes || null,
+        status: status || "active",
         region: region || null,
         commune: commune || null,
-        preferredTimeStart: preferredTimeStart || null,
-        preferredTimeEnd: preferredTimeEnd || null,
-        preferredDays: preferredDays || null
-      }
+        rut: rut || null
+      } as any
     })
-
-    console.log('✅ Cliente actualizado exitosamente:', updatedClient.name);
     return NextResponse.json(updatedClient)
 
   } catch (error) {
-    console.error('Error updating client:', error)
+
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+
+    // Verificar permisos (admin o secretaria)
+    const userRole = (session.user as any).role;
+    if (!['admin', 'administrador', 'ADMINISTRADOR', 'secretaria', 'SECRETARIA'].includes(userRole)) {
+      return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { id } = await params
+
+    // Verificar que el cliente existe
+    const existingClient = await prisma.client.findUnique({
+      where: { id }
+    })
+
+    if (!existingClient) {
+      return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
+    }
+
+    // Actualizar solo los campos proporcionados
+    const updatedClient = await prisma.client.update({
+      where: { id },
+      data: body
+    })
+
+    return NextResponse.json(updatedClient)
+
+  } catch (error) {
+
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }
@@ -196,18 +205,18 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    // Solo admin puede eliminar clientes
-    if ((session.user as any).role !== 'admin') {
+    // Verificar permisos para eliminar (admin, administrador o secretaria)
+    const userRole = (session.user as any).role;
+    if (!['admin', 'administrador', 'ADMINISTRADOR', 'secretaria', 'SECRETARIA'].includes(userRole)) {
       return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
     }
 
@@ -227,7 +236,6 @@ export async function DELETE(
     if (!existingClient) {
       return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
     }
-
     // Verificar si tiene trabajos asociados
     if (existingClient._count.jobs > 0) {
       return NextResponse.json(
@@ -235,15 +243,13 @@ export async function DELETE(
         { status: 400 }
       )
     }
-
     await prisma.client.delete({
       where: { id }
     })
-
     return NextResponse.json({ message: 'Cliente eliminado correctamente' })
 
   } catch (error) {
-    console.error('Error deleting client:', error)
+
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }

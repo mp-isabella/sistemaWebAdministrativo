@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Star, ChevronDown, ChevronUp } from "lucide-react";
 import { motion } from "framer-motion";
-
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Star } from "lucide-react";
+import { useEffect, useState } from "react";
 
 // Paleta de colores
 const colors = {
@@ -27,49 +26,49 @@ const testimonials: Array<{
   text: string;
   service: string;
 }> = [
-  {
-    name: "María González",
-    location: "Las Condes, Santiago",
-    rating: 5,
-    text: "Excelente servicio. Detectaron la fuga en mi casa sin romper nada y la repararon el mismo día. Muy profesionales y puntuales.",
-    service: "Detección de fuga en jardín",
-  },
-  {
-    name: "Ariel Lagos",
-    location: "Coihueco, Ñuble",
-    rating: 5,
-    text: "Es una empresa seria al momento de realizar los diferentes trabajos, es una empresa en la cual se puede confiar",
-    service: "Servicios de detección y reparación",
-  },
-  {
-    name: "Ana Martínez",
-    location: "Rancagua, VI Región",
-    rating: 5,
-    text: "Llevaba meses con una fuga que nadie podía encontrar. Améstica la detectó en 2 horas con su equipo especializado. Increíble tecnología.",
-    service: "Detección de fuga oculta",
-  },
-  {
-    name: "Pedro Sánchez",
-    location: "Providencia, Santiago",
-    rating: 5,
-    text: "Trabajo impecable en mi condominio. Repararon las cañerías comunes sin afectar a los vecinos. Muy organizados y limpios.",
-    service: "Reparación en condominio",
-  },
-  {
-    name: "Lucía Torres",
-    location: "Valparaíso, V Región",
-    rating: 5,
-    text: "Excelente atención y servicio profesional. Detectaron y repararon una fuga compleja que otras empresas no pudieron resolver.",
-    service: "Detección y reparación de fuga",
-  },
-  {
-    name: "Josefina Lagos",
-    location: "Coihueco-Ñuble",
-    rating: 5,
-    text: "Excelente servicio, lo recomiendo al 100%, hace poco me contacté con ellos para la reparación de una fuga que otras empresas ni si quiera habían podido detectar, pero con el trabajo de la empresa Amestica pudo ser detectada y reparada con éxito",
-    service: "Detección y reparación de fuga",
-  },
-];
+    {
+      name: "María González",
+      location: "Las Condes, Santiago",
+      rating: 5,
+      text: "Excelente servicio. Detectaron la fuga en mi casa sin romper nada y la repararon el mismo día. Muy profesionales y puntuales.",
+      service: "Detección de fuga en jardín",
+    },
+    {
+      name: "Ariel Lagos",
+      location: "Coihueco, Ñuble",
+      rating: 5,
+      text: "Es una empresa seria al momento de realizar los diferentes trabajos, es una empresa en la cual se puede confiar",
+      service: "Servicios de detección y reparación",
+    },
+    {
+      name: "Ana Martínez",
+      location: "Rancagua, VI Región",
+      rating: 5,
+      text: "Llevaba meses con una fuga que nadie podía encontrar. Améstica la detectó en 2 horas con su equipo especializado. Increíble tecnología.",
+      service: "Detección de fuga oculta",
+    },
+    {
+      name: "Pedro Sánchez",
+      location: "Providencia, Santiago",
+      rating: 5,
+      text: "Trabajo impecable en mi condominio. Repararon las cañerías comunes sin afectar a los vecinos. Muy organizados y limpios.",
+      service: "Reparación en condominio",
+    },
+    {
+      name: "Lucía Torres",
+      location: "Valparaíso, V Región",
+      rating: 5,
+      text: "Excelente atención y servicio profesional. Detectaron y repararon una fuga compleja que otras empresas no pudieron resolver.",
+      service: "Detección y reparación de fuga",
+    },
+    {
+      name: "Josefina Lagos",
+      location: "Coihueco-Ñuble",
+      rating: 5,
+      text: "Excelente servicio, lo recomiendo al 100%, hace poco me contacté con ellos para la reparación de una fuga que otras empresas ni si quiera habían podido detectar, pero con el trabajo de la empresa Amestica pudo ser detectada y reparada con éxito",
+      service: "Detección y reparación de fuga",
+    },
+  ];
 
 export default function Testimonials() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -85,7 +84,6 @@ export default function Testimonials() {
         try {
           setIsMobile(window.innerWidth <= 768);
         } catch (error) {
-          console.warn('Error checking mobile:', error);
           setIsMobile(false);
         }
       };
@@ -93,6 +91,7 @@ export default function Testimonials() {
       window.addEventListener('resize', checkMobile);
       return () => window.removeEventListener('resize', checkMobile);
     }
+    return undefined;
   }, []);
 
   // Actualizar conteo visible basado en móvil
@@ -119,8 +118,6 @@ export default function Testimonials() {
     setCurrentSlide((prev: number) => (prev - 1 + (totalSlides || 1)) % (totalSlides || 1));
   };
 
-
-
   // En móvil, mostrar todos los testimonios en vista vertical
   if (isMobile) {
     return (
@@ -143,9 +140,9 @@ export default function Testimonials() {
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ 
-                  duration: isMobile ? 0.6 : 0.3, 
-                  delay: index * (isMobile ? 0.3 : 0.1) 
+                transition={{
+                  duration: isMobile ? 0.6 : 0.3,
+                  delay: index * (isMobile ? 0.3 : 0.1)
                 }}
                 className="w-full"
               >
@@ -180,9 +177,9 @@ export default function Testimonials() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ 
-                  duration: isMobile ? 0.6 : 0.3, 
-                  delay: isMobile ? 1.0 : 0.5 
+                transition={{
+                  duration: isMobile ? 0.6 : 0.3,
+                  delay: isMobile ? 1.0 : 0.5
                 }}
                 className="flex justify-center mt-6"
               >
@@ -213,12 +210,12 @@ export default function Testimonials() {
           {/* Vista desktop - Carrusel original */}
           <div className="hidden md:block">
             <div className="relative w-full overflow-hidden">
-                      <motion.div
-          className="flex w-full"
-          animate={{ x: `-${currentSlide * 100}%` }}
-          transition={{ type: "tween", ease: "easeInOut", duration: 0.5 }}
-        >
-          {(testimonials || []).map((testimonial, index) => {
+              <motion.div
+                className="flex w-full"
+                animate={{ x: `-${currentSlide * 100}%` }}
+                transition={{ type: "tween", ease: "easeInOut", duration: 0.5 }}
+              >
+                {(testimonials || []).map((testimonial, index) => {
                   const cardPositionInSlide = index % cardsPerPage;
 
                   // Rotación solo en desktop
@@ -226,8 +223,8 @@ export default function Testimonials() {
                     cardPositionInSlide === 0
                       ? "-2deg"
                       : cardPositionInSlide === 1
-                      ? "0deg"
-                      : "2deg";
+                        ? "0deg"
+                        : "2deg";
 
                   return (
                     <div
@@ -238,8 +235,8 @@ export default function Testimonials() {
                       <Card className="h-full bg-white shadow-xl border-t-8 rounded-3xl" style={{ borderColor: colors.highlight }}>
                         <CardContent className="h-full flex flex-col justify-between p-6">
                           <div>
-                                                    <div className="flex justify-center mb-4">
-                          {[...Array(testimonial?.rating || 0)].map((_, i) => (
+                            <div className="flex justify-center mb-4">
+                              {[...Array(testimonial?.rating || 0)].map((_, i) => (
                                 <Star key={i} className="h-6 w-6 fill-current" style={{ color: colors.highlight }} />
                               ))}
                             </div>
@@ -270,9 +267,9 @@ export default function Testimonials() {
             <button
               aria-label="Anterior slide"
               className="absolute left-0 top-1/2 -translate-y-1/2 ml-4 p-3 rounded-full shadow-lg border-2 transition-transform disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 touch-optimized"
-              style={{ 
-                backgroundColor: colors.white, 
-                borderColor: colors.strong, 
+              style={{
+                backgroundColor: colors.white,
+                borderColor: colors.strong,
                 color: colors.strong,
                 transitionDuration: `${isMobile ? 0.2 : 0.3}s`
               }}
@@ -285,9 +282,9 @@ export default function Testimonials() {
             <button
               aria-label="Siguiente slide"
               className="absolute right-0 top-1/2 -translate-y-1/2 mr-4 p-3 rounded-full shadow-lg border-2 transition-transform disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 touch-optimized"
-              style={{ 
-                backgroundColor: colors.white, 
-                borderColor: colors.strong, 
+              style={{
+                backgroundColor: colors.white,
+                borderColor: colors.strong,
                 color: colors.strong,
                 transitionDuration: `${isMobile ? 0.2 : 0.3}s`
               }}
@@ -344,8 +341,8 @@ export default function Testimonials() {
                 cardPositionInSlide === 0
                   ? "-2deg"
                   : cardPositionInSlide === 1
-                  ? "0deg"
-                  : "2deg";
+                    ? "0deg"
+                    : "2deg";
 
               return (
                 <div

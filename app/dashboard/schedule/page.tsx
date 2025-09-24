@@ -1,43 +1,44 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { CalendarEvents } from "@/lib/calendar-events";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Calendar, 
-  Clock, 
-  User, 
-  Phone, 
-  Plus, 
-  Search, 
-  Filter, 
-  Edit, 
-  Trash2, 
-  FileText,
-  TrendingUp,
+import { CalendarEvents } from "@/lib/calendar-events";
+import {
   AlertCircle,
-  CheckCircle,
-  X,
-  Download,
+  Calendar,
   CalendarDays,
-  Wrench,
-  Users,
-  ChevronDown,
-  ChevronUp,
+  CheckCircle,
+  Clock,
+  Download,
+  Edit,
+  FileText,
+  Filter,
+  Phone,
+  Plus,
+  RefreshCw,
+  Search,
   Star,
+  Trash2,
+  TrendingUp,
+  User,
+  Users,
+  Wrench,
+  X,
   Zap
 } from 'lucide-react';
+import { useSession } from "next-auth/react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import "../styles/dashboard-optimized.css";
+import "../styles/schedule-mobile-optimizations.css";
 
 import JobForm from "@/components/forms/job-form";
 import useNotifications from "@/hooks/use-notifications";
 import { useToast } from "@/hooks/use-toast";
 
 // Tipos de datos para el proyecto
-type UserRole = 'admin' | 'secretaria' | 'tecnico';
+type UserRole = 'admin' | 'administrador' | 'secretaria' | 'tecnico';
 type JobStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 type JobPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
 
@@ -48,15 +49,37 @@ interface Job {
   status: JobStatus;
   priority: JobPriority;
   scheduledAt: string;
+  startTime?: string;
+  endTime?: string;
+  clientId?: string;
+  serviceId?: string;
+  companyId?: string;
+  technicianId?: string;
+  totalBudget?: number;
+  paymentInfo?: {
+    isPaid: boolean;
+    paidAmount: number;
+    paymentMethod: string;
+    budget: number;
+    status: string;
+    method: string;
+    amount: number;
+  };
   client: {
+    id: string;
     name: string;
     phone: string;
     address: string;
     type?: string;
   };
   service: {
+    id: string;
     name: string;
     price?: number;
+  };
+  company?: {
+    id: string;
+    name: string;
   };
   technician?: {
     id: string;
@@ -66,89 +89,6 @@ interface Job {
   updatedAt: string;
 }
 
-// Componente simple para confirmación de eliminación
-const ConfirmationDialog = ({ isOpen, onConfirm, onCancel, message }: { isOpen: boolean, onConfirm: () => void, onCancel: () => void, message: string }) => {
-  if (!isOpen) return null;
-  
-  return (
-    <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center">
-      <div className="w-[95vw] max-w-[425px] bg-white rounded-lg shadow-xl flex flex-col overflow-hidden">
-        <div className="px-6 py-4 border-b bg-gray-50 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-500" />
-              <h2 className="text-lg font-semibold">
-                Confirmar Eliminación
-              </h2>
-            </div>
-            <button
-              onClick={onCancel}
-              className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </button>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            {message}
-          </p>
-        </div>
-        <div className="flex-1 p-6 flex items-center justify-end gap-2">
-          <Button 
-            variant="outline" 
-            onClick={onCancel}
-          >
-            Cancelar
-          </Button>
-          <Button 
-            onClick={onConfirm} 
-            className="bg-red-600 hover:bg-red-700"
-          >
-            Eliminar
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Componente para reemplazar el "alert" de JavaScript.
-const MessageBox = ({ isOpen, onDismiss, title, message }: { isOpen: boolean, onDismiss: () => void, title: string, message: string }) => {
-  if (!isOpen) return null;
-  
-  return (
-    <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center">
-      <div className="w-[95vw] max-w-[425px] bg-white rounded-lg shadow-xl flex flex-col overflow-hidden">
-        <div className="px-6 py-4 border-b bg-gray-50 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-blue-500" />
-              <h2 className="text-lg font-semibold">
-                {title}
-              </h2>
-            </div>
-            <button
-              onClick={onDismiss}
-              className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </button>
-          </div>
-        </div>
-        <div className="flex-1 p-6 overflow-y-auto">
-          <pre className="whitespace-pre-wrap font-sans text-gray-600">{message}</pre>
-        </div>
-        <div className="px-6 py-4 border-t bg-gray-50 flex-shrink-0">
-          <Button onClick={onDismiss} className="w-full">
-            Cerrar
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 /**
  * Componente principal para la página de la agenda.
  * Renderiza la vista adecuada según el rol del usuario.
@@ -156,41 +96,43 @@ const MessageBox = ({ isOpen, onDismiss, title, message }: { isOpen: boolean, on
 export default function AgendaPage() {
   // Obtener la sesión real del usuario
   const { data: session, status } = useSession();
-  
+
   // Type assertion para el usuario de la sesión
-  const userRole = (session?.user as any)?.role?.toLowerCase() as UserRole || 'admin';
+  const userRole = (session?.user as any)?.role?.toLowerCase() as UserRole || 'administrador';
   const userId = (session?.user as any)?.id ?? '';
-  const [currentUser, setCurrentUser] = useState<string>('Juan Pérez');
+  const currentUser = (session?.user as any)?.name || 'Usuario';
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
+
   // Estado para controlar la visibilidad del formulario de trabajo
   const [showJobForm, setShowJobForm] = useState(false);
-  
+
   // Nuevo estado para la edición de trabajos
   const [isEditing, setIsEditing] = useState(false);
   const [jobToEdit, setJobToEdit] = useState<Job | null>(null);
 
   const [selectedDate, setSelectedDate] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [technicianFilter, setTechnicianFilter] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  const [dateFilter, setDateFilter] = useState("");
   const [technicians, setTechnicians] = useState<any[]>([]);
-  
+
+  // Estados para filtros mejorados
+  const [searchText, setSearchText] = useState("");
+  const [companyFilter, setCompanyFilter] = useState("all");
+  const [companies, setCompanies] = useState<any[]>([]);
+
   // Estados para los nuevos cuadros de diálogo
   const [showMessageBox, setShowMessageBox] = useState(false);
   const [messageBoxContent, setMessageBoxContent] = useState({ title: '', message: '' });
-  
+
   // Estado simple para eliminación
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Estado para controlar qué secciones están expandidas
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Referencias para optimización
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
@@ -209,62 +151,197 @@ export default function AgendaPage() {
     return `${year}-${month}-${day}`;
   }, []);
 
-  // Función auxiliar para obtener la fecha de hoy en formato YYYY-MM-DD
-  const getTodayString = useCallback(() => {
-    const today = new Date();
-    // Usar la zona horaria local de Chile
-    const year = today.getFullYear();
-    const month = (today.getMonth() + 1).toString().padStart(2, '0');
-    const day = today.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }, []);
+  // Debounce para evitar múltiples recargas simultáneas
+  const fetchJobsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isFetchingRef = useRef<boolean>(false);
 
   // Función para cargar trabajos desde la API
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
+    // Evitar múltiples llamadas simultáneas
+    if (isFetchingRef.current) {
+      return;
+    }
+
     try {
-      console.log('🔄 Iniciando fetchJobs...');
+      isFetchingRef.current = true;
       setLoading(true);
       setError("");
-      
-      const response = await fetch('/api/jobs');
-      console.log('📡 Respuesta de la API:', response.status, response.statusText);
-      
+
+      // Usar el mismo endpoint que el calendario para consistencia
+      const timestamp = Date.now();
+      const response = await fetch(`/api/calendar/jobs?t=${timestamp}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Error en la respuesta:', errorText);
         throw new Error(`Error al cargar los trabajos: ${response.status} ${response.statusText}`);
       }
-      
-      const data = await response.json();
-      console.log('✅ Datos recibidos:', data);
-      console.log('📊 Número de trabajos:', data.length);
-      
-      setJobs(data);
+
+      const result = await response.json();
+      if (result.success && result.data) {
+        // Mapear los datos del calendario al formato esperado por la lista
+        const mappedJobs = await Promise.all(result.data.map(async (job: any) => {
+          // Cargar información de pago para cada trabajo
+          let paymentInfo = {
+            isPaid: false,
+            paidAmount: 0,
+            paymentMethod: 'efectivo',
+            budget: job.totalBudget || 0,
+            status: 'PENDING',
+            method: 'CASH',
+            amount: 0
+          };
+
+          try {
+            const paymentResponse = await fetch(`/api/jobs/${job.id}/payment`);
+            if (paymentResponse.ok) {
+              const paymentData = await paymentResponse.json();
+              if (paymentData.hasPayment && paymentData.payment) {
+                paymentInfo = {
+                  isPaid: paymentData.payment.status === 'PAID',
+                  paidAmount: paymentData.payment.status === 'PAID' ? paymentData.payment.amount : 0,
+                  paymentMethod: paymentData.payment.method?.toLowerCase() || 'efectivo',
+                  budget: paymentData.payment.amount || job.totalBudget || 0,
+                  status: paymentData.payment.status,
+                  method: paymentData.payment.method,
+                  amount: paymentData.payment.amount
+                };
+              } else {
+              }
+            }
+          } catch (error) {
+          }
+
+          return {
+            id: job.id,
+            title: job.type || job.service?.name || 'Sin título',
+            description: job.description || '',
+            status: job.status || 'PENDING',
+            priority: job.priority || 'MEDIUM',
+            scheduledAt: job.scheduledAt || new Date().toISOString(),
+            startTime: job.startTime || '08:00',
+            endTime: job.endTime || '09:00',
+            clientId: job.client?.id,
+            serviceId: job.service?.id,
+            companyId: job.company?.id,
+            technicianId: job.technician?.id,
+            totalBudget: job.totalBudget, // ✅ Agregar totalBudget al mapeo
+            paymentInfo: paymentInfo, // ✅ Agregar información de pago
+            client: job.client ? {
+              id: job.client.id,
+              name: job.client.name || job.patientName || 'Sin nombre',
+              phone: job.client.phone || '',
+              address: job.client.address || '',
+              type: 'Cliente'
+            } : {
+              id: 'no-client',
+              name: job.patientName || 'Sin cliente',
+              phone: '',
+              address: '',
+              type: 'Cliente'
+            },
+            service: job.service ? {
+              id: job.service.id,
+              name: job.service.name || 'Sin servicio',
+              price: job.service.price || 0
+            } : {
+              id: 'no-service',
+              name: job.type || 'Sin servicio',
+              price: 0
+            },
+            company: job.company ? {
+              id: job.company.id,
+              name: job.company.name || 'Sin empresa'
+            } : {
+              id: 'no-company',
+              name: 'Sin empresa'
+            },
+            technician: job.technician ? {
+              id: job.technician.id,
+              name: job.technician.name
+            } : undefined,
+            createdAt: job.scheduledAt || new Date().toISOString(),
+            updatedAt: job.scheduledAt || new Date().toISOString(),
+          };
+        }));
+
+        // Eliminar duplicados antes de establecer el estado
+        const uniqueJobs = mappedJobs.filter((job: any, index: number, self: any[]) =>
+          index === self.findIndex((j: any) => j.id === job.id)
+        )
+        // Mostrar notificación si se detectaron duplicados
+        if (mappedJobs.length !== uniqueJobs.length) {
+          // Mostrar notificación visual si hay duplicados
+          if (typeof window !== 'undefined') {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center gap-2';
+            notification.innerHTML = `
+              <span>⚠️</span>
+              <span>Se eliminaron ${mappedJobs.length - uniqueJobs.length} trabajos duplicados</span>
+            `;
+            document.body.appendChild(notification);
+
+            // Remover notificación después de 4 segundos
+            setTimeout(() => {
+              if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+              }
+            }, 4000);
+          }
+        }
+
+        setJobs(uniqueJobs);
+
+        // Cargar empresas después de cargar trabajos
+        setTimeout(() => {
+          const uniqueCompanies = mappedJobs.reduce((acc: any[], job: any) => {
+            if (job.company?.name && !acc.find((c: any) => c.name === job.company?.name)) {
+              acc.push({ id: job.company.id, name: job.company.name });
+            }
+            return acc;
+          }, [] as any[]);
+          setCompanies(uniqueCompanies);
+        }, 100);
+
+        // Solo usar datos reales de la base de datos
+      } else {
+        setError(result.error || 'Error al cargar los trabajos');
+      }
     } catch (error) {
-      console.error("❌ Error fetching jobs:", error);
       setError(error instanceof Error ? error.message : "Error al cargar los trabajos");
     } finally {
-      console.log('🏁 Finalizando fetchJobs, estableciendo loading a false');
+      isFetchingRef.current = false;
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Función helper para recargar datos con debounce
+  const debouncedFetchJobs = useCallback(() => {
+    if (session && status === "authenticated" && !isFetchingRef.current) {
+      // Limpiar timeout anterior si existe
+      if (fetchJobsTimeoutRef.current) {
+        clearTimeout(fetchJobsTimeoutRef.current);
+      }
+
+      // Usar debounce para evitar recargas múltiples simultáneas
+      fetchJobsTimeoutRef.current = setTimeout(() => {
+        fetchJobs();
+      }, 200);
+    }
+  }, [session, status, fetchJobs]);
 
   // Función para cargar técnicos desde la API
   const fetchTechnicians = async () => {
     try {
-      console.log('🔄 Iniciando fetchTechnicians...');
       const response = await fetch("/api/workers/technicians");
-      console.log('📡 Respuesta de técnicos:', response.status, response.statusText);
-      
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Técnicos recibidos:', data);
         setTechnicians(data);
       } else {
-        console.error('❌ Error al cargar técnicos:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error("❌ Error fetching technicians:", error);
     }
   };
 
@@ -276,83 +353,42 @@ export default function AgendaPage() {
         const jobDate = getLocalDateString(job.scheduledAt);
         if (jobDate !== selectedDate) return false;
       }
-      
-      // Filtrar por estado
-      if (statusFilter !== "all" && job.status !== statusFilter) return false;
-      
+
       // Filtrar por técnico
       if (technicianFilter !== "all" && job.technician?.id !== technicianFilter) return false;
-      
-      // Filtrar por término de búsqueda
-      if (searchTerm) {
-        const searchLower = searchTerm.toLowerCase();
-    return (
-          job.title.toLowerCase().includes(searchLower) ||
-          job.client.name.toLowerCase().includes(searchLower) ||
-          job.service.name.toLowerCase().includes(searchLower) ||
-          (job.technician?.name || "").toLowerCase().includes(searchLower) ||
-          job.client.address.toLowerCase().includes(searchLower)
-        );
+
+      // Filtrar por empresa
+      if (companyFilter !== "all" && job.company?.name !== companyFilter) return false;
+
+      // Filtrar por texto de búsqueda
+      if (searchText.trim()) {
+        const searchLower = searchText.toLowerCase();
+        const matchesSearch =
+          job.title?.toLowerCase().includes(searchLower) ||
+          job.client?.name?.toLowerCase().includes(searchLower) ||
+          job.client?.phone?.includes(searchText) ||
+          job.service?.name?.toLowerCase().includes(searchLower) ||
+          job.technician?.name?.toLowerCase().includes(searchLower) ||
+          job.description?.toLowerCase().includes(searchLower) ||
+          job.client?.address?.toLowerCase().includes(searchLower);
+
+        if (!matchesSearch) return false;
       }
-      
+
       return true;
     });
 
-    // Ordenar por fecha (más recientes primero)
-    filtered.sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
+    // Ordenar por fecha de creación (más recientes primero) - solo por fecha de creación
+    filtered.sort((a, b) => {
+      const createdA = new Date(a.createdAt).getTime();
+      const createdB = new Date(b.createdAt).getTime();
+
+      // Ordenar por fecha de creación descendente (más recientes primero)
+      return createdB - createdA;
+    });
 
     setFilteredJobs(filtered);
-  }, [jobs, selectedDate, statusFilter, technicianFilter, searchTerm, getLocalDateString]);
-
-  // Función para agrupar trabajos solo por mes y año
-  const groupJobsByMonth = useMemo(() => {
-    const groups: Record<string, Job[]> = {};
-    
-    filteredJobs.forEach(job => {
-      // Crear fecha usando la zona horaria local de Chile
-      const date = new Date(job.scheduledAt);
-      
-      // Usar la zona horaria local de Chile para obtener la fecha correcta
-      const year = date.getFullYear();
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      
-      // Crear la clave usando solo mes y año
-      const monthKey = `${year}-${month}`;
-      
-      if (!groups[monthKey]) {
-        groups[monthKey] = [];
-      }
-      
-      groups[monthKey].push(job);
-    });
-    
-    return groups;
-  }, [filteredJobs]);
-
-  // Estadísticas optimizadas con useMemo
-  const stats = useMemo(() => {
-    const total = jobs.length;
-    const pending = jobs.filter(j => j.status === "PENDING").length;
-    const inProgress = jobs.filter(j => j.status === "IN_PROGRESS").length;
-    const completed = jobs.filter(j => j.status === "COMPLETED").length;
-    const cancelled = jobs.filter(j => j.status === "CANCELLED").length;
-    const urgent = jobs.filter(j => j.priority === "URGENT").length;
-    const today = jobs.filter(j => {
-      const jobDate = getLocalDateString(j.scheduledAt);
-      const todayString = getTodayString();
-      return jobDate === todayString;
-    }).length;
-    
-    // Contar trabajos nuevos (creados en las últimas 24 horas)
-    const newJobs = jobs.filter(j => {
-      const jobDate = new Date(j.createdAt);
-      const now = new Date();
-      const diffInHours = (now.getTime() - jobDate.getTime()) / (1000 * 60 * 60);
-      return diffInHours <= 24;
-    }).length;
-
-    return { total, pending, inProgress, completed, cancelled, urgent, today, newJobs };
-  }, [jobs, getLocalDateString, getTodayString]);
+  }, [jobs, selectedDate, technicianFilter, companyFilter, searchText, getLocalDateString]);
 
   // Optimización: Debounce para la búsqueda
   useEffect(() => {
@@ -369,7 +405,7 @@ export default function AgendaPage() {
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [jobs, selectedDate, statusFilter, technicianFilter, searchTerm, filterJobs]);
+  }, [jobs, selectedDate, technicianFilter, filterJobs]);
 
   useEffect(() => {
     // Solo cargar datos si hay sesión
@@ -377,54 +413,67 @@ export default function AgendaPage() {
       fetchJobs();
       fetchTechnicians();
     }
-    
+
     // Escuchar eventos de nuevos trabajos creados
-    const handleNewJob = () => {
-      console.log('🔄 Nuevo trabajo detectado, recargando datos...');
-      if (session && status === "authenticated") {
-        fetchJobs();
+    const handleNewJobEvent = () => {
+      // Solo recargar si no estamos ya cargando
+      if (!isFetchingRef.current) {
+        debouncedFetchJobs();
       }
     };
-    
+
     const handleJobUpdated = () => {
-      console.log('🔄 Trabajo actualizado, recargando datos...');
-      if (session && status === "authenticated") {
-        fetchJobs();
+      // Solo recargar si no estamos ya cargando
+      if (!isFetchingRef.current) {
+        debouncedFetchJobs();
       }
     };
-    
+
     const handleJobDeleted = () => {
-      console.log('🔄 Trabajo eliminado, recargando datos...');
-      if (session && status === "authenticated") {
-        fetchJobs();
+      // Solo recargar si no estamos ya cargando
+      if (!isFetchingRef.current) {
+        debouncedFetchJobs();
       }
     };
-    
+
     const handleJobStatusUpdated = () => {
-      console.log('🔄 Estado de trabajo actualizado, recargando datos...');
-      if (session && status === "authenticated") {
-        fetchJobs();
+      // Solo recargar si no estamos ya cargando
+      if (!isFetchingRef.current) {
+        debouncedFetchJobs();
       }
     };
-    
+
+    const handlePaymentStatusUpdated = () => {
+      // Solo recargar si no estamos ya cargando
+      if (!isFetchingRef.current) {
+        debouncedFetchJobs();
+      }
+    };
+
     // Agregar event listeners
-    window.addEventListener('newJobCreated', handleNewJob);
-    window.addEventListener('jobUpdated', handleJobUpdated);
-    window.addEventListener('jobDeleted', handleJobDeleted);
-    window.addEventListener('jobStatusUpdated', handleJobStatusUpdated);
-    
+    window.addEventListener('newJobCreated', handleNewJobEvent as EventListener);
+    window.addEventListener('jobUpdated', handleJobUpdated as EventListener);
+    window.addEventListener('jobDeleted', handleJobDeleted as EventListener);
+    window.addEventListener('jobStatusUpdated', handleJobStatusUpdated as EventListener);
+    window.addEventListener('paymentStatusUpdated', handlePaymentStatusUpdated as EventListener);
+
     // Cleanup
     return () => {
-      window.removeEventListener('newJobCreated', handleNewJob);
-      window.removeEventListener('jobUpdated', handleJobUpdated);
-      window.removeEventListener('jobDeleted', handleJobDeleted);
-      window.removeEventListener('jobStatusUpdated', handleJobStatusUpdated);
+      window.removeEventListener('newJobCreated', handleNewJobEvent as EventListener);
+      window.removeEventListener('jobUpdated', handleJobUpdated as EventListener);
+      window.removeEventListener('jobDeleted', handleJobDeleted as EventListener);
+      window.removeEventListener('jobStatusUpdated', handleJobStatusUpdated as EventListener);
+      window.removeEventListener('paymentStatusUpdated', handlePaymentStatusUpdated as EventListener);
+
+      // Limpiar timeout pendiente
+      if (fetchJobsTimeoutRef.current) {
+        clearTimeout(fetchJobsTimeoutRef.current);
+      }
     };
-  }, [session, status]);
+  }, [session, status, debouncedFetchJobs, fetchJobs]);
 
   // Mostrar loading mientras la sesión se carga
   if (status === "loading") {
-    console.log('🔄 Estado de sesión: loading');
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
@@ -437,7 +486,6 @@ export default function AgendaPage() {
 
   // Mostrar error si no hay sesión
   if (status === "unauthenticated" || !session) {
-    console.log('❌ Estado de sesión:', status, 'Session:', !!session);
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
@@ -454,7 +502,6 @@ export default function AgendaPage() {
 
   // Mostrar loading mientras se cargan los datos
   if (loading) {
-    console.log('🔄 Estado de carga: loading = true');
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
@@ -464,19 +511,6 @@ export default function AgendaPage() {
       </div>
     );
   }
-
-  console.log('✅ Renderizando agenda con:', {
-    sessionStatus: status,
-    hasSession: !!session,
-    userRole,
-    userId,
-    jobsCount: jobs.length,
-    loading,
-    error
-  });
-
-
-
   // Función simple para abrir confirmación de eliminación
   const confirmDelete = (jobId: string) => {
     setDeletingJobId(jobId);
@@ -504,133 +538,106 @@ export default function AgendaPage() {
 
       // Cerrar diálogo
       cancelDelete();
-      
+
       // Recargar datos
       await fetchJobs();
-      
+
       // Notificar al calendario
       CalendarEvents.notifyJobDeleted(deletingJobId);
-      
+
       // Disparar evento personalizado para notificar a otros componentes
       window.dispatchEvent(new CustomEvent('jobDeleted', { detail: { id: deletingJobId } }));
-      
+
       // Mostrar mensaje de éxito
       setMessageBoxContent({
         title: 'Éxito',
         message: 'El trabajo ha sido eliminado correctamente.'
       });
       setShowMessageBox(true);
-      
+
     } catch (error) {
-      console.error('Error eliminando trabajo:', error);
-      
       // Mostrar error
       setMessageBoxContent({
         title: 'Error',
         message: 'No se pudo eliminar el trabajo. Inténtalo de nuevo.'
       });
       setShowMessageBox(true);
-      
+
       // Cerrar diálogo en caso de error
       cancelDelete();
     }
   };
 
-
-
-
-
-
-
-  // Función para alternar expansión de mes
-  const toggleMonthExpansion = (monthKey: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [monthKey]: !prev[monthKey]
-    }));
-  };
-
-  // Función para expandir/contraer todo
-  const toggleAllExpansion = (expand: boolean) => {
-    const monthKeys = Object.keys(groupJobsByMonth);
-    
-    setExpandedSections(
-      monthKeys.reduce((acc, key) => ({ ...acc, [key]: expand }), {})
-    );
-  };
-
   // Funciones para obtener colores y etiquetas de estado/prioridad
   const getStatusConfig = (status: string) => {
     switch (status) {
-      case "COMPLETED": 
-        return { 
-          color: "bg-green-100 text-green-800 border-green-200", 
+      case "COMPLETED":
+        return {
+          color: "bg-green-100 text-green-800 border-green-200",
           icon: CheckCircle,
-          label: "Completado" 
+          label: "Completado"
         };
-      case "IN_PROGRESS": 
-        return { 
-          color: "bg-blue-100 text-blue-800 border-blue-200", 
+      case "IN_PROGRESS":
+        return {
+          color: "bg-blue-100 text-blue-800 border-blue-200",
           icon: Clock,
-          label: "En Progreso" 
+          label: "En Progreso"
         };
-      case "PENDING": 
-        return { 
-          color: "bg-yellow-100 text-yellow-800 border-yellow-200", 
+      case "PENDING":
+        return {
+          color: "bg-yellow-100 text-yellow-800 border-yellow-200",
           icon: AlertCircle,
-          label: "Pendiente" 
+          label: "Pendiente"
         };
-      case "CANCELLED": 
-        return { 
-          color: "bg-red-100 text-red-800 border-red-200", 
+      case "CANCELLED":
+        return {
+          color: "bg-red-100 text-red-800 border-red-200",
           icon: X,
-          label: "Cancelado" 
+          label: "Cancelado"
         };
-      default: 
-        return { 
-          color: "bg-gray-100 text-gray-800 border-gray-200", 
+      default:
+        return {
+          color: "bg-gray-100 text-gray-800 border-gray-200",
           icon: FileText,
-          label: status 
+          label: status
         };
     }
   };
 
   const getPriorityConfig = (priority: string) => {
     switch (priority) {
-      case "URGENT": 
-        return { 
-          color: "bg-red-100 text-red-800 border-red-200", 
+      case "URGENT":
+        return {
+          color: "bg-red-100 text-red-800 border-red-200",
           icon: Zap,
-          label: "Urgente" 
+          label: "Urgente"
         };
-      case "HIGH": 
-        return { 
-          color: "bg-orange-100 text-orange-800 border-orange-200", 
+      case "HIGH":
+        return {
+          color: "bg-orange-100 text-orange-800 border-orange-200",
           icon: TrendingUp,
-          label: "Alta" 
+          label: "Alta"
         };
-      case "MEDIUM": 
-        return { 
-          color: "bg-yellow-100 text-yellow-800 border-yellow-200", 
+      case "MEDIUM":
+        return {
+          color: "bg-yellow-100 text-yellow-800 border-yellow-200",
           icon: Star,
-          label: "Media" 
+          label: "Media"
         };
-      case "LOW": 
-        return { 
-          color: "bg-green-100 text-green-800 border-green-200", 
+      case "LOW":
+        return {
+          color: "bg-green-100 text-green-800 border-green-200",
           icon: CheckCircle,
-          label: "Baja" 
+          label: "Baja"
         };
-      default: 
-        return { 
-          color: "bg-gray-100 text-gray-800 border-gray-200", 
+      default:
+        return {
+          color: "bg-gray-100 text-gray-800 border-gray-200",
           icon: FileText,
-          label: priority 
+          label: priority
         };
     }
   };
-
-
 
   // Nueva función para iniciar la edición de un trabajo
   const handleEditJob = (job: Job) => {
@@ -650,7 +657,7 @@ export default function AgendaPage() {
   const handleSaveJob = async (jobData: any) => {
     try {
       let savedJob;
-      
+
       if (isEditing && jobToEdit) {
         // Actualizar trabajo existente
         const response = await fetch(`/api/jobs`, {
@@ -660,13 +667,12 @@ export default function AgendaPage() {
           },
           body: JSON.stringify(jobData),
         });
-        
         if (!response.ok) {
-          const errorText = await response.text()
-          console.error('❌ Error en respuesta:', errorText)
-          throw new Error('Error al actualizar el trabajo');
+          const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }))
+
+          throw new Error(errorData.error || 'Error al actualizar el trabajo');
         }
-        
+
         savedJob = await response.json();
       } else {
         // Crear nuevo trabajo
@@ -677,91 +683,97 @@ export default function AgendaPage() {
           },
           body: JSON.stringify(jobData),
         });
-        
+
         if (!response.ok) {
-          const errorText = await response.text()
-          console.error('❌ Error en respuesta:', errorText)
+          await response.text()
+
           throw new Error('Error al crear el trabajo');
         }
-        
+
         savedJob = await response.json();
       }
-      
-      // Resetear estados y recargar datos
+
+      // Resetear estados
       setShowJobForm(false);
       setJobToEdit(null);
       setIsEditing(false);
-      await fetchJobs();
-      
-             // Notificar al calendario sobre el nuevo trabajo
-       if (isEditing) {
-         CalendarEvents.notifyJobUpdated(savedJob);
-         
-         // Disparar evento personalizado para notificar a otros componentes
-         window.dispatchEvent(new CustomEvent('jobUpdated', { detail: savedJob }));
-         
-         // Agregar notificación de trabajo actualizado
-         addJobNotification({
-           jobId: savedJob.id,
-           jobTitle: savedJob.title,
-           clientName: savedJob.client.name,
-           technicianId: savedJob.technician?.id,
-           technicianName: savedJob.technician?.name,
-           type: 'updated'
-         });
-       } else {
-         CalendarEvents.notifyNewJob(savedJob);
-         
-         // Disparar evento personalizado para notificar a otros componentes
-         window.dispatchEvent(new CustomEvent('newJobCreated', { detail: savedJob }));
-         
-         // Agregar notificación de trabajo creado
-         addJobNotification({
-           jobId: savedJob.id,
-           jobTitle: savedJob.title,
-           clientName: savedJob.client.name,
-           technicianId: savedJob.technician?.id,
-           technicianName: savedJob.technician?.name,
-           type: 'created'
-         });
-       }
-      
-    } catch (error) {
-      console.error('Error saving job:', error);
-      setError("Error al guardar el trabajo");
-    }
-  };
 
-  // Función para obtener los trabajos que aparecen en el calendario
-  const getWorkerJobs = (workerName: string) => {
-    // Para administradores y secretarias, mostrar todos los trabajos con técnico asignado
-    if (userRole === 'admin' || userRole === 'secretaria') {
-      return jobs.filter(job => job.technician && job.technician.id);
+      // Notificar al calendario sobre el nuevo trabajo
+      if (isEditing) {
+        CalendarEvents.notifyJobUpdated(savedJob);
+
+        // Disparar evento personalizado para notificar a otros componentes
+        window.dispatchEvent(new CustomEvent('jobUpdated', { detail: savedJob }));
+
+        // Agregar notificación de trabajo actualizado
+        addJobNotification({
+          jobId: savedJob.id,
+          jobTitle: savedJob.title,
+          clientName: savedJob.client.name,
+          technicianId: savedJob.technician?.id,
+          technicianName: savedJob.technician?.name,
+          type: 'updated'
+        });
+      } else {
+        CalendarEvents.notifyNewJob(savedJob);
+
+        // Disparar evento personalizado para notificar a otros componentes
+        window.dispatchEvent(new CustomEvent('newJobCreated', { detail: savedJob }));
+
+        // Agregar notificación de trabajo creado
+        addJobNotification({
+          jobId: savedJob.id,
+          jobTitle: savedJob.title,
+          clientName: savedJob.client.name,
+          technicianId: savedJob.technician?.id,
+          technicianName: savedJob.technician?.name,
+          type: 'created'
+        });
+      }
+
+      // Recargar datos después de un breve delay para asegurar que la notificación se procese
+      setTimeout(() => {
+        if (!isFetchingRef.current) {
+          debouncedFetchJobs();
+        }
+      }, 100);
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Error al guardar el trabajo"
+      setError(errorMessage);
+
+      // Mostrar error específico al usuario con más detalles
+      const errorTitle = isEditing ? 'Error al Actualizar' : 'Error al Guardar'
+      const errorDetail = error instanceof Error ? error.message : "Error desconocido al guardar el trabajo"
+
+      setMessageBoxContent({
+        title: errorTitle,
+        message: errorDetail
+      });
+      setShowMessageBox(true);
     }
-    // Para técnicos, mostrar solo sus trabajos asignados
-    return jobs.filter(job => job.technician?.name === workerName);
   };
 
   // Función para limpiar filtros
   const clearFilters = () => {
     setSelectedDate(""); // Limpiar fecha para ver todos los trabajos
-    setStatusFilter("all");
     setTechnicianFilter("all");
-    setSearchTerm("");
   };
 
   // Función para exportar datos
   const handleExport = () => {
     // Crear contenido HTML para Excel
-    const headers = ['Título', 'Cliente', 'Servicio', 'Técnico', 'Estado', 'Prioridad', 'Fecha Programada', 'Descripción', 'Dirección'];
+    const headers = ['Título', 'Cliente', 'Empresa', 'Servicio', 'Técnico', 'Estado', 'Prioridad', 'Fecha Programada', 'Horario', 'Descripción', 'Dirección'];
     const rows = filteredJobs.map(job => [
       job.title,
       job.client.name,
+      job.company?.name || 'Sin empresa',
       job.service.name,
       job.technician?.name || 'Sin asignar',
       getStatusConfig(job.status).label,
       getPriorityConfig(job.priority).label,
-             new Date(job.scheduledAt).toLocaleString('es-CL', { timeZone: 'America/Santiago' }),
+      new Date(job.scheduledAt).toLocaleDateString('es-CL', { timeZone: 'America/Santiago' }),
+      job.startTime && job.endTime ? `${job.startTime} - ${job.endTime}` : 'Sin horario',
       job.description || '',
       job.client.address || ''
     ]);
@@ -805,10 +817,6 @@ export default function AgendaPage() {
   // Función para sincronizar trabajos con el calendario
   const syncWithCalendar = async (jobId: string, technicianId: string | null) => {
     try {
-      console.log(`🔄 Sincronizando trabajo con calendario:`);
-      console.log(`   - Job ID: ${jobId}`);
-      console.log(`   - Technician ID: ${technicianId}`);
-      
       // Actualizar el trabajo con el técnico asignado
       const response = await fetch(`/api/jobs/${jobId}`, {
         method: 'PATCH',
@@ -817,38 +825,29 @@ export default function AgendaPage() {
         },
         body: JSON.stringify({ technicianId }),
       });
-      
-      console.log(`📡 Respuesta del servidor: ${response.status} ${response.statusText}`);
-      
       if (response.ok) {
-        const updatedJob = await response.json();
-        console.log(`✅ Trabajo actualizado correctamente:`, updatedJob);
-        
+        await response.json();
         // Mostrar notificación de sincronización
         const technician = technicians.find(t => t.id === technicianId);
         const technicianName = technician ? technician.name : 'Técnico';
-        
+
         setMessageBoxContent({
           title: 'Trabajo Asignado',
-          message: technicianId 
+          message: technicianId
             ? `El trabajo ha sido asignado a ${technicianName} y ahora aparece en el calendario.`
             : 'El trabajo ha sido desasignado del técnico.'
         });
         setShowMessageBox(true);
-        
+
         // Recargar datos
-        console.log(`🔄 Recargando datos...`);
         await fetchJobs();
-        console.log(`✅ Datos recargados`);
       } else {
-        const errorText = await response.text();
-        console.error(`❌ Error en la respuesta: ${errorText}`);
+        await response.text();
         throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
-      console.error('❌ Error syncing with calendar:', error);
       setError("Error al sincronizar con el calendario");
-      
+
       // Mostrar error al usuario
       setMessageBoxContent({
         title: 'Error',
@@ -858,16 +857,95 @@ export default function AgendaPage() {
     }
   };
 
+  // Función para marcar como pagado
+  const handleMarkAsPaid = async (jobId: string) => {
+    setIsUpdating(true);
+    try {
+      const job = jobs.find(j => j.id === jobId);
+      if (!job) {
+        throw new Error('Trabajo no encontrado');
+      }
+
+      const response = await fetch(`/api/jobs/${jobId}/payment-status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          isPaid: true,
+          paymentMethod: 'CASH',
+          amount: job.totalBudget || 0
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: "✅ Pago Registrado",
+          description: result.message || "El trabajo ha sido marcado como pagado.",
+        });
+
+        // Actualizar el estado local del trabajo
+        setJobs(prevJobs =>
+          prevJobs.map(j =>
+            j.id === jobId
+              ? {
+                ...j,
+                paymentInfo: j.paymentInfo ? {
+                  ...j.paymentInfo,
+                  isPaid: true,
+                  paidAmount: job.totalBudget || 0,
+                  status: 'PAID'
+                } : {
+                  isPaid: true,
+                  paidAmount: job.totalBudget || 0,
+                  paymentMethod: 'efectivo',
+                  budget: job.totalBudget || 0,
+                  status: 'PAID',
+                  method: 'CASH',
+                  amount: job.totalBudget || 0
+                }
+              }
+              : j
+          )
+        );
+
+        // Disparar evento personalizado para sincronizar con el calendario
+        window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
+          detail: {
+            jobId,
+            isPaid: true,
+            amount: job.totalBudget || 0
+          }
+        }));
+
+        // Recargar datos para asegurar sincronización
+        setTimeout(() => {
+          if (!isFetchingRef.current) {
+            debouncedFetchJobs();
+          }
+        }, 500);
+
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al marcar como pagado');
+      }
+    } catch (error) {
+      toast({
+        title: "❌ Error",
+        description: error instanceof Error ? error.message : "Error al marcar como pagado",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   // Función para asignar técnico rápidamente desde la tarjeta
   const handleQuickAssign = async (jobId: string, technicianId: string) => {
-    console.log(`🔄 Iniciando asignación rápida:`);
-    console.log(`   - Job ID: ${jobId}`);
-    console.log(`   - Technician ID: ${technicianId}`);
-    
     // Verificar que el técnico existe
     const technician = technicians.find(t => t.id === technicianId);
     if (!technician) {
-      console.error(`❌ Técnico no encontrado con ID: ${technicianId}`);
       setMessageBoxContent({
         title: 'Error',
         message: `Técnico no encontrado. ID: ${technicianId}`
@@ -875,19 +953,14 @@ export default function AgendaPage() {
       setShowMessageBox(true);
       return;
     }
-    
-    console.log(`✅ Técnico encontrado: ${technician.name}`);
-    
     try {
       // Llamar a la función de sincronización
       await syncWithCalendar(jobId, technicianId);
-      
+
       // Encontrar el trabajo para la notificación
       const job = jobs.find(j => j.id === jobId);
-      
+
       if (job) {
-        console.log(`✅ Trabajo encontrado: ${job.title}`);
-        
         // Agregar notificación de asignación
         addJobNotification({
           jobId: job.id,
@@ -897,26 +970,21 @@ export default function AgendaPage() {
           technicianName: technician.name,
           type: 'assigned'
         });
-        
-        console.log(`✅ Notificación agregada para: ${technician.name}`);
-        
         // Disparar evento personalizado para actualizar el calendario
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('calendarRefresh', {
             detail: { jobId, technicianId, action: 'assigned' }
           }));
         }
-        
+
         // Mostrar notificación de éxito
         toast({
           title: "✅ Técnico Asignado",
           description: `El trabajo "${job.title}" ha sido asignado a ${technician.name}`,
         });
       } else {
-        console.error(`❌ Trabajo no encontrado con ID: ${jobId}`);
       }
     } catch (error) {
-      console.error('❌ Error en asignación rápida:', error);
       toast({
         title: "❌ Error",
         description: error instanceof Error ? error.message : "Error al asignar técnico",
@@ -925,181 +993,238 @@ export default function AgendaPage() {
     }
   };
 
-    // Componente de tarjeta de trabajo unificado
+  // Componente de tarjeta de trabajo unificado - Optimizado para móvil
   const JobCard = React.memo(({ job }: { job: Job }) => {
     const statusConfig = getStatusConfig(job.status);
     const StatusIcon = statusConfig.icon;
 
-         return (
-       <div className="dashboard-card hover:shadow-lg transition-all duration-300">
-         <div className="dashboard-card-content">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-3">
-                <h3 className="text-lg font-semibold text-gray-800 truncate">
-                  {job.title}
-                </h3>
-                <div className="flex gap-2 flex-shrink-0">
-                  <Badge className={`status-badge ${job.status === 'COMPLETED' ? 'status-completed' : job.status === 'IN_PROGRESS' ? 'status-progress' : job.status === 'PENDING' ? 'status-pending' : 'status-cancelled'}`}>
-                    <StatusIcon className="h-3 w-3 mr-1" />
-                    {statusConfig.label}
-                  </Badge>
-                  {job.technician ? (
-                    <Badge className="status-badge status-calendar">
-                      <CalendarDays className="h-3 w-3 mr-1" />
-                      En Calendario
-                    </Badge>
-                  ) : (
-                    <Badge className="status-badge status-pending">
-                      <AlertCircle className="h-3 w-3 mr-1" />
-                      Sin Asignar
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm text-gray-600 mb-3">
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-blue-500" />
-                  <span className="truncate">{job.client.name}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-green-500" />
-                  <span className="truncate">{job.client.phone}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-purple-500" />
-                  <span className="truncate">
-                    {new Date(job.scheduledAt).toLocaleString("es-CL", { 
-                      hour: '2-digit', 
-                      minute: '2-digit',
-                      hour12: false,
-                      timeZone: 'America/Santiago'
-                    })}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-orange-500" />
-                  <span className="truncate">
-                    {new Date(job.scheduledAt).toLocaleDateString("es-CL", { 
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      timeZone: 'America/Santiago'
-                    })}
-                  </span>
-                </div>
-              </div>
-              
-              {job.description && (
-                <p className="text-gray-700 mb-3">{job.description}</p>
-              )}
-              
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-1">
-                    <Wrench className="h-3 w-3" />
-                    {job.service.name}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    {job.technician?.name || "Sin asignar"}
-                  </span>
-                </div>
-                <span className="text-gray-400">ID: {job.id.slice(-8)}</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2 ml-4">
-                              <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleEditJob(job)}
-                  className="dashboard-button dashboard-button-secondary"
-                  title="Editar trabajo"
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-              
-              {!job.technician && technicians.length > 0 && (
-                <Button 
-                  variant="outline" 
+    return (
+      <div className="dashboard-card-mobile-job mobile-optimized mobile-touch">
+        {/* Header de la tarjeta */}
+        <div className="dashboard-card-mobile-job-header">
+          <div className="flex-1 min-w-0">
+            <h3 className="dashboard-card-mobile-job-title">
+              {job.title}
+            </h3>
+          </div>
+          <div className="dashboard-card-mobile-job-status">
+            <Badge className={`status-badge ${job.status === 'COMPLETED' ? 'status-completed' : job.status === 'IN_PROGRESS' ? 'status-progress' : job.status === 'PENDING' ? 'status-pending' : 'status-cancelled'}`}>
+              <StatusIcon className="h-3 w-3 mr-1" />
+              {statusConfig.label}
+            </Badge>
+            {job.technician ? (
+              <Badge className="status-badge status-calendar">
+                <CalendarDays className="h-3 w-3 mr-1" />
+                En Calendario
+              </Badge>
+            ) : (
+              <Badge className="status-badge status-pending">
+                <AlertCircle className="h-3 w-3 mr-1" />
+                Sin Asignar
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        {/* Información del trabajo */}
+        <div className="dashboard-card-mobile-job-info">
+          <div className="dashboard-card-mobile-job-info-item">
+            <User className="h-4 w-4 text-blue-500" />
+            <span className="truncate">{job.client.name}</span>
+          </div>
+          <div className="dashboard-card-mobile-job-info-item">
+            <Phone className="h-4 w-4 text-green-500" />
+            <span className="truncate">{job.client.phone}</span>
+          </div>
+          <div className="dashboard-card-mobile-job-info-item">
+            <Clock className="h-4 w-4 text-purple-500" />
+            <span className="truncate">
+              {job.startTime && job.endTime
+                ? `${job.startTime} - ${job.endTime}`
+                : new Date(job.scheduledAt).toLocaleString("es-CL", {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false,
+                  timeZone: 'America/Santiago'
+                })
+              }
+            </span>
+          </div>
+          <div className="dashboard-card-mobile-job-info-item">
+            <Calendar className="h-4 w-4 text-orange-500" />
+            <span className="truncate">
+              {new Date(job.scheduledAt).toLocaleDateString("es-CL", {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                timeZone: 'America/Santiago'
+              })}
+            </span>
+          </div>
+        </div>
+
+        {/* Descripción */}
+        {job.description && (
+          <div className="dashboard-card-mobile-job-description">
+            {job.description}
+          </div>
+        )}
+
+        {/* Información de Pago */}
+        <div className="dashboard-card-mobile-job-payment">
+          <div className="dashboard-card-mobile-job-payment-header">
+            <span className="dashboard-card-mobile-job-payment-status">Estado de Pago:</span>
+            <div className="flex items-center gap-2">
+              <Badge className={
+                job.paymentInfo?.isPaid
+                  ? "bg-green-100 text-green-700"
+                  : "bg-yellow-100 text-yellow-700"
+              }>
+                {job.paymentInfo?.isPaid ? 'Pagado' : 'Pendiente'}
+              </Badge>
+              {!job.paymentInfo?.isPaid && (
+                <Button
+                  onClick={() => handleMarkAsPaid(job.id)}
+                  disabled={isUpdating}
+                  className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 h-6"
                   size="sm"
-                  className="dashboard-button dashboard-button-success"
-                  onClick={() => {
-                    // Modal simple para asignar técnico
-                    const modal = document.createElement('div');
-                    modal.className = 'modal-overlay';
-                    modal.innerHTML = `
-                      <div class="modal max-w-md">
-                        <div class="modal-header">
-                          <h3 class="modal-title">Asignar Técnico</h3>
-                          <button class="modal-close" id="close-modal">
-                            <X class="h-5 w-5" />
-                          </button>
-                        </div>
-                        <div class="modal-body">
-                          <p class="text-gray-600 mb-4">Selecciona un técnico para: <strong>${job.title}</strong></p>
-                          <div class="space-y-2">
-                            ${technicians.map((t, i) => `
-                              <button 
-                                class="w-full text-left p-3 rounded border hover:bg-gray-50 transition-colors technician-option" 
-                                data-technician-id="${t.id}"
-                                data-technician-name="${t.name}"
-                              >
-                                <div class="font-medium">${t.name}</div>
-                              </button>
-                            `).join('')}
-                          </div>
-                        </div>
-                      </div>
-                    `;
-                    
-                    document.body.appendChild(modal);
-                    
-                    const closeBtn = modal.querySelector('#close-modal');
-                    const technicianOptions = modal.querySelectorAll('.technician-option');
-                    
-                    closeBtn?.addEventListener('click', () => {
-                      document.body.removeChild(modal);
-                    });
-                    
-                    technicianOptions.forEach(option => {
-                      option.addEventListener('click', () => {
-                        const technicianId = option.getAttribute('data-technician-id');
-                        const technicianName = option.getAttribute('data-technician-name');
-                        
-                        if (technicianId) {
-                          handleQuickAssign(job.id, technicianId);
-                        }
-                        
-                        document.body.removeChild(modal);
-                      });
-                    });
-                    
-                    modal.addEventListener('click', (e) => {
-                      if (e.target === modal) {
-                        document.body.removeChild(modal);
-                      }
-                    });
-                  }}
-                  title="Asignar técnico"
                 >
-                  <Users className="h-4 w-4" />
+                  {isUpdating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                      Procesando...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Marcar Pagado
+                    </>
+                  )}
                 </Button>
               )}
-              
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => confirmDelete(job.id)}
-                className="dashboard-button dashboard-button-danger"
-                title="Eliminar trabajo"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
             </div>
           </div>
+          <div className="dashboard-card-mobile-job-payment-info">
+            <div className="dashboard-card-mobile-job-payment-item">
+              <span className="dashboard-card-mobile-job-payment-item-label">Presupuesto:</span>
+              <span className="dashboard-card-mobile-job-payment-item-value">${job.totalBudget?.toLocaleString() || '0'}</span>
+            </div>
+            <div className="dashboard-card-mobile-job-payment-item">
+              <span className="dashboard-card-mobile-job-payment-item-label">Pagado:</span>
+              <span className="dashboard-card-mobile-job-payment-item-value text-green-600">${job.paymentInfo?.paidAmount?.toLocaleString() || '0'}</span>
+            </div>
+            {job.paymentInfo?.isPaid && (
+              <div className="dashboard-card-mobile-job-payment-item col-span-2">
+                <span className="dashboard-card-mobile-job-payment-item-label">Método:</span>
+                <span className="dashboard-card-mobile-job-payment-item-value">{job.paymentInfo?.paymentMethod || 'Efectivo'}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Información adicional */}
+        <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1">
+              <Wrench className="h-3 w-3" />
+              {job.service.name}
+            </span>
+            <span className="flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              {job.technician?.name || "Sin asignar"}
+            </span>
+          </div>
+          <span className="text-gray-400">ID: {job.id.slice(-8)}</span>
+        </div>
+
+        {/* Acciones */}
+        <div className="dashboard-card-mobile-job-actions">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleEditJob(job)}
+            className="dashboard-button dashboard-button-secondary mobile-touch-target"
+            title="Editar trabajo"
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+
+          {!job.technician && technicians.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="dashboard-button dashboard-button-success mobile-touch-target"
+              onClick={() => {
+                // Modal simple para asignar técnico
+                const modal = document.createElement('div');
+                modal.className = 'agenda-modal-overlay';
+                modal.innerHTML = `
+                  <div class="agenda-modal">
+                    <div class="agenda-modal-header">
+                      <h3 class="agenda-modal-title">Asignar Técnico</h3>
+                      <button class="agenda-modal-close" id="close-modal">
+                        <X class="h-5 w-5" />
+                      </button>
+                    </div>
+                    <div class="agenda-modal-content">
+                      <p class="text-gray-600 mb-4">Selecciona un técnico para: <strong>${job.title}</strong></p>
+                      <div class="space-y-2">
+                        ${technicians.map((t) => `
+                          <button 
+                            class="w-full text-left p-3 rounded border hover:bg-gray-50 transition-colors technician-option mobile-touch-target" 
+                            data-technician-id="${t.id}"
+                            data-technician-name="${t.name}"
+                          >
+                            <div class="font-medium">${t.name}</div>
+                          </button>
+                        `).join('')}
+                      </div>
+                    </div>
+                  </div>
+                `;
+
+                document.body.appendChild(modal);
+
+                const closeBtn = modal.querySelector('#close-modal');
+                const technicianOptions = modal.querySelectorAll('.technician-option');
+
+                closeBtn?.addEventListener('click', () => {
+                  document.body.removeChild(modal);
+                });
+
+                technicianOptions.forEach(option => {
+                  option.addEventListener('click', () => {
+                    const technicianId = option.getAttribute('data-technician-id');
+
+                    if (technicianId) {
+                      handleQuickAssign(job.id, technicianId);
+                    }
+
+                    document.body.removeChild(modal);
+                  });
+                });
+
+                modal.addEventListener('click', (e) => {
+                  if (e.target === modal) {
+                    document.body.removeChild(modal);
+                  }
+                });
+              }}
+              title="Asignar técnico"
+            >
+              <Users className="h-4 w-4" />
+            </Button>
+          )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => confirmDelete(job.id)}
+            className="dashboard-button dashboard-button-danger mobile-touch-target"
+            title="Eliminar trabajo"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     );
@@ -1110,7 +1235,7 @@ export default function AgendaPage() {
   // Componente de tabla para administradores y secretarias con agrupación por fecha
   const AgendaTable: React.FC<{ data: Job[] }> = ({ data }) => {
     const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-    
+
     if (data.length === 0) {
       return (
         <div className="text-center py-16">
@@ -1119,22 +1244,22 @@ export default function AgendaPage() {
           </div>
           <h3 className="text-2xl font-bold text-slate-700 mb-3">No hay trabajos programados</h3>
           <p className="text-slate-500 mb-8 text-lg max-w-2xl mx-auto leading-relaxed">
-            {searchTerm || statusFilter !== "all" || technicianFilter !== "all" || selectedDate
+            {technicianFilter !== "all" || selectedDate
               ? "No se encontraron trabajos para los filtros seleccionados. Intenta ajustar los criterios de búsqueda."
               : "Comienza programando tu primer trabajo para organizar tus servicios de manera profesional."}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              onClick={handleNewJob} 
+            <Button
+              onClick={handleNewJob}
               className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
             >
               <Plus className="mr-3 h-5 w-5" />
               Programar Trabajo
             </Button>
-            {(searchTerm || statusFilter !== "all" || technicianFilter !== "all" || selectedDate) && (
-              <Button 
-                variant="outline" 
-                onClick={clearFilters} 
+            {(technicianFilter !== "all" || selectedDate) && (
+              <Button
+                variant="outline"
+                onClick={clearFilters}
                 className="px-8 py-4 border-2 border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-800 font-semibold text-lg rounded-2xl bg-white hover:bg-slate-50 transition-all duration-200"
               >
                 <Filter className="mr-3 h-5 w-5" />
@@ -1146,633 +1271,713 @@ export default function AgendaPage() {
       );
     }
 
+    // Función para agrupar trabajos por año y mes
+    const groupJobsByYearMonth = (jobs: Job[]) => {
+      const grouped = jobs.reduce((acc, job) => {
+        const date = new Date(job.scheduledAt);
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const key = `${year}-${month}`;
+
+        if (!acc[key]) {
+          acc[key] = {
+            year,
+            month,
+            jobs: []
+          };
+        }
+        acc[key].jobs.push(job);
+        return acc;
+      }, {} as Record<string, { year: number; month: number; jobs: Job[] }>);
+
+      // Ordenar por año y mes (más reciente primero)
+      return Object.values(grouped).sort((a, b) => {
+        if (a.year !== b.year) return b.year - a.year;
+        return b.month - a.month;
+      });
+    };
+
+    const groupedJobs = groupJobsByYearMonth(data);
+
+    // Función para cambiar el estado de un trabajo
+    const handleStatusChange = async (jobId: string, newStatus: string) => {
+      try {
+        const response = await fetch('/api/jobs', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: jobId,
+            status: newStatus
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al actualizar el estado');
+        }
+
+        // Recargar datos
+        await fetchJobs();
+
+        // Mostrar notificación
+        toast({
+          title: "✅ Estado Actualizado",
+          description: "El estado del trabajo ha sido actualizado correctamente",
+        });
+      } catch (error) {
+        toast({
+          title: "❌ Error",
+          description: "No se pudo actualizar el estado del trabajo",
+          variant: "destructive",
+        });
+      }
+    };
+
     return (
       <div className="space-y-8">
-        {/* Controles de expansión mejorados */}
-        <div className="bg-gradient-to-r from-slate-50 to-blue-50 border border-slate-200 rounded-2xl p-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                <CalendarDays className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-slate-800">Controles de Vista</h3>
-                <p className="text-slate-600 text-sm">Gestiona la visualización de los trabajos</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => toggleAllExpansion(true)}
-                className="px-6 py-2 border-2 border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-800 font-medium rounded-xl bg-white hover:bg-slate-50 transition-all duration-200"
-              >
-                <ChevronDown className="h-4 w-4 mr-2" />
-                Expandir Todo
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => toggleAllExpansion(false)}
-                className="px-6 py-2 border-2 border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-800 font-medium rounded-xl bg-white hover:bg-slate-50 transition-all duration-200"
-              >
-                <ChevronUp className="h-4 w-4 mr-2" />
-                Contraer Todo
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Trabajos agrupados solo por mes */}
-        {Object.entries(groupJobsByMonth)
-          .sort(([a], [b]) => b.localeCompare(a)) // Ordenar meses de más reciente a más antiguo
-          .map(([monthKey, monthJobs]) => {
-            const [year, month] = monthKey.split('-') || ['', ''];
-            const monthName = monthNames[parseInt(month || '1') - 1];
-            const isMonthExpanded = expandedSections[monthKey] !== false;
-            const totalJobsInMonth = monthJobs.length;
-
-            return (
-              <div key={monthKey} className="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-lg overflow-hidden">
-                <div 
-                  className="bg-gradient-to-r from-slate-50 to-blue-50 p-6 cursor-pointer hover:from-slate-100 hover:to-blue-100 transition-all duration-200" 
-                  onClick={() => toggleMonthExpansion(monthKey)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleMonthExpansion(monthKey);
-                        }}
-                        className="p-2 h-10 w-10 hover:bg-white/50 rounded-xl transition-all duration-200"
-                      >
-                        {isMonthExpanded ? (
-                          <ChevronUp className="h-5 w-5 text-slate-600" />
-                        ) : (
-                          <ChevronDown className="h-5 w-5 text-slate-600" />
-                        )}
-                      </Button>
-                      <div>
-                        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-3">
-                          {monthName} {year}
-                          <span className="inline-flex items-center justify-center px-3 py-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-semibold rounded-full">
-                            {totalJobsInMonth} trabajo{totalJobsInMonth !== 1 ? 's' : ''}
-                          </span>
-                        </h3>
-                        <p className="text-slate-600 mt-1">
-                          {isMonthExpanded ? 'Haz clic para contraer' : 'Haz clic para expandir'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-slate-600">
-                        {isMonthExpanded ? 'Expandido' : 'Contraído'}
-                      </span>
-                    </div>
+        {groupedJobs.map((group) => (
+          <div key={`${group.year}-${group.month}`} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            {/* Header del grupo */}
+            <div className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Calendar className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-800">
+                      {monthNames[group.month]} {group.year}
+                    </h3>
+                    <p className="text-sm text-slate-600">
+                      {group.jobs.length} trabajo{group.jobs.length !== 1 ? 's' : ''} programado{group.jobs.length !== 1 ? 's' : ''}
+                    </p>
                   </div>
                 </div>
-                
-                {isMonthExpanded && (
-                  <div className="p-6 space-y-4">
-                    {monthJobs
-                      .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
-                      .map((job) => (
-                        <div key={job.id} className="bg-gradient-to-r from-slate-50 to-white border border-slate-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-3 mb-4">
-                                <h4 className="text-lg font-bold text-slate-800 truncate">
-                                  {job.title}
-                                </h4>
-                                <div className="flex gap-2 flex-shrink-0">
-                                  <Badge className={`px-3 py-1 rounded-full text-xs font-semibold border-2 ${
-                                    job.status === 'COMPLETED' ? 'bg-green-100 text-green-800 border-green-300' : 
-                                    job.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800 border-blue-300' : 
-                                    job.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' : 
-                                    'bg-red-100 text-red-800 border-red-300'
-                                  }`}>
-                                    {getStatusConfig(job.status).label}
-                                  </Badge>
-                                  {job.technician ? (
-                                    <Badge className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border-2 border-blue-300">
-                                      <CalendarDays className="h-3 w-3 mr-1" />
-                                      En Calendario
-                                    </Badge>
-                                  ) : (
-                                    <Badge className="px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 border-2 border-orange-300">
-                                      <AlertCircle className="h-3 w-3 mr-1" />
-                                      Sin Asignar
-                                    </Badge>
-                                  )}
-                                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                    {group.jobs.length} trabajo{group.jobs.length !== 1 ? 's' : ''}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {/* Tabla de trabajos del grupo */}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Trabajo
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Cliente
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Empresa
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Técnico
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Fecha/Hora
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Estado
+                    </th>
+                    <th className="px-6 py-4 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-slate-200">
+                  {group.jobs
+                    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
+                    .map((job) => {
+                      const statusConfig = getStatusConfig(job.status);
+
+                      return (
+                        <tr key={job.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex flex-col">
+                              <div className="text-sm font-medium text-slate-900 truncate max-w-xs">
+                                {job.title}
                               </div>
-                              
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-slate-600 mb-4">
-                                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
-                                  <User className="h-5 w-5 text-blue-600" />
-                                  <span className="font-medium">{job.client.name}</span>
-                                </div>
-                                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
-                                  <Phone className="h-5 w-5 text-green-600" />
-                                  <span className="font-medium">{job.client.phone}</span>
-                                </div>
-                                <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-xl">
-                                  <Clock className="h-5 w-5 text-purple-600" />
-                                  <span className="font-medium">
-                                    {new Date(job.scheduledAt).toLocaleString("es-CL", { 
-                                      hour: '2-digit', 
-                                      minute: '2-digit',
-                                      hour12: false,
-                                      timeZone: 'America/Santiago'
-                                    })}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-xl">
-                                  <Calendar className="h-5 w-5 text-orange-600" />
-                                  <span className="font-medium">
-                                    {new Date(job.scheduledAt).toLocaleDateString("es-CL", { 
-                                      day: '2-digit',
-                                      month: '2-digit',
-                                      year: 'numeric',
-                                      timeZone: 'America/Santiago'
-                                    })}
-                                  </span>
-                                </div>
-                              </div>
-                              
                               {job.description && (
-                                <div className="bg-slate-50 rounded-xl p-4 mb-4">
-                                  <p className="text-slate-700 font-medium">{job.description}</p>
+                                <div className="text-xs text-slate-500 truncate max-w-xs">
+                                  {job.description}
                                 </div>
                               )}
-                              
-                              <div className="flex items-center justify-between text-sm text-slate-500">
-                                <div className="flex items-center gap-4">
-                                  <span className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-lg">
-                                    <Wrench className="h-4 w-4 text-slate-600" />
-                                    <span className="font-medium">{job.service.name}</span>
-                                  </span>
-                                  <span className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-lg">
-                                    <Users className="h-4 w-4 text-slate-600" />
-                                    <span className="font-medium">{job.technician?.name || "Sin asignar"}</span>
-                                  </span>
-                                </div>
-                                <span className="text-slate-400 font-mono">ID: {job.id.slice(-8)}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex flex-col">
+                              <div className="text-sm font-medium text-slate-900">
+                                {job.client.name}
+                              </div>
+                              <div className="text-xs text-slate-500">
+                                {job.client.phone}
+                              </div>
+                              <div className="text-xs text-slate-400 truncate max-w-xs">
+                                {job.client.address}
                               </div>
                             </div>
-                            
-                            <div className="flex items-center gap-3 ml-6">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex flex-col">
+                              <div className="text-sm font-medium text-slate-900">
+                                {job.company?.name || 'Sin empresa'}
+                              </div>
+                              {job.company?.name && (
+                                <div className="text-xs text-slate-500">
+                                  Empresa
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              {job.technician ? (
+                                <div className="flex flex-col gap-1">
+                                  <div className="text-sm font-medium text-slate-900">
+                                    {job.technician.name}
+                                  </div>
+                                  <Badge className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 w-fit">
+                                    <CalendarDays className="h-3 w-3 mr-1" />
+                                    Asignado
+                                  </Badge>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col gap-1">
+                                  <div className="text-sm font-medium text-slate-500">
+                                    Sin asignar
+                                  </div>
+                                  <Badge className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 w-fit">
+                                    <AlertCircle className="h-3 w-3 mr-1" />
+                                    Sin Asignar
+                                  </Badge>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex flex-col">
+                              <div className="text-sm font-medium text-slate-900">
+                                {new Date(job.scheduledAt).toLocaleDateString("es-CL", {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                  timeZone: 'America/Santiago'
+                                })}
+                              </div>
+                              <div className="text-xs text-slate-500">
+                                {job.startTime && job.endTime
+                                  ? `${job.startTime} - ${job.endTime}`
+                                  : new Date(job.scheduledAt).toLocaleString("es-CL", {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: false,
+                                    timeZone: 'America/Santiago'
+                                  })
+                                }
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <select
+                              value={job.status}
+                              onChange={(e) => handleStatusChange(job.id, e.target.value)}
+                              className={`text-xs font-medium px-2 py-1 rounded-full border-0 focus:ring-2 focus:ring-blue-500 ${statusConfig.color}`}
+                            >
+                              <option value="PENDING">Pendiente</option>
+                              <option value="IN_PROGRESS">En Progreso</option>
+                              <option value="COMPLETED">Completado</option>
+                              <option value="CANCELLED">Cancelado</option>
+                            </select>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() => handleEditJob(job)}
-                                className="h-10 px-4 border-2 border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-800 font-medium rounded-xl bg-white hover:bg-slate-50 transition-all duration-200"
+                                className="h-8 w-8 p-0"
                                 title="Editar trabajo"
                               >
-                                <Edit className="h-4 w-4 mr-2" />
-                                Editar
+                                <Edit className="h-4 w-4" />
                               </Button>
-                              
+
                               {!job.technician && technicians.length > 0 && (
-                                <Button 
-                                  variant="outline" 
+                                <Button
+                                  variant="outline"
                                   size="sm"
-                                  className="h-10 px-4 border-2 border-green-300 hover:border-green-400 text-green-700 hover:text-green-800 font-medium rounded-xl bg-green-50 hover:bg-green-100 transition-all duration-200"
                                   onClick={() => {
                                     // Modal simple para asignar técnico
                                     const modal = document.createElement('div');
                                     modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4';
                                     modal.innerHTML = `
-                                      <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6">
-                                        <div class="flex items-center justify-between mb-4">
-                                          <h3 class="text-xl font-bold text-slate-800">Asignar Técnico</h3>
-                                          <button class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors" id="close-modal">
-                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                            </svg>
-                                          </button>
-                                        </div>
-                                        <p class="text-slate-600 mb-6">Selecciona un técnico para: <strong>${job.title}</strong></p>
-                                        <div class="space-y-2">
-                                          ${technicians.map((t, i) => `
-                                            <button 
-                                              class="w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 technician-option" 
-                                              data-technician-id="${t.id}"
-                                              data-technician-name="${t.name}"
-                                            >
-                                              <div class="font-semibold text-slate-800">${t.name}</div>
-                                            </button>
-                                          `).join('')}
-                                        </div>
-                                      </div>
-                                    `;
-                                    
+                                <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+                                  <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-bold text-slate-800">Asignar Técnico</h3>
+                                    <button class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors" id="close-modal">
+                                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                      </svg>
+                                    </button>
+                                  </div>
+                                  <p class="text-slate-600 mb-4">Selecciona un técnico para: <strong>${job.title}</strong></p>
+                                  <div class="space-y-2">
+                                    ${technicians.map((t) => `
+                                      <button 
+                                        class="w-full text-left p-3 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 technician-option" 
+                                        data-technician-id="${t.id}"
+                                        data-technician-name="${t.name}"
+                                      >
+                                        <div class="font-medium text-slate-800">${t.name}</div>
+                                      </button>
+                                    `).join('')}
+                                  </div>
+                                </div>
+                              `;
+
                                     document.body.appendChild(modal);
-                                    
+
                                     const closeBtn = modal.querySelector('#close-modal');
                                     const technicianOptions = modal.querySelectorAll('.technician-option');
-                                    
+
                                     closeBtn?.addEventListener('click', () => {
                                       document.body.removeChild(modal);
                                     });
-                                    
+
                                     technicianOptions.forEach(option => {
                                       option.addEventListener('click', () => {
                                         const technicianId = option.getAttribute('data-technician-id');
-                                        const technicianName = option.getAttribute('data-technician-name');
-                                        
+
                                         if (technicianId) {
                                           handleQuickAssign(job.id, technicianId);
                                         }
-                                        
+
                                         document.body.removeChild(modal);
                                       });
                                     });
-                                    
+
                                     modal.addEventListener('click', (e) => {
                                       if (e.target === modal) {
                                         document.body.removeChild(modal);
                                       }
                                     });
                                   }}
+                                  className="h-8 w-8 p-0 border-green-300 text-green-700 hover:bg-green-50"
                                   title="Asignar técnico"
                                 >
-                                  <Users className="h-4 w-4 mr-2" />
-                                  Asignar
+                                  <Users className="h-4 w-4" />
                                 </Button>
                               )}
-                              
-                              <Button 
-                                variant="outline" 
+
+                              <Button
+                                variant="outline"
                                 size="sm"
                                 onClick={() => confirmDelete(job.id)}
-                                className="h-10 px-4 border-2 border-red-300 hover:border-red-400 text-red-700 hover:text-red-800 font-medium rounded-xl bg-red-50 hover:bg-red-100 transition-all duration-200"
+                                className="h-8 w-8 p-0 border-red-300 text-red-700 hover:bg-red-50"
                                 title="Eliminar trabajo"
                               >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Eliminar
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
       </div>
     );
   };
 
-  // Componente de calendario para trabajadores
-  const WorkerCalendar: React.FC<{ events: Job[] }> = ({ events }) => {
-    const today = new Date();
-    const [currentDate, setCurrentDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
-
-    const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
-    const firstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
-
-    const renderDays = () => {
-      const totalDays = daysInMonth(currentDate.getFullYear(), currentDate.getMonth());
-      const startingDay = firstDayOfMonth(currentDate.getFullYear(), currentDate.getMonth());
-      const days = [];
-
-      // Días vacíos al principio del mes
-      for (let i = 0; i < startingDay; i++) {
-        days.push(<div key={`empty-${i}`} className="p-2"></div>);
-      }
-
-      // Días del mes
-      for (let day = 1; day <= totalDays; day++) {
-        const dateString = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-        const dayEvents = events.filter(e => {
-          const date = new Date(e.scheduledAt);
-          const jobDateString = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-          return jobDateString === dateString;
-        });
-        const isToday = today.getFullYear() === currentDate.getFullYear() && today.getMonth() === currentDate.getMonth() && today.getDate() === day;
-
-        days.push(
-          <div
-            key={day}
-            className={`calendar-day ${isToday ? 'today' : ''} ${dayEvents.length > 0 ? 'has-events' : ''}`}
-            onClick={() => {
-              if (dayEvents.length > 0) {
-                const message = dayEvents.map(e => 
-                  `• ${new Date(e.scheduledAt).toLocaleTimeString("es-CL", { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    hour12: false
-                  })}: ${e.title}
-Cliente: ${e.client.name}
-Técnico: ${e.technician?.name || 'Sin asignar'}
-Servicio: ${e.service.name}
-Estado: ${getStatusConfig(e.status).label}`
-                ).join('\n\n');
-                setMessageBoxContent({
-                  title: `Trabajos para el ${new Date(dateString).toLocaleDateString('es-CL')}`,
-                  message: message
-                });
-                setShowMessageBox(true);
-              }
-            }}
-          >
-            <span className="text-sm font-medium">{day}</span>
-            {dayEvents.length > 0 && (
-              <div className="event-count">
-                {dayEvents.length}
-              </div>
-            )}
-          </div>
-        );
-      }
-
-      return days;
-    };
-
-    const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-
-         return (
-       <div className="dashboard-card max-w-4xl mx-auto">
-         <div className="dashboard-card-header">
-           <div className="flex items-center justify-between">
-             <span className="flex items-center gap-2">
-               <CalendarDays className="h-5 w-5 text-blue-600" />
-               <h3 className="dashboard-card-title">Mi Agenda Personal</h3>
-             </span>
-             <div className="flex items-center gap-2">
-               <Button
-                 variant="outline"
-                 size="sm"
-                 onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))}
-                 className="dashboard-button dashboard-button-secondary"
-               >
-                 <ChevronUp className="h-4 w-4 rotate-90" />
-               </Button>
-               <span className="text-lg font-semibold text-gray-800 min-w-[200px] text-center">
-                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-               </span>
-               <Button
-                 variant="outline"
-                 size="sm"
-                 onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
-                 className="dashboard-button dashboard-button-secondary"
-               >
-                 <ChevronDown className="h-4 w-4 rotate-90" />
-               </Button>
-             </div>
-           </div>
-         </div>
-         <div className="dashboard-card-content">
-          <div className="calendar-grid text-center text-gray-600 font-medium mb-4">
-            {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
-              <div key={day} className="py-2 text-sm">{day}</div>
-            ))}
-          </div>
-          <div className="calendar-grid">
-            {renderDays()}
-          </div>
-        </div>
-      </div>
-    );
-  };
-  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header de la página de agenda mejorado */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl mb-6 shadow-lg">
-            <Calendar className="h-10 w-10 text-white" />
+    <div className="agenda-container mobile-optimized">
+      <div className="agenda-content">
+        {/* Header del Sistema de Gestión de Trabajos - Responsive */}
+        <div className="agenda-header">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4 md:gap-6">
+              <div className="agenda-header-icon">
+                <Wrench className="h-8 w-8 md:h-12 md:w-12 text-white" />
+              </div>
+              <div className="text-center md:text-left">
+                <h1 className="agenda-title">
+                  Sistema de Gestión de Trabajos
+                </h1>
+                <p className="agenda-subtitle">
+                  Gestión completa desde la creación hasta la finalización
+                </p>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-4 mt-2 md:mt-3">
+                  <div className="flex items-center gap-1 md:gap-2 text-blue-100">
+                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5" />
+                    <span className="text-xs md:text-sm">Control Total</span>
+                  </div>
+                  <div className="flex items-center gap-1 md:gap-2 text-blue-100">
+                    <Users className="h-4 w-4 md:h-5 md:w-5" />
+                    <span className="text-xs md:text-sm">Equipo Integrado</span>
+                  </div>
+                  <div className="flex items-center gap-1 md:gap-2 text-blue-100">
+                    <TrendingUp className="h-4 w-4 md:h-5 md:w-5" />
+                    <span className="text-xs md:text-sm">Eficiencia Máxima</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-800 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-4">
-            Agenda de Trabajos
-          </h1>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-            Gestiona y programa los servicios de manera eficiente y profesional
-          </p>
-        </div>
-
-        {/* Botones de acción mejorados */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-          {(userRole === 'admin' || userRole === 'secretaria') && (
-            <>
-              <Button 
-                onClick={handleNewJob} 
-                className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-              >
-                <Plus className="h-6 w-6 mr-3 group-hover:rotate-90 transition-transform duration-300" />
-                Programar Trabajo
-              </Button>
-              <Button 
-                onClick={handleExport} 
-                variant="outline"
-                className="px-8 py-4 border-2 border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-800 font-semibold text-lg rounded-2xl bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-              >
-                <Download className="h-6 w-6 mr-3" />
-                Exportar Excel
-              </Button>
-            </>
-          )}
         </div>
 
         {/* Alerta de error mejorada */}
         {error && (
-          <div className="max-w-4xl mx-auto mb-8">
-            <div className="bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-200 rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <AlertCircle className="h-6 w-6 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-red-800 mb-1">Error en el Sistema</h3>
-                  <p className="text-red-700">{error}</p>
-                </div>
+          <div className="agenda-alert">
+            <div className="agenda-alert-content">
+              <div className="agenda-alert-icon">
+                <AlertCircle className="h-6 w-6 text-red-600" />
+              </div>
+              <div className="agenda-alert-text">
+                <h3>Error en el Sistema</h3>
+                <p>{error}</p>
               </div>
             </div>
           </div>
         )}
 
         {/* Vista condicional según el rol del usuario */}
-        {userRole === 'admin' || userRole === 'secretaria' ? (
+        {userRole === 'admin' || userRole === 'administrador' || userRole === 'secretaria' ? (
           <>
-            {/* Filtros mejorados */}
-            <div className="max-w-6xl mx-auto mb-8">
-              <div className="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-3xl p-8 shadow-xl">
-                <div className="text-center mb-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mb-4">
-                    <Filter className="h-8 w-8 text-white" />
+            {/* Sistema Completo de Gestión de Trabajos - Responsive */}
+            <div className="dashboard-card">
+              {/* Header del Sistema */}
+              <div className="dashboard-card-header">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <div className="text-center lg:text-left">
+                    <h2 className="dashboard-card-title">
+                      Centro de Control de Trabajos
+                    </h2>
+                    <p className="dashboard-card-subtitle">
+                      Gestión integral desde la creación hasta la finalización con seguimiento completo
+                    </p>
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-800 mb-2">Filtros y Búsqueda</h2>
-                  <p className="text-slate-600">Personaliza la vista de trabajos según tus necesidades</p>
+
+                  {/* Botones de Acción Principales - Responsive */}
+                  <div className="agenda-actions">
+                    <Button
+                      onClick={handleNewJob}
+                      className="agenda-btn-primary mobile-touch-target"
+                    >
+                      <Plus className="h-4 w-4 md:h-5 md:w-5" />
+                      <span className="hidden sm:inline">Crear Trabajo</span>
+                      <span className="sm:hidden">Crear</span>
+                    </Button>
+
+                    <Button
+                      onClick={handleExport}
+                      className="agenda-btn-primary mobile-touch-target"
+                    >
+                      <Download className="h-4 w-4 md:h-5 md:w-5" />
+                      <span className="hidden sm:inline">Exportar Excel</span>
+                      <span className="sm:hidden">Exportar</span>
+                    </Button>
+
+                    <Button
+                      onClick={() => {
+                        fetchJobs();
+                      }}
+                      className="agenda-btn-secondary mobile-touch-target"
+                    >
+                      <RefreshCw className="h-4 w-4 md:h-5 md:w-5" />
+                      <span className="hidden sm:inline">Recargar Datos</span>
+                      <span className="sm:hidden">Recargar</span>
+                    </Button>
+                  </div>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                  <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-slate-700">Fecha</label>
-                    <div className="flex gap-2">
+              </div>
+
+              {/* Contenido Principal */}
+              <div className="p-6">
+
+                {/* Panel de Filtros Mejorado - Responsive */}
+                <div className="agenda-filters">
+                  <div className="agenda-filters-header">
+                    <div className="agenda-filters-icon">
+                      <Filter className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="agenda-filters-title">
+                      Filtros de Búsqueda
+                    </h3>
+                    <p className="agenda-filters-subtitle">
+                      Refina los resultados según tus necesidades
+                    </p>
+                  </div>
+
+                  {/* Búsqueda por texto - Hidden on tablet and mobile */}
+                  <div className="agenda-filter-group hidden lg:block">
+                    <label className="agenda-filter-label">Buscar</label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <Input
+                        type="text"
+                        placeholder="Buscar por título, cliente, servicio, técnico, descripción..."
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        className="agenda-filter-input pl-10 w-full mobile-touch-target"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Filtros en grid responsive */}
+                  <div className="agenda-filters-grid">
+                    <div className="agenda-filter-group">
+                      <label className="agenda-filter-label">Técnico</label>
+                      <Select value={technicianFilter} onValueChange={setTechnicianFilter}>
+                        <SelectTrigger className="agenda-filter-select mobile-touch-target">
+                          <SelectValue placeholder="Todos los técnicos" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos los técnicos</SelectItem>
+                          {technicians.map((tech) => (
+                            <SelectItem key={tech.id} value={tech.id}>
+                              {tech.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="agenda-filter-group">
+                      <label className="agenda-filter-label">Empresa</label>
+                      <Select value={companyFilter} onValueChange={setCompanyFilter}>
+                        <SelectTrigger className="agenda-filter-select mobile-touch-target">
+                          <SelectValue placeholder="Todas las empresas" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todas las empresas</SelectItem>
+                          {companies.map((company) => (
+                            <SelectItem key={company.id} value={company.name}>
+                              {company.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="agenda-filter-group">
+                      <label className="agenda-filter-label">Fecha</label>
                       <Input
                         type="date"
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
-                        className="h-12 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 font-medium"
-                      />
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setSelectedDate('')}
-                        size="sm"
-                        title="Ver todos los trabajos"
-                        className="h-12 px-4 border-2 border-slate-200 rounded-xl hover:border-slate-300 hover:bg-slate-50"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-slate-700">Buscar</label>
-                    <div className="relative">
-                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
-                      <Input
-                        type="text"
-                        placeholder="Buscar trabajo, cliente..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="h-12 pl-12 pr-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 font-medium"
+                        className="agenda-filter-input mobile-touch-target"
                       />
                     </div>
                   </div>
-                  
-                  <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-slate-700">Estado</label>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="h-12 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 font-medium">
-                        <SelectValue placeholder="Todos los estados" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl border shadow-xl bg-white">
-                        <SelectItem value="all">Todos los estados</SelectItem>
-                        <SelectItem value="PENDING">Pendiente</SelectItem>
-                        <SelectItem value="IN_PROGRESS">En Progreso</SelectItem>
-                        <SelectItem value="COMPLETED">Completado</SelectItem>
-                        <SelectItem value="CANCELLED">Cancelado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-slate-700">Técnico</label>
-                    <Select value={technicianFilter} onValueChange={setTechnicianFilter}>
-                      <SelectTrigger className="h-12 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 font-medium">
-                        <SelectValue placeholder="Todos los técnicos" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl border shadow-xl bg-white">
-                        <SelectItem value="all">Todos los técnicos</SelectItem>
-                        {technicians.map((technician) => (
-                          <SelectItem key={technician.id} value={technician.id}>
-                            {technician.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+
+                  {/* Botón para limpiar filtros */}
+                  <div className="agenda-filter-clear">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchText("");
+                        setTechnicianFilter("all");
+                        setCompanyFilter("all");
+                        setSelectedDate("");
+                      }}
+                      className="agenda-btn-clear mobile-touch-target"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Limpiar Filtros
+                    </Button>
                   </div>
                 </div>
-                
-                <div className="text-center">
-                  <Button 
-                    variant="outline" 
-                    onClick={clearFilters}
-                    className="px-8 py-3 border-2 border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-800 font-semibold rounded-xl bg-white hover:bg-slate-50 transition-all duration-200"
-                  >
-                    <Filter className="h-5 w-5 mr-2" />
-                    Limpiar Filtros
-                  </Button>
+
+                {/* Tabla de Gestión de Trabajos - Responsive */}
+                <div className="agenda-table-container">
+                  <div className="agenda-table-header">
+                    <h3 className="agenda-table-title">
+                      Lista de Trabajos - Gestión Completa
+                    </h3>
+                    <p className="agenda-table-subtitle">
+                      Administra todos los aspectos de los trabajos desde esta interfaz centralizada
+                    </p>
+                  </div>
+
+                  {/* Vista de cards para móvil, tabla para desktop */}
+                  <div className="hidden md:block">
+                    <div className="overflow-x-auto mobile-scroll">
+                      <AgendaTable data={filteredJobs} />
+                    </div>
+                  </div>
+
+                  {/* Vista de cards para móvil */}
+                  <div className="md:hidden">
+                    <div className="space-y-3">
+                      {filteredJobs.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="w-16 h-16 mx-auto mb-4 text-slate-300">
+                            <Calendar className="h-full w-full" />
+                          </div>
+                          <h3 className="text-lg font-medium text-slate-600 mb-2">No hay trabajos</h3>
+                          <p className="text-slate-500">No se encontraron trabajos para los filtros seleccionados.</p>
+                        </div>
+                      ) : (
+                        filteredJobs.map((job) => (
+                          <JobCard key={job.id} job={job} />
+                        ))
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            
-            {/* Tabla de trabajos mejorada */}
-            <div className="max-w-7xl mx-auto">
-              <div className="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-xl overflow-hidden">
-                <div className="p-6 border-b border-slate-200">
-                  <h3 className="text-xl font-semibold text-slate-800">Lista de Trabajos Programados</h3>
-                  <p className="text-slate-600 mt-1">Gestiona todos los trabajos del sistema</p>
-                </div>
-                <div className="overflow-x-auto">
-                  <AgendaTable data={filteredJobs} />
-                </div>
-              </div>
-            </div>
+
           </>
         ) : (
           <>
-            {/* Vista para técnicos */}
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-3xl p-8 shadow-xl">
-                <div className="text-center mb-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl mb-4">
-                    <User className="h-8 w-8 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-slate-800 mb-2">Mi Agenda Personal</h2>
-                  <p className="text-slate-600">
-                    Bienvenido, {currentUser}. Aquí puedes ver tus trabajos programados.
-                  </p>
+            {/* Vista para técnicos - Lista de trabajos - Responsive */}
+            <div className="agenda-technician-view">
+              <div className="agenda-technician-header">
+                <div className="agenda-technician-icon">
+                  <User className="h-6 w-6 text-white" />
                 </div>
-                <WorkerCalendar events={getWorkerJobs(currentUser)} />
+                <h2 className="agenda-technician-title">Mis Trabajos</h2>
+                <p className="agenda-technician-subtitle">
+                  Bienvenido, {currentUser}. Aquí puedes ver tus trabajos programados.
+                </p>
+              </div>
+
+              {/* Filtros para técnicos - Responsive */}
+              <div className="agenda-filters">
+                <div className="agenda-filter-group">
+                  <label className="agenda-filter-label">Filtrar por fecha</label>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-slate-500" />
+                    <Input
+                      type="date"
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                      className="agenda-filter-input mobile-touch-target"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Lista de trabajos del técnico - Responsive */}
+              <div className="space-y-3">
+                {filteredJobs.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 mx-auto mb-4 text-slate-300">
+                      <Calendar className="h-full w-full" />
+                    </div>
+                    <h3 className="text-lg font-medium text-slate-600 mb-2">No hay trabajos programados</h3>
+                    <p className="text-slate-500">No tienes trabajos asignados para los filtros seleccionados.</p>
+                  </div>
+                ) : (
+                  filteredJobs.map((job) => (
+                    <JobCard key={job.id} job={job} />
+                  ))
+                )}
               </div>
             </div>
           </>
         )}
 
-        {/* Cuadro de diálogo de confirmación de eliminación */}
-        <ConfirmationDialog
-          isOpen={showDeleteConfirm}
-          onConfirm={deleteJob}
-          onCancel={cancelDelete}
-          message={`¿Estás seguro de que quieres eliminar el trabajo? Esta acción no se puede deshacer.`}
-        />
-
-        {/* Cuadro de diálogo para mensajes del calendario */}
-        <MessageBox
-          isOpen={showMessageBox}
-          onDismiss={() => setShowMessageBox(false)}
-          title={messageBoxContent.title}
-          message={messageBoxContent.message}
-        />
-
-        {/* Modal para el formulario de nuevo/editar trabajo */}
-        {showJobForm && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl my-8 border border-slate-200 min-h-fit">
-              <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-6 py-4 border-b border-slate-200 sticky top-0 z-10">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                      <FileText className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-slate-800">
-                        {isEditing ? 'Editar Trabajo' : 'Programar Nuevo Trabajo'}
-                      </h2>
-                      <p className="text-slate-600 text-sm">
-                        {isEditing ? 'Modifica los detalles del trabajo existente' : 'Completa el formulario para programar un nuevo trabajo'}
-                      </p>
-                    </div>
-                  </div>
+        {/* Cuadro de diálogo de confirmación de eliminación - Responsive */}
+        {showDeleteConfirm && (
+          <div className="agenda-modal-overlay">
+            <div className="agenda-modal mobile-optimized">
+              <div className="agenda-modal-header">
+                <h3 className="agenda-modal-title">Confirmar Eliminación</h3>
+                <button
+                  onClick={cancelDelete}
+                  className="agenda-modal-close mobile-touch-target"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="agenda-modal-content">
+                <p className="mobile-readable">¿Estás seguro de que quieres eliminar el trabajo? Esta acción no se puede deshacer.</p>
+              </div>
+              <div className="agenda-modal-footer">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
-                    onClick={() => setShowJobForm(false)}
-                    className="w-8 h-8 bg-white rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-all duration-200 shadow-sm hover:shadow-md"
+                    onClick={cancelDelete}
+                    className="agenda-btn-secondary flex-1 mobile-touch-target"
                   >
-                    <X className="h-4 w-4" />
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={deleteJob}
+                    className="agenda-btn-primary flex-1 bg-red-600 hover:bg-red-700 mobile-touch-target"
+                  >
+                    Eliminar
                   </button>
                 </div>
               </div>
-              <div className="p-6">
-                <JobForm 
+            </div>
+          </div>
+        )}
+
+        {/* Cuadro de diálogo para mensajes del calendario - Responsive */}
+        {showMessageBox && (
+          <div className="agenda-modal-overlay">
+            <div className="agenda-modal mobile-optimized">
+              <div className="agenda-modal-header">
+                <h3 className="agenda-modal-title">{messageBoxContent.title}</h3>
+                <button
+                  onClick={() => setShowMessageBox(false)}
+                  className="agenda-modal-close mobile-touch-target"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="agenda-modal-content mobile-scroll">
+                <pre className="whitespace-pre-wrap font-sans text-gray-600 mobile-readable">{messageBoxContent.message}</pre>
+              </div>
+              <div className="agenda-modal-footer">
+                <button
+                  onClick={() => setShowMessageBox(false)}
+                  className="agenda-btn-primary w-full mobile-touch-target"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal para el formulario de nuevo/editar trabajo - Responsive */}
+        {showJobForm && (
+          <div className="agenda-modal-overlay">
+            <div className="agenda-modal notebook-modal mobile-optimized">
+              <div className="agenda-modal-header flex-shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                    <FileText className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="agenda-modal-title">
+                      {isEditing ? 'Editar Trabajo' : 'Programar Nuevo Trabajo'}
+                    </h2>
+                    <p className="text-slate-600 text-xs md:text-sm">
+                      {isEditing ? 'Modifica los detalles del trabajo existente' : 'Completa el formulario para programar un nuevo trabajo'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowJobForm(false)}
+                  className="agenda-modal-close mobile-touch-target"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="agenda-modal-content flex-1 overflow-y-auto mobile-scroll">
+                <JobForm
                   job={jobToEdit}
                   onSubmit={(updatedJob) => handleSaveJob(updatedJob)}
                   onCancel={() => setShowJobForm(false)}
@@ -1785,3 +1990,4 @@ Estado: ${getStatusConfig(e.status).label}`
     </div>
   );
 }
+

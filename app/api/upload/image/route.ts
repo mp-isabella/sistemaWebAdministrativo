@@ -1,13 +1,13 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { v2 as cloudinary } from "cloudinary"
+import { getServerSession } from "next-auth/next"
+import { type NextRequest, NextResponse } from "next/server"
 
 // Configurar Cloudinary
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || '',
+  api_key: process.env.CLOUDINARY_API_KEY || '',
+  api_secret: process.env.CLOUDINARY_API_SECRET || '',
 })
 
 export async function POST(request: NextRequest) {
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       publicId: result.public_id,
     })
   } catch (error) {
-    console.error("Error al subir imagen:", error)
+    
     return NextResponse.json({ error: "Error subiendo imagen" }, { status: 500 })
   }
 }

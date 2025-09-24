@@ -1,8 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Edit, Mail, Shield, User } from "lucide-react";
 import '../styles/unified-design.css';
-import { User, Mail, Shield, Edit } from "lucide-react"
 
 export default function ProfilePage() {
   return (
@@ -47,7 +47,7 @@ export default function ProfilePage() {
                   Cambiar Foto
                 </Button>
               </div>
-              
+
               {/* Información */}
               <div className="flex-1 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -58,7 +58,7 @@ export default function ProfilePage() {
                       <p className="text-slate-900">Usuario Demo</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3">
                     <Mail className="h-5 w-5 text-slate-500" />
                     <div>
@@ -66,7 +66,7 @@ export default function ProfilePage() {
                       <p className="text-slate-900">usuario@demo.com</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3">
                     <Shield className="h-5 w-5 text-slate-500" />
                     <div>

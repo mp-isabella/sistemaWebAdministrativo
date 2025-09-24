@@ -1,19 +1,19 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Calendar, CalendarProps } from "@/components/ui/calendar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import JobManagementModal from "@/components/dashboard/job-management-modal"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { 
+import { Calendar } from "@/components/ui/calendar"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  AlertCircle,
   Calendar as CalendarIcon,
   CheckCircle,
   Clock,
-  AlertCircle,
   XCircle
 } from "lucide-react"
 import { useSession } from "next-auth/react"
-import JobManagementModal from "@/components/dashboard/job-management-modal"
+import { useEffect, useState } from "react"
 
 interface Job {
   id: string
@@ -59,8 +59,8 @@ export default function JobStatusCalendar({ className }: JobStatusCalendarProps)
 
   // Escuchar eventos de actualización de estado de trabajos
   useEffect(() => {
-    const handleJobStatusUpdated = (event: CustomEvent) => {
-      console.log('🔄 Estado de trabajo actualizado en JobStatusCalendar:', event.detail)
+    const handleJobStatusUpdated = () => {
+
       fetchJobs() // Recargar trabajos para reflejar el nuevo estado
     }
 
@@ -79,7 +79,7 @@ export default function JobStatusCalendar({ className }: JobStatusCalendarProps)
         setJobs(data)
       }
     } catch (error) {
-      console.error("Error fetching jobs:", error)
+
     }
   }
 
@@ -135,17 +135,9 @@ export default function JobStatusCalendar({ className }: JobStatusCalendarProps)
     return <Badge className={config.color}>{config.label}</Badge>
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-CL', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
   const renderDayContent = (day: Date) => {
     const dayJobs = getJobsForDate(day)
-    
+
     if (dayJobs.length === 0) {
       return <div className="p-1 text-sm">{day.getDate()}</div>
     }
@@ -199,10 +191,10 @@ export default function JobStatusCalendar({ className }: JobStatusCalendarProps)
                 onSelect={setSelectedDate}
                 className="rounded-md border"
                 components={{
-                  DayContent: ({ date }) => renderDayContent(date)
-                }}
+                  DayContent: ({ date }: any) => renderDayContent(date)
+                } as any}
               />
-              
+
               {/* Leyenda */}
               <div className="mt-4 space-y-2">
                 <h4 className="text-sm font-medium">Leyenda:</h4>
@@ -237,7 +229,7 @@ export default function JobStatusCalendar({ className }: JobStatusCalendarProps)
                   day: 'numeric'
                 })}
               </h3>
-              
+
               {selectedDateJobs.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <CalendarIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
@@ -257,12 +249,12 @@ export default function JobStatusCalendar({ className }: JobStatusCalendarProps)
                             {getStatusBadge(job.status)}
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                           <span>{job.startTime} - {job.endTime}</span>
                           <span>{job.address}</span>
                         </div>
-                        
+
                         <Button
                           size="sm"
                           variant="outline"

@@ -119,7 +119,7 @@ export default function TestTailwindPage() {
         description: `El ${type === 'quote' ? 'presupuesto' : type === 'liquidation' ? 'liquidación' : type === 'invoice' ? 'factura' : 'orden de trabajo'} se ha descargado correctamente`,
       })
     } catch (error) {
-      console.error('Error generating PDF:', error)
+      
       toast({
         title: "Error",
         description: "No se pudo generar el PDF",

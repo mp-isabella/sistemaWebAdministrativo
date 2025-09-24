@@ -1,0 +1,882 @@
+/* ===== OPTIMIZACIONES MÓVILES Y TABLETS PARA EL PANEL ADMINISTRATIVO ===== */
+
+/* ===== MÓVILES (0px - 640px) ===== */
+@media (max-width: 640px) {
+  /* Layout principal móvil */
+  .dashboard-mobile-container {
+    padding: 0.5rem;
+    min-height: 100vh;
+  }
+
+  /* Sidebar móvil */
+  .dashboard-mobile-sidebar {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .dashboard-mobile-sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Header móvil */
+  .dashboard-mobile-header {
+    padding: 0.75rem 1rem;
+    min-height: 3.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+
+  /* Contenido móvil */
+  .dashboard-mobile-content {
+    padding: 0.5rem;
+    min-height: calc(100vh - 3.5rem);
+  }
+
+  /* Cards móviles */
+  .dashboard-mobile-card {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-radius: 0.75rem;
+  }
+
+  /* Grids móviles */
+  .dashboard-mobile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Tipografía móvil */
+  .dashboard-mobile-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .dashboard-mobile-subtitle {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .dashboard-mobile-text {
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  /* Botones móviles */
+  .dashboard-mobile-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    border-radius: 0.5rem;
+    min-height: 2rem;
+    width: 100%;
+  }
+
+  /* Formularios móviles */
+  .dashboard-mobile-input {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    border-radius: 0.5rem;
+    min-height: 2rem;
+    width: 100%;
+  }
+
+  /* Tablas móviles */
+  .dashboard-mobile-table {
+    font-size: 0.75rem;
+    border-collapse: collapse;
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+    white-space: nowrap;
+  }
+
+  .dashboard-mobile-table th,
+  .dashboard-mobile-table td {
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    min-width: 120px;
+  }
+
+  /* Modales móviles */
+  .dashboard-mobile-modal {
+    width: 95vw;
+    max-width: none;
+    max-height: 90vh;
+    margin: 0.5rem;
+    border-radius: 0.75rem;
+  }
+
+  /* Navegación móvil */
+  .dashboard-mobile-nav {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .dashboard-mobile-nav-item {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    border-radius: 0.5rem;
+    min-height: 2rem;
+    width: 100%;
+    text-align: left;
+  }
+
+  /* Iconos móviles */
+  .dashboard-mobile-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* Avatares móviles */
+  .dashboard-mobile-avatar {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  /* Badges móviles */
+  .dashboard-mobile-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.625rem;
+    border-radius: 0.375rem;
+  }
+
+  /* Utilidades móviles */
+  .dashboard-mobile-hidden {
+    display: none !important;
+  }
+
+  .dashboard-mobile-visible {
+    display: block !important;
+  }
+
+  /* Scroll móvil */
+  .dashboard-mobile-scroll {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .dashboard-mobile-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Touch optimizations */
+  .dashboard-mobile-touch {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Focus móvil */
+  .dashboard-mobile-focus:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+
+  /* Hover móvil (deshabilitado) */
+  .dashboard-mobile-hover:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* ===== TABLETS (640px - 1024px) ===== */
+@media (min-width: 640px) and (max-width: 1024px) {
+  /* Layout tablet */
+  .dashboard-tablet-container {
+    padding: 1rem;
+    min-height: 100vh;
+  }
+
+  /* Sidebar tablet */
+  .dashboard-tablet-sidebar {
+    width: 18rem;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .dashboard-tablet-sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Header tablet */
+  .dashboard-tablet-header {
+    padding: 1rem 1.5rem;
+    min-height: 4rem;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+
+  /* Contenido tablet */
+  .dashboard-tablet-content {
+    padding: 1rem;
+    min-height: calc(100vh - 4rem);
+  }
+
+  /* Cards tablet */
+  .dashboard-tablet-card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 1rem;
+  }
+
+  /* Grids tablet */
+  .dashboard-tablet-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  /* Tipografía tablet */
+  .dashboard-tablet-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .dashboard-tablet-subtitle {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .dashboard-tablet-text {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  /* Botones tablet */
+  .dashboard-tablet-btn {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.625rem;
+    min-height: 2.25rem;
+  }
+
+  /* Formularios tablet */
+  .dashboard-tablet-input {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.625rem;
+    min-height: 2.25rem;
+  }
+
+  /* Tablas tablet */
+  .dashboard-tablet-table {
+    font-size: 0.875rem;
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .dashboard-tablet-table th,
+  .dashboard-tablet-table td {
+    padding: 0.625rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  /* Modales tablet */
+  .dashboard-tablet-modal {
+    width: 90vw;
+    max-width: 32rem;
+    max-height: 90vh;
+    margin: 1rem;
+    border-radius: 1rem;
+  }
+
+  /* Navegación tablet */
+  .dashboard-tablet-nav {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .dashboard-tablet-nav-item {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.625rem;
+    min-height: 2.25rem;
+  }
+
+  /* Iconos tablet */
+  .dashboard-tablet-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* Avatares tablet */
+  .dashboard-tablet-avatar {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  /* Badges tablet */
+  .dashboard-tablet-badge {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem;
+    border-radius: 0.5rem;
+  }
+
+  /* Utilidades tablet */
+  .dashboard-tablet-hidden {
+    display: none !important;
+  }
+
+  .dashboard-tablet-visible {
+    display: block !important;
+  }
+
+  /* Scroll tablet */
+  .dashboard-tablet-scroll {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+  }
+
+  .dashboard-tablet-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .dashboard-tablet-scroll::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+  }
+
+  .dashboard-tablet-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+
+  .dashboard-tablet-scroll::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* Touch optimizations */
+  .dashboard-tablet-touch {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Focus tablet */
+  .dashboard-tablet-focus:focus {
+    outline: 3px solid #3b82f6;
+    outline-offset: 3px;
+  }
+
+  /* Hover tablet */
+  .dashboard-tablet-hover:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* ===== OPTIMIZACIONES ESPECÍFICAS PARA PANEL ADMINISTRATIVO ===== */
+
+/* Sidebar responsivo del dashboard */
+.dashboard-sidebar-mobile {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dashboard-sidebar-mobile.open {
+  transform: translateX(0);
+}
+
+@media (min-width: 1024px) {
+  .dashboard-sidebar-mobile {
+    width: 20rem;
+    height: 100vh;
+    position: static;
+    transform: translateX(0);
+    z-index: auto;
+  }
+}
+
+/* Header responsivo del dashboard */
+.dashboard-header-mobile {
+  padding: 0.75rem 1rem;
+  min-height: 3.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+@media (min-width: 640px) {
+  .dashboard-header-mobile {
+    padding: 1rem 1.5rem;
+    min-height: 4rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-header-mobile {
+    padding: 1rem 1.5rem;
+    min-height: 4.5rem;
+  }
+}
+
+/* Contenido principal responsivo */
+.dashboard-main-mobile {
+  padding: 0.5rem;
+  min-height: calc(100vh - 3.5rem);
+  overflow-x: hidden;
+}
+
+@media (min-width: 640px) {
+  .dashboard-main-mobile {
+    padding: 1rem;
+    min-height: calc(100vh - 4rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-main-mobile {
+    padding: 1.5rem;
+    min-height: calc(100vh - 4.5rem);
+  }
+}
+
+/* Cards del dashboard responsivas */
+.dashboard-card-mobile {
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-radius: 0.75rem;
+  background: white;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 640px) {
+  .dashboard-card-mobile {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-card-mobile {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 1.25rem;
+  }
+}
+
+/* Grids del dashboard responsivas */
+.dashboard-grid-mobile {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .dashboard-grid-mobile {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid-mobile {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .dashboard-grid-mobile {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+/* Navegación del dashboard responsiva */
+.dashboard-nav-mobile {
+  padding: 0.5rem;
+  gap: 0.5rem;
+}
+
+.dashboard-nav-item-mobile {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  border-radius: 0.5rem;
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+@media (min-width: 640px) {
+  .dashboard-nav-mobile {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .dashboard-nav-item-mobile {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.625rem;
+    min-height: 2.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-nav-mobile {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .dashboard-nav-item-mobile {
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    border-radius: 0.75rem;
+    min-height: 2.5rem;
+  }
+}
+
+/* Botones del dashboard responsivos */
+.dashboard-btn-mobile {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  border-radius: 0.5rem;
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+@media (min-width: 640px) {
+  .dashboard-btn-mobile {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.625rem;
+    min-height: 2.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-btn-mobile {
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    border-radius: 0.75rem;
+    min-height: 2.5rem;
+  }
+}
+
+/* Formularios del dashboard responsivos */
+.dashboard-form-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dashboard-form-group-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dashboard-form-label-mobile {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.dashboard-form-input-mobile {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  border-radius: 0.5rem;
+  min-height: 2rem;
+  border: 1px solid #d1d5db;
+  transition: all 0.2s ease-in-out;
+}
+
+@media (min-width: 640px) {
+  .dashboard-form-mobile {
+    gap: 1rem;
+  }
+
+  .dashboard-form-group-mobile {
+    gap: 0.75rem;
+  }
+
+  .dashboard-form-label-mobile {
+    font-size: 0.875rem;
+  }
+
+  .dashboard-form-input-mobile {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.625rem;
+    min-height: 2.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-form-mobile {
+    gap: 1.25rem;
+  }
+
+  .dashboard-form-group-mobile {
+    gap: 1rem;
+  }
+
+  .dashboard-form-label-mobile {
+    font-size: 1rem;
+  }
+
+  .dashboard-form-input-mobile {
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    border-radius: 0.75rem;
+    min-height: 2.5rem;
+  }
+}
+
+/* Tablas del dashboard responsivas */
+.dashboard-table-mobile {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  overflow-x: auto;
+  display: block;
+  white-space: nowrap;
+}
+
+.dashboard-table-mobile th,
+.dashboard-table-mobile td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  min-width: 120px;
+}
+
+@media (min-width: 640px) {
+  .dashboard-table-mobile {
+    font-size: 0.875rem;
+    display: table;
+    white-space: normal;
+  }
+
+  .dashboard-table-mobile th,
+  .dashboard-table-mobile td {
+    padding: 0.625rem 0.75rem;
+    min-width: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-table-mobile {
+    font-size: 1rem;
+  }
+
+  .dashboard-table-mobile th,
+  .dashboard-table-mobile td {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Modales del dashboard responsivos */
+.dashboard-modal-mobile {
+  width: 95vw;
+  max-width: none;
+  max-height: 90vh;
+  margin: 0.5rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .dashboard-modal-mobile {
+    width: 90vw;
+    max-width: 32rem;
+    margin: 1rem;
+    border-radius: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-modal-mobile {
+    width: 80vw;
+    max-width: 40rem;
+    margin: 2rem;
+    border-radius: 1.25rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .dashboard-modal-mobile {
+    width: 70vw;
+    max-width: 48rem;
+  }
+}
+
+/* Utilidades específicas para móviles */
+.dashboard-mobile-only {
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .dashboard-mobile-only {
+    display: none;
+  }
+}
+
+.dashboard-tablet-only {
+  display: none;
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .dashboard-tablet-only {
+    display: block;
+  }
+}
+
+.dashboard-desktop-only {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-desktop-only {
+    display: block;
+  }
+}
+
+/* Optimizaciones de rendimiento para móviles */
+.dashboard-mobile-optimized {
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Reducir animaciones en móviles para mejor rendimiento */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-mobile-optimized {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Optimizaciones de touch para móviles */
+.dashboard-touch-optimized {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Botón de cerrar menú móvil - optimizaciones específicas */
+[data-menu-button] {
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+  position: relative !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Asegurar que el botón de cerrar sea clickeable en móviles */
+@media (max-width: 1024px) {
+  [data-menu-button] {
+    position: relative !important;
+    z-index: 1001 !important;
+    background: rgba(0, 0, 0, 0.1) !important;
+    border-radius: 8px !important;
+    margin: 4px !important;
+  }
+  
+  [data-menu-button]:active {
+    background: rgba(0, 0, 0, 0.2) !important;
+    transform: scale(0.95) !important;
+  }
+}
+
+/* Botón de cerrar específico para navegación móvil */
+.mobile-navigation-close-btn {
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+  position: relative !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  margin: 4px !important;
+}
+
+.mobile-navigation-close-btn:active {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: scale(0.95) !important;
+}
+
+/* Overlay móvil optimizado */
+.mobile-overlay {
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+  pointer-events: auto !important;
+}
+
+/* Mejorar legibilidad en móviles */
+.dashboard-mobile-text {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Optimizaciones de scroll para móviles */
+.dashboard-mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+}
+
+/* Mejorar rendimiento de scroll en móviles */
+.dashboard-mobile-scroll-container {
+  contain: layout style paint;
+  will-change: scroll-position;
+}

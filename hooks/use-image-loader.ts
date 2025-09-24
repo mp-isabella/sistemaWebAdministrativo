@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface UseImageLoaderOptions {
   src: string;
@@ -16,7 +16,7 @@ export function useImageLoader({ src, priority = false, onLoad, onError }: UseIm
     if (!src) return;
 
     const img = new Image();
-    
+
     img.onload = () => {
       setIsLoading(false);
       setIsLoaded(true);
@@ -38,6 +38,7 @@ export function useImageLoader({ src, priority = false, onLoad, onError }: UseIm
     if (priority) {
       // Cargar inmediatamente si es prioritaria
       loadImage();
+      return undefined;
     } else {
       // Cargar con delay para no bloquear el render
       const timer = setTimeout(loadImage, 100);
@@ -73,12 +74,12 @@ export function useImagePreloader(imageUrls: string[]) {
     const loadImage = (url: string) => {
       return new Promise<void>((resolve) => {
         const img = new Image();
-        
+
         img.onload = () => {
           loadedCount++;
-          setLoadedImages(prev => new Set([...prev, url]));
+          setLoadedImages(prev => new Set(Array.from(prev).concat(url)));
           setLoadingProgress((loadedCount / totalImages) * 100);
-          
+
           if (loadedCount === totalImages) {
             setIsAllLoaded(true);
           }
@@ -88,7 +89,7 @@ export function useImagePreloader(imageUrls: string[]) {
         img.onerror = () => {
           loadedCount++;
           setLoadingProgress((loadedCount / totalImages) * 100);
-          
+
           if (loadedCount === totalImages) {
             setIsAllLoaded(true);
           }

@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Ejecutando verificaciones pre-commit..."
+npm run check-all
+
+if [ $? -ne 0 ]; then
+  echo "❌ Errores encontrados. Commit cancelado."
+  exit 1
+fi
+
+echo "✅ Todas las verificaciones pasaron. Procediendo con el commit."

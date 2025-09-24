@@ -1,16 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { User, Wrench, Clock, MapPin, AlertCircle, CheckCircle } from 'lucide-react'
+import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import { cn } from "@/lib/utils"
+import { AlertCircle, CheckCircle, Clock, MapPin, User, Wrench } from 'lucide-react'
+import { useEffect, useState } from "react"
 
 interface JobFormProps {
   job?: any
@@ -67,17 +67,17 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
       const servicesData = await servicesRes.json()
       const techniciansData = await techniciansRes.json()
 
-      setClients(clientsData || [])
+      // Filtrar solo clientes activos para agendamiento
+      const activeClients = (clientsData || []).filter((client: any) => client.status === 'active')
+      setClients(activeClients)
       setServices(Array.isArray(servicesData) ? servicesData.filter((s: any) => s.isActive) : [])
       setTechnicians(techniciansData.workers?.filter((w: any) => w.isActive && w.role?.name === 'TECNICO') || [])
 
-      console.log('✅ Datos cargados:', {
-        clients: clientsData?.length || 0,
-        services: servicesData?.length || 0,
-        technicians: techniciansData.workers?.filter((w: any) => w.isActive && w.role?.name === 'TECNICO').length || 0
+      console.log({
+        totalTechnicians: techniciansData.workers?.filter((w: any) => w.isActive && w.role?.name === 'TECNICO').length || 0
       })
     } catch (error) {
-      console.error("❌ Error cargando datos:", error)
+      console.error('Error loading data:', error)
     } finally {
       setLoadingData(false)
     }
@@ -99,14 +99,14 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
     } else {
       // Validación más precisa de fecha y hora
       const now = new Date()
-      
+
       // Si es la misma fecha, validar la hora
       if (formData.scheduledAt.toDateString() === now.toDateString()) {
         const scheduledHour = formData.scheduledAt.getHours()
         const scheduledMinute = formData.scheduledAt.getMinutes()
         const currentHour = now.getHours()
         const currentMinute = now.getMinutes()
-        
+
         // Si la hora programada es anterior a la hora actual
         if (scheduledHour < currentHour || (scheduledHour === currentHour && scheduledMinute <= currentMinute)) {
           newErrors.scheduledAt = "La hora programada no puede ser en el pasado"
@@ -134,7 +134,7 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
     try {
       const selectedService = services.find(s => s.id === formData.serviceId)
       const selectedClient = clients.find(c => c.id === formData.clientId)
-      
+
       const jobData = {
         ...formData,
         title: selectedService ? selectedService.name : "Trabajo sin título",
@@ -145,7 +145,7 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
       }
 
       await onSubmit(jobData)
-      
+
       // Limpiar formulario
       setFormData({
         description: "",
@@ -155,9 +155,9 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
         scheduledAt: null
       })
       setErrors({})
-      
+
     } catch (error) {
-      console.error("Error submitting form:", error)
+
       setErrors({ submit: "Error al guardar el trabajo" })
     } finally {
       setIsSubmitting(false)
@@ -179,8 +179,8 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
 
   const getFormProgress = () => {
     const requiredFields = ['clientId', 'serviceId', 'scheduledAt']
-    const completedFields = requiredFields.filter(field => 
-      formData[field as keyof typeof formData] && 
+    const completedFields = requiredFields.filter(field =>
+      formData[field as keyof typeof formData] &&
       formData[field as keyof typeof formData] !== ""
     )
     return Math.round((completedFields.length / requiredFields.length) * 100)
@@ -212,7 +212,7 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
           </div>
         </div>
       )}
-      
+
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Barra de progreso */}
         <div className="space-y-2">
@@ -221,8 +221,8 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
             <span>{getFormProgress()}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${getFormProgress()}%` }}
             ></div>
           </div>
@@ -238,12 +238,12 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
               <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
-              <Select 
-                value={formData.clientId} 
+              <Select
+                value={formData.clientId}
                 onValueChange={(value) => handleChange("clientId", value)}
                 disabled={loadingData}
               >
-                <SelectTrigger 
+                <SelectTrigger
                   className={cn(
                     "h-10 pl-9 pr-4 text-sm border-2 rounded-lg transition-all duration-200",
                     "focus:ring-2 focus:ring-blue-100 focus:border-blue-500",
@@ -251,8 +251,8 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
                     getFieldStatus("clientId") === "success" && "border-green-500 focus:border-green-500 focus:ring-green-100"
                   )}
                 >
-                  <SelectValue 
-                    placeholder={loadingData ? "Cargando..." : "Seleccionar cliente"} 
+                  <SelectValue
+                    placeholder={loadingData ? "Cargando..." : "Seleccionar cliente"}
                     className="text-gray-600"
                   />
                 </SelectTrigger>
@@ -262,16 +262,16 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
                       No hay clientes disponibles
                     </div>
                   ) : (
-                                      clients.map((client: any) => (
-                    <SelectItem key={client.id} value={client.id} className="py-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <div className="min-w-0 flex-1">
-                          <div className="font-medium truncate">{client.name}</div>
+                    clients.map((client: any) => (
+                      <SelectItem key={client.id} value={client.id} className="py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium truncate">{client.name}</div>
+                          </div>
                         </div>
-                      </div>
-                    </SelectItem>
-                  ))
+                      </SelectItem>
+                    ))
                   )}
                 </SelectContent>
               </Select>
@@ -296,12 +296,12 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
               <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
-              <Select 
-                value={formData.serviceId} 
+              <Select
+                value={formData.serviceId}
                 onValueChange={(value) => handleChange("serviceId", value)}
                 disabled={loadingData}
               >
-                <SelectTrigger 
+                <SelectTrigger
                   className={cn(
                     "h-10 pl-9 pr-4 text-sm border-2 rounded-lg transition-all duration-200",
                     "focus:ring-2 focus:ring-blue-100 focus:border-blue-500",
@@ -356,8 +356,8 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
               Técnico Asignado
             </Label>
             <div className="relative">
-              <Select 
-                value={formData.assignedToId} 
+              <Select
+                value={formData.assignedToId}
                 onValueChange={(value) => handleChange("assignedToId", value)}
                 disabled={loadingData}
               >
@@ -406,6 +406,7 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
                   if (e.target.value) {
                     // Parse the date string and create a date in local timezone
                     const [year, month, day] = e.target.value.split('-').map(Number)
+                    if (!year || !month || !day) return
                     const date = new Date(year, month - 1, day) // month is 0-indexed
                     handleChange("scheduledAt", date)
                   } else {
@@ -415,7 +416,7 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
                 min={format(new Date(), "yyyy-MM-dd")}
                 className="h-10 text-sm border-2 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 flex-1"
               />
-              
+
               {formData.scheduledAt && (
                 <Input
                   type="time"
@@ -424,7 +425,9 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
                     if (formData.scheduledAt && e.target.value) {
                       const [hours, minutes] = e.target.value.split(":")
                       const newDate = new Date(formData.scheduledAt)
-                      newDate.setHours(parseInt(hours), parseInt(minutes))
+                      if (hours && minutes) {
+                        newDate.setHours(parseInt(hours), parseInt(minutes))
+                      }
                       handleChange("scheduledAt", newDate)
                     }
                   }}

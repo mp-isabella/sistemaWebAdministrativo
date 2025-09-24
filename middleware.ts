@@ -8,12 +8,13 @@ export default withAuth(
 
     // Optimización: Solo loggear en desarrollo
     if (process.env.NODE_ENV === "development") {
-      console.log("[Middleware] Pathname:", pathname);
-      console.log("[Middleware] Token:", token);
+
     }
 
     // Si no hay token y está intentando acceder al dashboard, redirigir al login
-    if (!token && pathname.startsWith("/dashboard")) {
+    // Pero solo si no está ya en el proceso de autenticación
+    if (!token && pathname.startsWith("/dashboard") && !pathname.includes("/api/auth")) {
+
       return NextResponse.redirect(new URL("/login", req.url));
     }
 
@@ -21,28 +22,33 @@ export default withAuth(
     if (token) {
       const role = token['role'] as string;
 
+      // Permitir acceso al calendario para todos los roles autenticados
+      if (pathname.startsWith("/dashboard/schedule/calendar")) {
+        return NextResponse.next();
+      }
+
       // Verificar permisos específicos por ruta
-      if (pathname.startsWith("/dashboard/admin") && role !== "admin") {
+      if (pathname.startsWith("/dashboard/admin") && role !== "ADMINISTRADOR" && role !== "administrador" && role !== "admin") {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
 
-      if (pathname.startsWith("/dashboard/workers") && role === "tecnico") {
+      if (pathname.startsWith("/dashboard/workers") && (role === "TECNICO" || role === "tecnico")) {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
 
-      if (pathname.startsWith("/dashboard/cash") && role === "tecnico") {
+      if (pathname.startsWith("/dashboard/cash") && (role === "TECNICO" || role === "tecnico")) {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
 
-      if (pathname.startsWith("/dashboard/quotes") && role === "tecnico") {
+      if (pathname.startsWith("/dashboard/quotes") && (role === "TECNICO" || role === "tecnico")) {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
 
-      if (pathname.startsWith("/dashboard/liquidations") && role === "tecnico") {
+      if (pathname.startsWith("/dashboard/liquidations") && (role === "TECNICO" || role === "tecnico")) {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
 
-      if (pathname.startsWith("/dashboard/reports") && role === "tecnico") {
+      if (pathname.startsWith("/dashboard/reports") && (role === "TECNICO" || role === "tecnico")) {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
 
@@ -84,6 +90,7 @@ export const config = {
     "/api/cash-transactions/:path*",
     "/api/invoices/:path*",
     "/api/quotes/:path*",
+    "/api/liquidations/:path*",
     "/api/reports/:path*",
     "/api/roles/:path*",
     "/api/upload/:path*",

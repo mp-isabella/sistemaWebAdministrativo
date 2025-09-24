@@ -1,32 +1,32 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import WorkOrderForm from "@/components/forms/work-order-form"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Download, 
-  Edit, 
-  Trash2, 
-  Eye,
-  Wrench,
-  User,
-  Clock,
-  Building2,
-  Calendar,
-  DollarSign,
-  AlertCircle
-} from 'lucide-react'
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import WorkOrderForm from "@/components/forms/work-order-form"
+import {
+  AlertCircle,
+  Building2,
+  Clock,
+  // Calendar,
+  DollarSign,
+  Download,
+  Edit,
+  Filter,
+  Plus,
+  Search,
+  Trash2,
+  User,
+  // Eye,
+  Wrench
+} from 'lucide-react'
+import { useEffect, useState } from "react"
 
 export default function WorkOrdersPage() {
   const [workOrders, setWorkOrders] = useState<any[]>([])
@@ -49,11 +49,11 @@ export default function WorkOrdersPage() {
     try {
       const response = await fetch("/api/work-orders")
       if (!response.ok) throw new Error("Error cargando órdenes de trabajo")
-      
+
       const data = await response.json()
       setWorkOrders(data)
     } catch (error) {
-      console.error("Error:", error)
+      
       setError("Error cargando órdenes de trabajo")
     } finally {
       setLoading(false)
@@ -68,7 +68,7 @@ export default function WorkOrdersPage() {
         setCompanies(data)
       }
     } catch (error) {
-      console.error("Error cargando empresas:", error)
+      
     }
   }
 
@@ -85,7 +85,7 @@ export default function WorkOrdersPage() {
       await loadWorkOrders()
       setShowForm(false)
     } catch (error) {
-      console.error("Error:", error)
+      
       setError("Error creando orden de trabajo")
     }
   }
@@ -104,7 +104,7 @@ export default function WorkOrdersPage() {
       setShowForm(false)
       setEditingWorkOrder(null)
     } catch (error) {
-      console.error("Error:", error)
+      
       setError("Error actualizando orden de trabajo")
     }
   }
@@ -121,7 +121,7 @@ export default function WorkOrdersPage() {
 
       await loadWorkOrders()
     } catch (error) {
-      console.error("Error:", error)
+      
       setError("Error eliminando orden de trabajo")
     }
   }
@@ -138,7 +138,7 @@ export default function WorkOrdersPage() {
       CANCELLED: { label: "Cancelado", className: "bg-red-100 text-red-800" },
       BILLED: { label: "Facturado", className: "bg-purple-100 text-purple-800" }
     }
-    
+
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.DRAFT
     return <Badge className={config.className}>{config.label}</Badge>
   }
@@ -150,7 +150,7 @@ export default function WorkOrdersPage() {
       HIGH: { label: "Alta", className: "bg-orange-100 text-orange-800" },
       URGENT: { label: "Urgente", className: "bg-red-100 text-red-800" }
     }
-    
+
     const config = priorityConfig[priority as keyof typeof priorityConfig] || priorityConfig.MEDIUM
     return <Badge className={config.className}>{config.label}</Badge>
   }
@@ -169,11 +169,11 @@ export default function WorkOrdersPage() {
   }
 
   const filteredWorkOrders = workOrders.filter(workOrder => {
-    const matchesSearch = 
+    const matchesSearch =
       workOrder.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       workOrder.workOrderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       workOrder.client?.name.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
     const matchesStatus = statusFilter === "all" || workOrder.status === statusFilter
     const matchesCompany = companyFilter === "all" || workOrder.companyId === companyFilter
 
@@ -242,7 +242,7 @@ export default function WorkOrdersPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
+            <div className="hidden lg:block">
               <label className="text-sm font-medium mb-2 block">Buscar</label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -254,7 +254,7 @@ export default function WorkOrdersPage() {
                 />
               </div>
             </div>
-            
+
             <div>
               <label className="text-sm font-medium mb-2 block">Estado</label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -290,8 +290,8 @@ export default function WorkOrdersPage() {
             </div>
 
             <div className="flex items-end">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setSearchTerm("")
                   setStatusFilter("all")
@@ -314,7 +314,7 @@ export default function WorkOrdersPage() {
               <Wrench className="h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No hay órdenes de trabajo</h3>
               <p className="text-gray-600 text-center">
-                {searchTerm || statusFilter !== "all" || companyFilter !== "all" 
+                {searchTerm || statusFilter !== "all" || companyFilter !== "all"
                   ? "No se encontraron órdenes con los filtros aplicados"
                   : "Comience creando su primera orden de trabajo"
                 }
@@ -324,22 +324,22 @@ export default function WorkOrdersPage() {
         ) : (
           filteredWorkOrders.map((workOrder) => {
             const companyColors = getCompanyColors(workOrder.company?.type || 'AMESTICA')
-            
+
             return (
               <Card key={workOrder.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
+                        <div
+                          className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: companyColors.primary }}
                         />
                         <h3 className="text-lg font-semibold">{workOrder.title}</h3>
                         {getStatusBadge(workOrder.status)}
                         {getPriorityBadge(workOrder.priority)}
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4" />
@@ -352,7 +352,7 @@ export default function WorkOrdersPage() {
                         <div className="flex items-center gap-2">
                           <Clock className="h-4 w-4" />
                           <span>
-                            {workOrder.scheduledAt 
+                            {workOrder.scheduledAt
                               ? format(new Date(workOrder.scheduledAt), 'dd/MM/yyyy HH:mm', { locale: es })
                               : 'Sin fecha'
                             }
@@ -373,7 +373,7 @@ export default function WorkOrdersPage() {
                       >
                         <Download className="h-4 w-4" />
                       </Button>
-                      
+
                       <Button
                         variant="outline"
                         size="sm"
@@ -384,7 +384,7 @@ export default function WorkOrdersPage() {
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      
+
                       <Button
                         variant="outline"
                         size="sm"

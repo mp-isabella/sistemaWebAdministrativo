@@ -1,44 +1,78 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth/next"
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+
     const session = await getServerSession(authOptions)
 
-    if (!session) {
+    if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const { status, observations, images, signature } = await request.json()
+    const requestBody = await request.json()
+
+    const { status, observations, images, signature } = requestBody
     const { id: jobId } = await params
 
+    // Validar que el estado sea válido
+    const validStatuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']
+    if (!status || !validStatuses.includes(status)) {
+
+      return NextResponse.json({ error: "Estado inválido" }, { status: 400 })
+    }
+
     // Verificar que el usuario puede actualizar este trabajo
+
     const job = await prisma.job.findUnique({
       where: { id: jobId },
-      include: { technician: true },
+      include: {
+        technician: true,
+        client: true,
+        service: true
+      },
     })
 
     if (!job) {
+
       return NextResponse.json({ error: "Trabajo no encontrado" }, { status: 404 })
     }
 
-    // Solo el técnico asignado o admin puede actualizar
-    if ((session.user as any).role !== "admin" && job.technicianId !== session.user.id) {
+    // Verificar permisos según el rol del usuario
+    const userRole = (session.user as any).role?.toLowerCase()
+
+    const canUpdate =
+      userRole === 'administrador' ||
+      userRole === 'secretaria' ||
+      (userRole === 'tecnico' && job.technicianId === (session.user as any).id)
+
+    if (!canUpdate) {
+
       return NextResponse.json({ error: "Sin permisos para actualizar este trabajo" }, { status: 403 })
     }
 
+    // Preparar datos para actualizar
+    const updateData: any = {
+      status,
+    }
+
+    // Solo actualizar completedAt si el estado cambia a COMPLETED
+    if (status === "COMPLETED" && job.status !== "COMPLETED") {
+      updateData.completedAt = new Date()
+    }
+
+    // Actualizar campos adicionales si se proporcionan
+    if (observations) updateData.observations = observations
+    if (images && images.length > 0) updateData.images = JSON.stringify(images)
+    if (signature) updateData.signature = signature
+
     // Actualizar el trabajo
+
     const updatedJob = await prisma.job.update({
       where: { id: jobId },
-      data: {
-        status,
-        ...(status === "COMPLETED" && { completedAt: new Date() }),
-        ...(observations && { description: observations }),
-        ...(images && images.length > 0 && { images }),
-        ...(signature && { signature }),
-      },
+      data: updateData,
       include: {
         service: true,
         client: true,
@@ -46,38 +80,20 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       }
     })
 
-    // Si el trabajo se completó, crear automáticamente una transacción de ingreso
-    if (status === "COMPLETED") {
-      try {
-        // Obtener el usuario que está realizando la acción
-        const user = await prisma.user.findUnique({
-          where: { email: session.user.email! }
-        })
+    // Nota: La funcionalidad de transacción automática se puede implementar
+    // cuando se agregue el modelo CashTransaction al esquema de Prisma
 
-        if (user) {
-          // Crear transacción de ingreso automática
-          await prisma.cashTransaction.create({
-            data: {
-              amount: updatedJob.service.price || 0,
-              type: 'INCOME',
-              description: `Pago por servicio: ${updatedJob.service.name} - ${updatedJob.client.name}`,
-              category: 'servicios',
-              paymentMethod: 'efectivo', // Por defecto, se puede cambiar después
-              reference: `Trabajo #${updatedJob.id}`,
-              date: new Date(),
-              createdById: user.id
-            }
-          })
-        }
-      } catch (error) {
-        console.error('Error creating automatic income transaction:', error)
-        // No fallamos la actualización del trabajo si hay error en la transacción
-      }
-    }
+    const responseMessage = `Estado actualizado a ${status === 'PENDING' ? 'Pendiente' :
+      status === 'IN_PROGRESS' ? 'En Progreso' :
+        status === 'COMPLETED' ? 'Completado' : 'Cancelado'}`
 
-    return NextResponse.json({ success: true, job: updatedJob })
+    return NextResponse.json({
+      success: true,
+      job: updatedJob,
+      message: responseMessage
+    })
   } catch (error) {
-    console.error("Error updating job status:", error)
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

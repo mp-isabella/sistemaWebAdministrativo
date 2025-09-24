@@ -1,11 +1,11 @@
 "use client"
 
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { Loader2, Shield, User } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { Shield, LogOut, User, Loader2 } from "lucide-react"
 
 interface SessionGuardProps {
   children: React.ReactNode
@@ -13,7 +13,7 @@ interface SessionGuardProps {
   requireAuth?: boolean
 }
 
-export function SessionGuard({ children, fallback, requireAuth = true }: SessionGuardProps) {
+export function SessionGuard({ children, fallback: _fallback, requireAuth = true }: SessionGuardProps) {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [isReady, setIsReady] = useState(false)
@@ -33,17 +33,22 @@ export function SessionGuard({ children, fallback, requireAuth = true }: Session
 
     // Si no hay sesión y requiere autenticación, redirigir
     if (status === "unauthenticated") {
-      console.log("🔒 Usuario no autenticado, redirigiendo a login...")
-      router.replace("/login")
-      return
+      
+      // Usar setTimeout para evitar redirecciones inmediatas
+      const timer = setTimeout(() => {
+        router.replace("/login")
+      }, 100)
+      return () => clearTimeout(timer)
     }
 
     // Si hay sesión válida, permitir acceso
     if (status === "authenticated" && session) {
-      console.log("✅ Sesión válida, permitiendo acceso")
+      
       setIsReady(true)
       return
     }
+
+    return undefined
 
     // Estado inesperado
     setError("Estado de sesión inesperado")
@@ -74,14 +79,14 @@ export function SessionGuard({ children, fallback, requireAuth = true }: Session
             </AlertDescription>
           </Alert>
           <div className="mt-4 flex gap-2">
-            <Button 
+            <Button
               onClick={() => router.push("/login")}
               className="flex-1"
             >
               <User className="mr-2 h-4 w-4" />
               Ir al Login
             </Button>
-            <Button 
+            <Button
               variant="outline"
               onClick={() => window.location.reload()}
             >

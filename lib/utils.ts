@@ -61,7 +61,7 @@ export function formatTime(date: Date | string): string {
  * Obtiene la fecha de hoy en formato YYYY-MM-DD
  */
 export function getTodayString(): string {
-  return new Date().toISOString().split('T')[0];
+  return new Date().toISOString().split('T')[0] || '';
 }
 
 /**
@@ -99,24 +99,27 @@ export function isValidEmail(email: string): boolean {
 export function isValidRUT(rut: string): boolean {
   // Limpiar RUT
   const cleanRUT = rut.replace(/[^0-9kK]/g, '');
-  
+
   if (cleanRUT.length < 8) return false;
-  
+
   const body = cleanRUT.slice(0, -1);
   const dv = cleanRUT.slice(-1).toUpperCase();
-  
+
   // Calcular dígito verificador
   let sum = 0;
   let multiplier = 2;
-  
+
   for (let i = body.length - 1; i >= 0; i--) {
-    sum += parseInt(body[i]) * multiplier;
+    const digit = body[i];
+    if (digit) {
+      sum += parseInt(digit) * multiplier;
+    }
     multiplier = multiplier === 7 ? 2 : multiplier + 1;
   }
-  
+
   const remainder = sum % 11;
   const calculatedDV = remainder === 0 ? '0' : remainder === 1 ? 'K' : (11 - remainder).toString();
-  
+
   return dv === calculatedDV;
 }
 
@@ -126,13 +129,13 @@ export function isValidRUT(rut: string): boolean {
 export function formatRUT(rut: string): string {
   const cleanRUT = rut.replace(/[^0-9kK]/g, '');
   if (cleanRUT.length < 8) return rut;
-  
+
   const body = cleanRUT.slice(0, -1);
   const dv = cleanRUT.slice(-1).toUpperCase();
-  
+
   // Agregar puntos
   const formattedBody = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  
+
   return `${formattedBody}-${dv}`;
 }
 
@@ -194,13 +197,13 @@ export function truncateText(text: string, maxLength: number): string {
  */
 export function formatBytes(bytes: number, decimals: number = 2): string {
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-  
+
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 

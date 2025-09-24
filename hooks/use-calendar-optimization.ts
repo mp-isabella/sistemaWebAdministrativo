@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
 import { RESPONSIVE_CONFIG } from '@/lib/responsive-config'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 interface UseCalendarOptimizationProps {
   professionalsCount: number
@@ -25,6 +25,7 @@ export function useCalendarOptimization({ professionalsCount }: UseCalendarOptim
       window.addEventListener('resize', handleResize)
       return () => window.removeEventListener('resize', handleResize)
     }
+    return undefined;
   }, [])
 
   // Calcular ancho dinámico de columnas de técnicos
@@ -35,14 +36,14 @@ export function useCalendarOptimization({ professionalsCount }: UseCalendarOptim
     const timeColumnWidth = isMobile ? 56 : isTablet ? 64 : 64 // 3.5rem, 4rem, 4rem (reducido de 5.5rem)
     const scrollbarWidth = 16
     const margins = 24
-    
+
     const availableWidth = windowWidth - sidebarWidth - timeColumnWidth - scrollbarWidth - margins
-    
+
     if (professionalsCount === 0) return 180
-    
+
     // Calcular ancho óptimo por técnico
     let columnWidth = availableWidth / professionalsCount
-    
+
     // Aplicar límites según el dispositivo
     if (isMobile) {
       columnWidth = Math.max(120, Math.min(160, columnWidth))
@@ -51,20 +52,16 @@ export function useCalendarOptimization({ professionalsCount }: UseCalendarOptim
     } else {
       columnWidth = Math.max(160, Math.min(280, columnWidth))
     }
-    
+
     return Math.floor(columnWidth)
   }, [windowWidth, professionalsCount, isMobile, isTablet])
 
   // Configuración de horarios optimizada - 8:00 AM a 19:00 PM
   const timeConfig = useMemo(() => {
-    const slots = Array.from({ length: 12 }, (_, i) => 
+    const slots = Array.from({ length: 12 }, (_, i) =>
       `${(i + 8).toString().padStart(2, '0')}:00`
     )
-    
-    console.log('🕐 Horarios configurados:', slots)
-    console.log('🕐 Total de slots:', slots.length)
-    console.log('🕐 Rango: 8:00 AM - 19:00 PM')
-    
+
     return {
       startHour: 8, // 8:00 AM
       endHour: 19,  // 7:00 PM
@@ -78,11 +75,16 @@ export function useCalendarOptimization({ professionalsCount }: UseCalendarOptim
   const calculateAppointmentPosition = useCallback((startTime: string, endTime: string) => {
     if (!startTime || !endTime) return null
 
-    const [startHour, startMinute] = startTime.split(":").map(Number)
-    const [endHour, endMinute] = endTime.split(":").map(Number)
+    const startParts = startTime.split(":").map(Number)
+    const endParts = endTime.split(":").map(Number)
+    const startHour = startParts[0]
+    const startMinute = startParts[1]
+    const endHour = endParts[0]
+    const endMinute = endParts[1]
 
     // Validar horas
-    if (isNaN(startHour) || isNaN(startMinute) || isNaN(endHour) || isNaN(endMinute)) {
+    if (startHour === undefined || startMinute === undefined || endHour === undefined || endMinute === undefined ||
+      isNaN(startHour) || isNaN(startMinute) || isNaN(endHour) || isNaN(endMinute)) {
       return null
     }
 
@@ -94,7 +96,7 @@ export function useCalendarOptimization({ professionalsCount }: UseCalendarOptim
     // Calcular posición
     const startSlotIndex = (startHour - timeConfig.startHour) + (startMinute / 60)
     const endSlotIndex = (endHour - timeConfig.startHour) + (endMinute / 60)
-    
+
     const top = startSlotIndex * timeConfig.slotHeight
     const height = Math.max((endSlotIndex - startSlotIndex) * timeConfig.slotHeight, 28)
 
@@ -106,7 +108,7 @@ export function useCalendarOptimization({ professionalsCount }: UseCalendarOptim
     const now = new Date()
     const hours = now.getHours()
     const minutes = now.getMinutes()
-    
+
     // Verificar rango de horas
     if (hours < timeConfig.startHour || hours > timeConfig.endHour) {
       return null

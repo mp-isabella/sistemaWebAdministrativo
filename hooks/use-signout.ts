@@ -33,8 +33,6 @@ export const useSignOut = () => {
       router.push('/login');
       
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-      
       // Fallback: limpiar localStorage y redirigir manualmente
       if (typeof window !== 'undefined') {
         localStorage.removeItem('notifications');

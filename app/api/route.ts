@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Solo admin puede ver todos los trabajadores
-    if ((session.user as any).role !== "admin") {
+    if ((session.user as any).role !== "administrador") {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
             ]
           } : {},
           role ? { roleId: role } : {},
-          status ? { status } : {}
+          status ? { isActive: status === 'active' } : {}
         ]
       },
       include: {
@@ -50,10 +50,10 @@ export async function GET(request: NextRequest) {
     // Estadísticas
     const stats = {
       total: workers.length,
-      active: workers.filter(w => w.status === "active").length,
-      inactive: workers.filter(w => w.status === "inactive").length,
+      active: workers.filter(w => w.isActive === true).length,
+      inactive: workers.filter(w => w.isActive === false).length,
       byRole: {
-        admin: workers.filter(w => w.role.name.toLowerCase() === "admin").length,
+        administrador: workers.filter(w => w.role.name.toLowerCase() === "administrador").length,
         secretaria: workers.filter(w => w.role.name.toLowerCase() === "secretaria").length,
         tecnico: workers.filter(w => w.role.name.toLowerCase() === "tecnico").length
       }
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ workers, stats })
   } catch (error) {
-    console.error("Error fetching workers:", error)
+    
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
@@ -70,7 +70,12 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session || (session.user as any).role !== "admin") {
+    if (!session) {
+      return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
+    }
+
+    const userRole = (session.user as any).role;
+    if (userRole !== "ADMINISTRADOR" && userRole !== "administrador" && userRole !== "admin") {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
@@ -93,14 +98,23 @@ export async function POST(request: NextRequest) {
     // Hash de la contraseña
     const hashedPassword = await bcrypt.hash(password, 12)
 
+    // Buscar el rol por nombre
+    const roleRecord = await prisma.role.findFirst({
+      where: { name: role }
+    })
+
+    if (!roleRecord) {
+      return NextResponse.json({ error: "Rol no encontrado" }, { status: 400 })
+    }
+
     const worker = await prisma.user.create({
       data: {
         name,
         email,
         phone,
-        role,
+        roleId: roleRecord.id,
         password: hashedPassword,
-        status: "active"
+        isActive: true
       },
       select: {
         id: true,
@@ -108,14 +122,14 @@ export async function POST(request: NextRequest) {
         email: true,
         phone: true,
         role: true,
-        status: true,
+        isActive: true,
         createdAt: true
       }
     })
 
     return NextResponse.json({ worker })
   } catch (error) {
-    console.error("Error creating worker:", error)
+    
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

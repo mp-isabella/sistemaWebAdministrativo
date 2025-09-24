@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
-import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 interface OptimizedImageProps {
   src: string;
@@ -51,7 +51,7 @@ export function OptimizedImage({
   const [isInView, setIsInView] = useState(priority); // Si es priority, considerarlo inmediatamente visible
 
   // Placeholder base64 optimizado (muy pequeño y claro)
-  const defaultBlurDataURL = blurDataURL || 
+  const defaultBlurDataURL = blurDataURL ||
     "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q==";
 
   // Intersection Observer para lazy loading inteligente
@@ -66,7 +66,7 @@ export function OptimizedImage({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsInView(true);
           observer.disconnect();
         }
@@ -206,7 +206,7 @@ export function useImagePreload(imageSources: string[], priority = false) {
     const preloadPromises = imageSources.slice(0, 3).map((src) => { // Solo las primeras 3
       return new Promise<string>((resolve) => {
         const img = new window.Image();
-        
+
         img.onload = () => {
           setLoadedImages(prev => new Set(prev).add(src));
           resolve(src);

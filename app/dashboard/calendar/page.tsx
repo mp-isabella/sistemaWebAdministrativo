@@ -12,8 +12,11 @@ export default function CalendarPage() {
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login")
-    } else if (status === "authenticated" && (session?.user as any)?.role?.toLowerCase() !== "tecnico") {
-      router.push("/dashboard")
+    } else if (status === "authenticated") {
+      const userRole = (session?.user as any)?.role?.toLowerCase();
+      if (userRole !== "tecnico") {
+        router.push("/dashboard")
+      }
     }
   }, [status, session, router])
 
@@ -28,8 +31,15 @@ export default function CalendarPage() {
     )
   }
 
-  if (status === "unauthenticated" || (status === "authenticated" && (session?.user as any)?.role?.toLowerCase() !== "tecnico")) {
+  if (status === "unauthenticated") {
     return null
+  }
+  
+  if (status === "authenticated") {
+    const userRole = (session?.user as any)?.role?.toLowerCase();
+    if (userRole !== "tecnico") {
+      return null
+    }
   }
 
   return (

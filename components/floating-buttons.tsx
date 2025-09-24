@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { FaWhatsapp, FaPhoneAlt, FaHeadset, FaTimes, FaPaperPlane } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Phone } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { FaHeadset, FaPaperPlane, FaPhoneAlt, FaTimes, FaWhatsapp } from "react-icons/fa";
 
 // Custom hook to check if component is mounted on client
 const useIsClient = () => {
   const [isClient, setIsClient] = useState(false);
-  
+
   useEffect(() => {
     setIsClient(true);
   }, []);
-  
+
   return isClient;
 };
 
@@ -20,9 +20,9 @@ export default function FloatingButtons() {
   const [showWsp, setShowWsp] = useState(false);
   const [showCall, setShowCall] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+  const [_isVisible, _setIsVisible] = useState(false);
   const isClient = useIsClient();
-  const [chatMessages, setChatMessages] = useState<Array<{type: 'user' | 'bot', message: string, timestamp: Date}>>([]);
+  const [chatMessages, setChatMessages] = useState<Array<{ type: 'user' | 'bot', message: string, timestamp: Date }>>([]);
   const [userInput, setUserInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
@@ -34,9 +34,9 @@ export default function FloatingButtons() {
   // Mostrar botones después de un delay
   useEffect(() => {
     if (!isClient) return;
-    
+
     const timer = setTimeout(() => {
-      setIsVisible(true);
+      _setIsVisible(true);
     }, 2000);
 
     return () => clearTimeout(timer);
@@ -45,119 +45,119 @@ export default function FloatingButtons() {
   // Chatbot IA profesional para Améstica Ltda
   const chatbotResponses = {
     greeting: "¡Hola! 👋 Soy el asistente virtual de Améstica Ltda., una empresa con 28 años de experiencia en detección y reparación de fugas de agua, destape de alcantarillado e inspección de tuberías. \n\nEstoy aquí para brindarte información sobre:\n• Nuestros servicios especializados\n• Cobertura y horarios\n• Agendar visitas técnicas\n• Contacto directo con nuestro equipo",
-    
+
     services: "🔧 NUESTROS SERVICIOS:\n\nDetección de Fugas de Agua:\n• Tecnología avanzada: ultrasonido, gas trazador y termografía\n• Localización precisa sin dañar estructuras\n• Reparación profesional de tuberías\n\nDestape de Alcantarillado:\n• Equipos eléctricos y varillas especializadas\n• Aire comprimido e hidrolavadoras de alta presión\n• Eliminación rápida de obstrucciones\n• Optimización del funcionamiento de instalaciones\n\nVideoinspección de Tuberías:\n• Cámaras de alta definición\n• Identificación de obstrucciones, fugas o daños\n• Diagnóstico preciso sin romper paredes\n• Planificación de reparaciones confiable",
-    
+
     coverage: "🗺️ COBERTURA Y HORARIOS:\n\nRegiones atendidas:\n• Región Metropolitana\n• Valparaíso\n• O'Higgins\n• Maule\n• Ñuble\n• Bío Bío\n\nHorarios de atención:\n• Lunes a Viernes: 8:00 - 20:00 hrs\n• Sábados: 9:00 - 19:00 hrs",
-    
+
     pricing: "💰 INFORMACIÓN DE PRECIOS:\n\nNuestros precios dependen de:\n• Tipo de servicio requerido\n• Complejidad del trabajo\n• Ubicación y extensión del área a intervenir\n\nOfrecemos:\n• Cotización gratuita y sin compromiso\n• Precios claros, competitivos y transparentes\n• Opciones adaptadas a tus necesidades",
-    
+
     contact: "📞 CONTACTO:\n\nWhatsApp y Teléfono:\n• Ñuble: +56 9 9670 6640\n• Santiago: +56 9 4200 8410\n\nEmail: amesticaltda@gmail.com\n\nHorarios de atención:\n• Lunes a Viernes: 8:00 - 20:00 hrs\n• Sábados: 9:00 - 19:00 hrs",
-    
+
     schedule: "📅 AGENDAR SERVICIO:\n\nPara coordinar tu visita técnica necesitamos:\n• Tipo de servicio (detección, destape o videoinspección)\n• Dirección exacta del servicio\n• Horario preferido (mañana o tarde)\n• Descripción del problema\n• Datos de contacto\n\nProceso:\n1. Cotización gratuita\n2. Confirmación de fecha y hora\n3. Visita técnica profesional\n4. Trabajo garantizado",
-    
+
     guarantee: "✅ GARANTÍA DE AMÉSTICA LTDA:\n\nCompromiso de calidad:\n• Trabajo garantizado por escrito\n• Materiales de primera calidad\n• Técnicos certificados y experimentados\n• Seguimiento post-servicio\n\nGarantías específicas:\n• Detección de fugas: 6 meses\n• Destape de alcantarillado: 3 meses\n• Reparaciones: 1 año\n• Videoinspección: 30 días\n\nSatisfacción garantizada o no pagas",
-    
+
     about: "🏢 SOBRE AMÉSTICA LTDA:\n\n• 28 años de experiencia en detección y reparación de fugas, destape e inspección de tuberías\n• Más de 65.000 clientes satisfechos\n• Profesionales certificados y experimentados\n• Compromiso con la eficiencia y confiabilidad\n\nMisión: Brindar servicios con eficiencia, confiabilidad y profesionalismo, utilizando tecnología avanzada y garantizando la integridad de las instalaciones de nuestros clientes.\n\nVisión: Ser reconocidos como líderes en soluciones de fugas y mantenimiento de tuberías, destacando por innovación tecnológica, calidad de servicio y compromiso con la satisfacción de nuestros clientes.",
-    
+
     testimonials: "⭐ TESTIMONIOS DE CLIENTES:\n\nMaría González, Las Condes: 'Detectaron la fuga sin romper nada y la repararon el mismo día. Muy profesionales.'\n\nAriel Lagos, Coihueco: 'Empresa seria y confiable, cumplieron con todo lo prometido.'\n\nAna Martínez, Rancagua: 'Detectaron una fuga que llevaba meses sin encontrar en solo 2 horas. Excelente tecnología.'\n\nJosefina Lagos, Coihueco: 'Servicio 100% recomendable, resolvieron una fuga que otras empresas no pudieron.'",
-    
+
     faq: "❓ PREGUNTAS FRECUENTES:\n\n¿Cómo detectar una fuga de agua?\n• Aumento inesperado en la cuenta del agua\n• Manchas o humedad en muros, techos o pisos\n• Ruidos de agua corriendo con llaves cerradas\n• Baja presión de agua\n\n¿Qué hacer si sospecho una fuga?\nCierra la llave de paso y contacta a nuestros especialistas para una detección profesional.\n\n¿Siempre es necesario romper muros o pisos?\nNo. Usamos tecnologías no invasivas que permiten localizar la fuga con precisión y minimizar daños.",
-    
+
     default: "Gracias por tu consulta. Nuestro equipo especializado está listo para brindarte atención profesional y personalizada en detección y reparación de fugas, destape de alcantarillado e inspección de tuberías."
   };
 
   const getBotResponse = (userMessage: string): string => {
     const message = userMessage.toLowerCase();
-    
+
     // Saludos y bienvenida
-    if (message.includes('hola') || message.includes('buenos') || message.includes('buenas') || 
-        message.includes('buen día') || message.includes('buenas tardes') || message.includes('buenas noches') ||
-        message.includes('saludos') || message.includes('hi') || message.includes('hello')) {
+    if (message.includes('hola') || message.includes('buenos') || message.includes('buenas') ||
+      message.includes('buen día') || message.includes('buenas tardes') || message.includes('buenas noches') ||
+      message.includes('saludos') || message.includes('hi') || message.includes('hello')) {
       return chatbotResponses.greeting;
     }
-    
+
     // Servicios específicos
     if (message.includes('servicio') || message.includes('que hacen') || message.includes('ofrecen') ||
-        message.includes('detectan') || message.includes('destapan') || message.includes('videoinspección') ||
-        message.includes('fuga') || message.includes('alcantarillado') || message.includes('tubería') ||
-        message.includes('cañería') || message.includes('plomería') || message.includes('fontanería') ||
-        message.includes('destape') || message.includes('detección') || message.includes('reparación')) {
+      message.includes('detectan') || message.includes('destapan') || message.includes('videoinspección') ||
+      message.includes('fuga') || message.includes('alcantarillado') || message.includes('tubería') ||
+      message.includes('cañería') || message.includes('plomería') || message.includes('fontanería') ||
+      message.includes('destape') || message.includes('detección') || message.includes('reparación')) {
       return chatbotResponses.services;
     }
-    
+
     // Cobertura y ubicación
     if (message.includes('cobertura') || message.includes('región') || message.includes('zona') ||
-        message.includes('donde') || message.includes('ubicación') || message.includes('atendemos') ||
-        message.includes('valparaíso') || message.includes('ohiggins') || message.includes('maule') ||
-        message.includes('ñuble') || message.includes('bío bío') || message.includes('metropolitana') ||
-        message.includes('santiago') || message.includes('rancagua') || message.includes('talca')) {
+      message.includes('donde') || message.includes('ubicación') || message.includes('atendemos') ||
+      message.includes('valparaíso') || message.includes('ohiggins') || message.includes('maule') ||
+      message.includes('ñuble') || message.includes('bío bío') || message.includes('metropolitana') ||
+      message.includes('santiago') || message.includes('rancagua') || message.includes('talca')) {
       return chatbotResponses.coverage;
     }
-    
+
     // Precios y costos
     if (message.includes('precio') || message.includes('costo') || message.includes('cuanto') ||
-        message.includes('valor') || message.includes('tarifa') || message.includes('cotización') ||
-        message.includes('presupuesto') || message.includes('pagar') || message.includes('dinero') ||
-        message.includes('cuesta') || message.includes('vale')) {
+      message.includes('valor') || message.includes('tarifa') || message.includes('cotización') ||
+      message.includes('presupuesto') || message.includes('pagar') || message.includes('dinero') ||
+      message.includes('cuesta') || message.includes('vale')) {
       return chatbotResponses.pricing;
     }
-    
+
     // Contacto
     if (message.includes('contacto') || message.includes('llamar') || message.includes('whatsapp') ||
-        message.includes('teléfono') || message.includes('número') || message.includes('comunicar') ||
-        message.includes('hablar') || message.includes('especialista') || message.includes('técnico') ||
-        message.includes('email') || message.includes('correo') || message.includes('dirección')) {
+      message.includes('teléfono') || message.includes('número') || message.includes('comunicar') ||
+      message.includes('hablar') || message.includes('especialista') || message.includes('técnico') ||
+      message.includes('email') || message.includes('correo') || message.includes('dirección')) {
       return chatbotResponses.contact;
     }
-    
+
     // Agendar y programar
     if (message.includes('agendar') || message.includes('cita') || message.includes('programar') ||
-        message.includes('visita') || message.includes('ir') || message.includes('llegar') ||
-        message.includes('fecha') || message.includes('hora') || message.includes('día') ||
-        message.includes('reservar') || message.includes('solicitar') || message.includes('pedir')) {
+      message.includes('visita') || message.includes('ir') || message.includes('llegar') ||
+      message.includes('fecha') || message.includes('hora') || message.includes('día') ||
+      message.includes('reservar') || message.includes('solicitar') || message.includes('pedir')) {
       return chatbotResponses.schedule;
     }
-    
+
     // Testimonios y referencias
     if (message.includes('testimonio') || message.includes('cliente') || message.includes('referencia') ||
-        message.includes('opinión') || message.includes('experiencia') || message.includes('recomendación') ||
-        message.includes('satisfecho') || message.includes('feliz')) {
+      message.includes('opinión') || message.includes('experiencia') || message.includes('recomendación') ||
+      message.includes('satisfecho') || message.includes('feliz')) {
       return chatbotResponses.testimonials;
     }
-    
+
     // Preguntas frecuentes
     if (message.includes('pregunta') || message.includes('duda') || message.includes('como saber') ||
-        message.includes('que hacer') || message.includes('ayuda') || message.includes('problema') ||
-        message.includes('roto') || message.includes('daño') || message.includes('malo') ||
-        message.includes('no funciona') || message.includes('tapado') || message.includes('humedad') ||
-        message.includes('mancha') || message.includes('ruido')) {
+      message.includes('que hacer') || message.includes('ayuda') || message.includes('problema') ||
+      message.includes('roto') || message.includes('daño') || message.includes('malo') ||
+      message.includes('no funciona') || message.includes('tapado') || message.includes('humedad') ||
+      message.includes('mancha') || message.includes('ruido')) {
       return chatbotResponses.faq;
     }
-    
+
     // Garantías
     if (message.includes('garantía') || message.includes('garantizado') || message.includes('seguro') ||
-        message.includes('confianza') || message.includes('calidad') || message.includes('certificado') ||
-        message.includes('experiencia') || message.includes('años') || message.includes('confiable')) {
+      message.includes('confianza') || message.includes('calidad') || message.includes('certificado') ||
+      message.includes('experiencia') || message.includes('años') || message.includes('confiable')) {
       return chatbotResponses.guarantee;
     }
-    
+
     // Sobre la empresa
     if (message.includes('empresa') || message.includes('améstica') || message.includes('quienes') ||
-        message.includes('somos') || message.includes('experiencia') || message.includes('historia') ||
-        message.includes('certificación') || message.includes('registro') || message.includes('sii') ||
-        message.includes('misión') || message.includes('visión') || message.includes('valores')) {
+      message.includes('somos') || message.includes('experiencia') || message.includes('historia') ||
+      message.includes('certificación') || message.includes('registro') || message.includes('sii') ||
+      message.includes('misión') || message.includes('visión') || message.includes('valores')) {
       return chatbotResponses.about;
     }
-    
+
     // Horarios
     if (message.includes('hora') || message.includes('horario') || message.includes('cuando') ||
-        message.includes('día') || message.includes('lunes') || message.includes('viernes') ||
-        message.includes('sábado') || message.includes('domingo') || message.includes('fin de semana') ||
-        message.includes('atendemos') || message.includes('disponible')) {
+      message.includes('día') || message.includes('lunes') || message.includes('viernes') ||
+      message.includes('sábado') || message.includes('domingo') || message.includes('fin de semana') ||
+      message.includes('atendemos') || message.includes('disponible')) {
       return chatbotResponses.coverage;
     }
-    
+
     // Respuesta por defecto
     return chatbotResponses.default;
   };
@@ -167,7 +167,7 @@ export default function FloatingButtons() {
 
     const userMessage = userInput.trim();
     setUserInput('');
-    
+
     // Agregar mensaje del usuario
     const newUserMessage = {
       type: 'user' as const,
@@ -178,7 +178,7 @@ export default function FloatingButtons() {
 
     // Simular typing
     setIsTyping(true);
-    
+
     // Simular respuesta del bot con delay
     setTimeout(() => {
       const botResponse = getBotResponse(userMessage);
@@ -196,7 +196,7 @@ export default function FloatingButtons() {
     setIsChatOpen(!isChatOpen);
     setShowCall(false);
     setShowWsp(false);
-    
+
     // Inicializar chat con mensaje de bienvenida profesional si es la primera vez
     if (!isChatOpen && chatMessages.length === 0) {
       setTimeout(() => {
@@ -237,7 +237,7 @@ export default function FloatingButtons() {
   // Cierra ventanas al hacer clic fuera
   useEffect(() => {
     if (!isClient) return;
-    
+
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
       if (showWsp && wspRef.current && !wspRef.current.contains(target)) {
@@ -263,7 +263,7 @@ export default function FloatingButtons() {
   return (
     <>
       {/* Botones flotantes */}
-      <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-3 sm:gap-4">
+      <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-3 sm:gap-4" style={{ maxWidth: '100vw', right: '1rem' }}>
         {/* WhatsApp */}
         <button
           type="button"
@@ -309,6 +309,7 @@ export default function FloatingButtons() {
             exit={{ opacity: 0, x: 30 }}
             transition={{ duration: 0.25 }}
             className="fixed bottom-32 right-4 sm:bottom-24 sm:right-28 bg-white rounded-3xl shadow-2xl p-4 sm:p-8 w-72 sm:w-80 max-w-[90vw] text-gray-900 z-50 flex flex-col"
+            style={{ maxWidth: 'calc(100vw - 2rem)', right: '1rem' }}
           >
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-semibold">Contáctanos por WhatsApp</h3>
@@ -355,6 +356,7 @@ export default function FloatingButtons() {
             exit={{ opacity: 0, x: 30 }}
             transition={{ duration: 0.25 }}
             className="fixed bottom-32 right-4 sm:bottom-24 sm:right-28 bg-white rounded-3xl shadow-2xl p-4 sm:p-8 w-72 sm:w-80 max-w-[90vw] text-gray-900 z-50 flex flex-col"
+            style={{ maxWidth: 'calc(100vw - 2rem)', right: '1rem' }}
           >
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-semibold">Números para llamar</h3>
@@ -386,7 +388,7 @@ export default function FloatingButtons() {
         )}
       </AnimatePresence>
 
-      
+
 
       {/* Chatbot IA */}
       <AnimatePresence>
@@ -399,6 +401,7 @@ export default function FloatingButtons() {
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ duration: 0.3 }}
             className="fixed bottom-32 right-4 sm:bottom-24 sm:right-24 w-[calc(100vw-2rem)] sm:w-96 h-[calc(100vh-6rem)] sm:h-[500px] max-h-[600px] bg-white rounded-3xl shadow-2xl z-50 flex flex-col overflow-hidden"
+            style={{ maxWidth: 'calc(100vw - 2rem)', right: '1rem' }}
           >
             {/* Header del chat */}
             <div className="bg-gradient-to-r from-orange-600 via-orange-700 to-orange-800 text-white p-4 sm:p-6 rounded-t-3xl flex items-center justify-between shadow-lg">
@@ -427,11 +430,10 @@ export default function FloatingButtons() {
                   className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[85%] p-3 sm:p-4 rounded-2xl shadow-sm ${
-                      msg.type === 'user'
-                        ? 'bg-gradient-to-r from-orange-600 to-orange-700 text-white'
-                        : 'bg-white text-gray-800 border border-gray-200'
-                    }`}
+                    className={`max-w-[85%] p-3 sm:p-4 rounded-2xl shadow-sm ${msg.type === 'user'
+                      ? 'bg-gradient-to-r from-orange-600 to-orange-700 text-white'
+                      : 'bg-white text-gray-800 border border-gray-200'
+                      }`}
                   >
                     <p className="text-xs sm:text-sm whitespace-pre-line leading-relaxed font-medium">{msg.message}</p>
                     <p className={`text-xs mt-1 sm:mt-2 ${msg.type === 'user' ? 'opacity-70' : 'text-gray-500'}`}>
@@ -440,7 +442,7 @@ export default function FloatingButtons() {
                   </div>
                 </div>
               ))}
-              
+
               {isTyping && (
                 <div className="flex justify-start">
                   <div className="bg-white text-gray-800 p-4 rounded-2xl border border-gray-200 shadow-sm">

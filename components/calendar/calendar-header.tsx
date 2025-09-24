@@ -1,9 +1,9 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react"
 
 interface CalendarHeaderProps {
   selectedDate: Date
@@ -13,12 +13,12 @@ interface CalendarHeaderProps {
   onRefresh?: () => void
 }
 
-export function CalendarHeader({ 
-  selectedDate, 
-  onDateChange, 
-  selectedCenter, 
-  userRole,
-  onRefresh 
+export function CalendarHeader({
+  selectedDate,
+  onDateChange,
+  selectedCenter: _selectedCenter,
+  userRole: _userRole,
+  onRefresh
 }: CalendarHeaderProps) {
   const goToPreviousDay = () => {
     const newDate = new Date(selectedDate)
@@ -39,19 +39,19 @@ export function CalendarHeader({
         <div className="flex items-center gap-10">
           {/* Navegación de días */}
           <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={goToPreviousDay} 
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goToPreviousDay}
               aria-label="Día anterior"
               className="h-10 w-10 p-0 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ChevronLeft className="h-5 w-5" />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={goToNextDay} 
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goToNextDay}
               aria-label="Día siguiente"
               className="h-10 w-10 p-0 hover:bg-gray-100 rounded-lg transition-colors"
             >

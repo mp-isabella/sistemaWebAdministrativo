@@ -1,80 +1,106 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from "next-auth/next"
 import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from 'next/server'
+// import { generatePDF } from '@/lib/pdf-generator'
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions as any)
-    
+    const session = await getServerSession(authOptions)
+
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    // Solo admin y secretaria pueden descargar reportes
-    const userRole = (session as any).user?.role?.toLowerCase()
+    const { id } = await params
+
+    // Obtener el reporte
+    const report = await (prisma as any).report.findUnique({
+      where: { id },
+      include: {
+        company: true,
+        createdBy: true,
+        metrics: true
+      }
+    })
+
+    if (!report) {
+      return NextResponse.json({ error: 'Reporte no encontrado' }, { status: 404 })
+    }
+
+    // Verificar permisos
+    const userRole = (session.user as any).role?.toLowerCase()
     if (userRole === 'tecnico') {
       return NextResponse.json({ error: 'Sin permisos para descargar reportes' }, { status: 403 })
     }
 
-    const reportId = params.id
+    // Si el reporte ya tiene un PDF generado, devolverlo
+    if (report.filePath && report.status === 'COMPLETED') {
+      // Incrementar contador de descargas
+      await (prisma as any).report.update({
+        where: { id },
+        data: { downloadCount: { increment: 1 } }
+      })
 
-    if (!reportId) {
-      return NextResponse.json({ error: 'ID de reporte requerido' }, { status: 400 })
+      // Devolver el archivo existente
+      return new NextResponse(null, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="${report.title}.pdf"`
+        }
+      })
     }
 
-    // Por ahora, generar un PDF simulado
-    // En una implementación real, obtendrías el reporte de la base de datos
-    // y generarías el PDF real
+    // Generar PDF si no existe
+    if (report.status !== 'COMPLETED' || !report.data) {
+      return NextResponse.json({ error: 'Reporte no está listo para descarga' }, { status: 400 })
+    }
 
-    // Simular contenido del reporte
-    const reportContent = `
-      <html>
-        <head>
-          <title>Reporte ${reportId}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 40px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            .content { margin-bottom: 20px; }
-            .footer { text-align: center; margin-top: 40px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>Reporte del Sistema</h1>
-            <p>Generado el: ${new Date().toLocaleDateString('es-CL')}</p>
-          </div>
-          <div class="content">
-            <h2>Información del Reporte</h2>
-            <p><strong>ID:</strong> ${reportId}</p>
-            <p><strong>Generado por:</strong> ${(session as any).user?.name || 'Sistema'}</p>
-            <p><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-CL')}</p>
-            <p><strong>Hora:</strong> ${new Date().toLocaleTimeString('es-CL')}</p>
-          </div>
-          <div class="footer">
-            <p>Este es un reporte generado por el Sistema Web Administrativo de Améstica</p>
-          </div>
-        </body>
-      </html>
-    `
+    JSON.parse(report.data)
 
-    // Convertir HTML a PDF (simulado)
-    // En una implementación real, usarías una librería como puppeteer o jsPDF
-    const pdfBuffer = Buffer.from(reportContent, 'utf-8')
+    // Generar PDF con el estilo de la empresa
+    // const pdfBuffer = await generatePDF({
+    //   report,
+    //   data: reportData,
+    //   company: report.company
+    // })
 
-    // Devolver como descarga
+    // Por ahora, crear un PDF simple
+    const pdfBuffer = Buffer.from('PDF placeholder - implementar generación real')
+
+    // Guardar el PDF
+    const fileName = `${report.title}_${report.year}_${report.month || 'anual'}.pdf`
+    const filePath = `/reports/${fileName}`
+
+    // En un entorno real, aquí guardarías el archivo en el sistema de archivos o S3
+    // Por ahora, solo actualizamos la base de datos
+    await (prisma as any).report.update({
+      where: { id },
+      data: {
+        filePath,
+        fileSize: pdfBuffer.length,
+        downloadCount: { increment: 1 }
+      }
+    })
+
     return new NextResponse(pdfBuffer, {
+      status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="reporte-${reportId}.pdf"`,
+        'Content-Disposition': `attachment; filename="${fileName}"`,
         'Content-Length': pdfBuffer.length.toString()
       }
     })
 
   } catch (error) {
-    console.error('Error downloading report:', error)
-    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
+
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    )
   }
 }

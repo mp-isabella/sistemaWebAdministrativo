@@ -117,7 +117,7 @@ export const performanceUtils = {
     options: IntersectionObserverInit = {}
   ) => {
     if (typeof window === 'undefined') return null;
-    
+
     const defaultOptions: IntersectionObserverInit = {
       threshold: PERFORMANCE_CONFIG.LOADING.INTERSECTION_THRESHOLD,
       rootMargin: '50px',
@@ -151,14 +151,14 @@ export const performanceUtils = {
 
 // Hooks de optimización
 export const usePerformanceOptimizations = () => {
-  const memoizeValue = <T>(value: T, deps: any[]): T => {
+  const memoizeValue = <T>(value: T, _deps: any[]): T => {
     // Implementación simple de memoización
     return value;
   };
 
   const memoizeCallback = <T extends (...args: any[]) => any>(
     callback: T,
-    deps: any[]
+    _deps: any[]
   ): T => {
     // Implementación simple de memoización de callbacks
     return callback;

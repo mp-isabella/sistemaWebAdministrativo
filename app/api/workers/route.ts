@@ -1,11 +1,12 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
   try {
+
     const session = await getServerSession(authOptions)
 
     if (!session) {
@@ -13,7 +14,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Admin, secretaria y técnicos pueden ver trabajadores
-    if (!["admin", "secretaria", "tecnico"].includes((session.user as any).role.toLowerCase())) {
+    const userRole = (session.user as any).role?.toLowerCase()
+
+    if (!["administrador", "admin", "secretaria", "tecnico"].includes(userRole)) {
+
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
@@ -55,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ workers: workersWithStats })
   } catch (error) {
-    console.error("Error fetching workers:", error)
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
@@ -68,14 +72,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    // Solo admin puede crear trabajadores
-    if ((session.user as any).role !== "admin") {
+    // Solo administrador puede crear trabajadores
+    const userRole = (session.user as any).role;
+    if (userRole !== "ADMINISTRADOR" && userRole !== "administrador" && userRole !== "admin") {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
     const { name, email, phone, password, role, status } = await request.json()
-
-    console.log('📥 Datos recibidos:', { name, email, phone, role, status })
 
     // Verificar que el email no exista
     const existingUser = await prisma.user.findUnique({
@@ -112,11 +115,9 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    console.log('✅ Trabajador creado:', newWorker.id)
-
     return NextResponse.json(newWorker, { status: 201 })
   } catch (error) {
-    console.error("Error creating worker:", error)
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
@@ -130,13 +131,12 @@ export async function PUT(request: NextRequest) {
     }
 
     // Solo admin puede actualizar trabajadores
-    if ((session.user as any).role !== "admin") {
+    const userRole = (session.user as any).role;
+    if (userRole !== "ADMINISTRADOR" && userRole !== "administrador" && userRole !== "admin") {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
     const { id, name, email, phone, password, role, status } = await request.json()
-
-    console.log('📥 Datos de actualización:', { id, name, email, phone, role, status })
 
     // Verificar que el trabajador existe
     const existingUser = await prisma.user.findUnique({
@@ -188,11 +188,9 @@ export async function PUT(request: NextRequest) {
       }
     })
 
-    console.log('✅ Trabajador actualizado:', updatedWorker.id)
-
     return NextResponse.json(updatedWorker)
   } catch (error) {
-    console.error("Error updating worker:", error)
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

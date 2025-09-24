@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const search = searchParams.get("search")
     const status = searchParams.get("status")
-    const type = searchParams.get("type")
 
     const where: any = {}
 
@@ -24,6 +23,10 @@ export async function GET(request: NextRequest) {
         { email: { contains: search, mode: "insensitive" } },
         { phone: { contains: search } }
       ]
+    }
+
+    if (status) {
+      where.status = status
     }
 
     const clients = await prisma.client.findMany({
@@ -38,18 +41,9 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" }
     })
 
-    const clientsWithStats = clients.map(client => ({
-      ...client,
-      totalServices: client.jobs.length,
-      totalSpent: client.jobs.reduce((sum, job) => sum + (job.service.price || 0), 0),
-      lastService: client.jobs.length > 0 ? client.jobs[0].createdAt : null,
-      status: "active", // Por ahora todos activos
-      type: client.address?.includes("Empresa") || client.address?.includes("Condominio") ? "commercial" : "residential"
-    }))
-
-    return NextResponse.json(clientsWithStats)
+    return NextResponse.json(clients)
   } catch (error) {
-    console.error("Error fetching clients:", error)
+    
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
@@ -63,24 +57,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Admin y secretaria pueden crear clientes
-    if (!["admin", "secretaria"].includes((session.user as any).role)) {
+    const userRole = (session.user as any).role;
+    if (!["ADMINISTRADOR", "admin", "administrador", "SECRETARIA", "secretaria"].includes(userRole)) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
-    const { 
-      name, 
-      email, 
-      phone, 
-      address, 
-      rut, 
-      company, 
-      region, 
-      commune, 
-      assignedTechnicianId,
-      // Campos de horario
-      preferredTimeStart,
-      preferredTimeEnd,
-      preferredDays
+    const {
+      name,
+      email,
+      phone,
+      address,
+      company,
+      region,
+      commune,
+      status,
+      rut
     } = await request.json()
 
     if (!session.user.id) {
@@ -93,21 +84,17 @@ export async function POST(request: NextRequest) {
         email,
         phone,
         address,
-        rut,
         company,
         region,
         commune,
-        // Campos de horario
-        preferredTimeStart,
-        preferredTimeEnd,
-        preferredDays,
-        createdById: session.user.id
+        status: status || "active",
+        rut
       }
     })
 
     return NextResponse.json(newClient, { status: 201 })
   } catch (error) {
-    console.error("Error creating client:", error)
+    
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

@@ -1,45 +1,43 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Textarea } from "@/components/ui/textarea"
+import { useCallback, useEffect, useState } from "react"
 
-import { 
-  X, 
-  DollarSign, 
-  TrendingUp, 
-  TrendingDown, 
-  Calendar,
-  FileText,
-  CreditCard,
-  Wallet,
-  Building,
-  Wrench,
-  Fuel,
-  Users,
-  Zap,
-  Home,
-  Shield,
-  Megaphone,
-  GraduationCap,
-  Plus,
+import {
   AlertCircle,
+  Building,
+  Calendar,
   CheckCircle,
-  Clock,
-  Tag
+  CreditCard,
+  DollarSign,
+  FileText,
+  Fuel,
+  GraduationCap,
+  Home,
+  Megaphone,
+  Plus,
+  Shield,
+  Tag,
+  TrendingDown,
+  TrendingUp,
+  Users,
+  Wallet,
+  Wrench,
+  X,
+  Zap
 } from 'lucide-react'
 
 interface CashTransactionFormProps {
   type: 'income' | 'expense'
   onSubmit: (data: any) => void
   onCancel: () => void
-  initialData?: any
 }
 
 interface FormData {
@@ -69,11 +67,10 @@ interface TouchedFields {
   date: boolean
 }
 
-export default function CashTransactionForm({ 
-  type, 
-  onSubmit, 
-  onCancel, 
-  initialData 
+export default function CashTransactionForm({
+  type,
+  onSubmit,
+  onCancel
 }: CashTransactionFormProps) {
   const [formData, setFormData] = useState<FormData>({
     amount: '',
@@ -81,7 +78,7 @@ export default function CashTransactionForm({
     category: '',
     paymentMethod: '',
     reference: '',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0] || '',
     notes: '',
     attachments: []
   })
@@ -133,37 +130,37 @@ export default function CashTransactionForm({
 
   const categories = type === 'income' ? incomeCategories : expenseCategories
 
-  useEffect(() => {
-    validateForm()
-  }, [formData])
-
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const newErrors: ValidationErrors = {}
-    
+
     const numericAmount = parseFloat(formData.amount.replace(/[^\d]/g, ''))
     if (!formData.amount || numericAmount <= 0) {
       newErrors.amount = 'El monto debe ser mayor a 0'
     }
-    
+
     if (!formData.description.trim()) {
       newErrors.description = 'La descripción es requerida'
     }
-    
+
     if (!formData.category) {
       newErrors.category = 'Selecciona una categoría'
     }
-    
+
     if (!formData.paymentMethod) {
       newErrors.paymentMethod = 'Selecciona un método de pago'
     }
-    
+
     if (!formData.date) {
       newErrors.date = 'La fecha es requerida'
     }
-    
+
     setErrors(newErrors)
     setIsValid(Object.keys(newErrors).length === 0)
-  }
+  }, [formData])
+
+  useEffect(() => {
+    validateForm()
+  }, [formData, validateForm])
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     if (field === 'amount') {
@@ -205,17 +202,9 @@ export default function CashTransactionForm({
     }).format(numericValue)
   }
 
-  // Función para parsear monto de CLP a número
-  const parseAmount = (value: string) => {
-    if (!value) return ''
-    const numericValue = parseFloat(value.replace(/[^\d]/g, ''))
-    if (isNaN(numericValue)) return ''
-    return numericValue.toString()
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Marcar todos los campos como tocados al intentar enviar
     setTouched({
       amount: true,
@@ -224,9 +213,9 @@ export default function CashTransactionForm({
       paymentMethod: true,
       date: true
     })
-    
+
     if (!isValid) return
-    
+
     setLoading(true)
     try {
       await onSubmit({
@@ -234,7 +223,7 @@ export default function CashTransactionForm({
         amount: parseFloat(formData.amount.replace(/[^\d]/g, ''))
       })
     } catch (error) {
-      console.error('Error submitting form:', error)
+      
     } finally {
       setLoading(false)
     }
@@ -249,296 +238,338 @@ export default function CashTransactionForm({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border-0">
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-lg">
-                {type === 'income' ? (
-                  <TrendingUp className="h-6 w-6" />
-                ) : (
-                  <TrendingDown className="h-6 w-6" />
-                )}
+    <div className="fixed inset-0 bg-transparent flex items-center justify-center p-2 sm:p-4 z-50">
+      <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
+        <Card className="border-0 shadow-soft">
+          <CardHeader className="bg-gradient-to-r from-[#002D71] to-[#1e40af] text-white rounded-t-xl sm:rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white/20 rounded-xl">
+                  {type === 'income' ? (
+                    <TrendingUp className="h-7 w-7" />
+                  ) : (
+                    <TrendingDown className="h-7 w-7" />
+                  )}
+                </div>
+                <div>
+                  <CardTitle className="text-2xl font-bold text-white">
+                    Registrar {type === 'income' ? 'Ingreso' : 'Gasto'}
+                  </CardTitle>
+                  <p className="text-blue-100 text-sm mt-1">
+                    Completa los detalles del movimiento financiero
+                  </p>
+                </div>
               </div>
-              <div>
-                <CardTitle className="text-xl">
-                  Registrar {type === 'income' ? 'Ingreso' : 'Gasto'}
-                </CardTitle>
-                <p className="text-blue-100 text-sm">
-                  Completa los detalles del movimiento financiero
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onCancel}
-              className="text-white hover:bg-white/20"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="p-6 space-y-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Monto */}
-            <div className="space-y-2">
-              <Label htmlFor="amount" className="text-sm font-semibold flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-green-600" />
-                Monto
-              </Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-semibold">
-                  $
-                </span>
-                <Input
-                  id="amount"
-                  type="text"
-                  placeholder="0"
-                  value={formData.amount ? formatAmount(formData.amount) : ''}
-                  onChange={(e) => handleInputChange('amount', e.target.value)}
-                  onBlur={() => handleFieldBlur('amount')}
-                  className={`h-12 pl-8 text-lg font-semibold ${
-                    shouldShowError('amount') ? 'border-red-500 focus:border-red-500' : ''
-                  }`}
-                />
-              </div>
-              {shouldShowError('amount') && (
-                <p className="text-red-500 text-sm flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.amount}
-                </p>
-              )}
-            </div>
-
-            {/* Categoría */}
-            <div className="space-y-2">
-              <Label htmlFor="category" className="text-sm font-semibold flex items-center gap-2">
-                <Tag className="h-4 w-4 text-blue-600" />
-                Categoría
-              </Label>
-              <Select 
-                value={formData.category} 
-                onValueChange={(value) => {
-                  handleInputChange('category', value)
-                  handleFieldBlur('category')
-                }}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onCancel}
+                className="text-white hover:bg-white/20 rounded-full p-2"
               >
-                <SelectTrigger className={`h-12 ${shouldShowError('category') ? 'border-red-500 focus:border-red-500' : ''}`}>
-                  <SelectValue placeholder="Seleccionar categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => {
-                    const IconComponent = category.icon
-                    return (
-                      <SelectItem key={category.value} value={category.value}>
-                        <div className="flex items-center gap-2">
-                          <IconComponent className="h-4 w-4" />
-                          <span>{category.label}</span>
-                        </div>
-                      </SelectItem>
-                    )
-                  })}
-                </SelectContent>
-              </Select>
-              {shouldShowError('category') && (
-                <p className="text-red-500 text-sm flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.category}
-                </p>
-              )}
+                <X className="h-6 w-6" />
+              </Button>
             </div>
+          </CardHeader>
 
-            {/* Método de Pago */}
-            <div className="space-y-2">
-              <Label htmlFor="paymentMethod" className="text-sm font-semibold flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-purple-600" />
-                Método de Pago
-              </Label>
-              <Select 
-                value={formData.paymentMethod} 
-                onValueChange={(value) => {
-                  handleInputChange('paymentMethod', value)
-                  handleFieldBlur('paymentMethod')
-                }}
-              >
-                <SelectTrigger className={`h-12 ${shouldShowError('paymentMethod') ? 'border-red-500 focus:border-red-500' : ''}`}>
-                  <SelectValue placeholder="Seleccionar método" />
-                </SelectTrigger>
-                <SelectContent>
-                  {paymentMethods.map((method) => {
-                    const IconComponent = method.icon
-                    return (
-                      <SelectItem key={method.value} value={method.value}>
-                        <div className="flex items-center gap-2">
-                          <IconComponent className="h-4 w-4" />
-                          <span>{method.label}</span>
-                        </div>
-                      </SelectItem>
-                    )
-                  })}
-                </SelectContent>
-              </Select>
-              {shouldShowError('paymentMethod') && (
-                <p className="text-red-500 text-sm flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.paymentMethod}
-                </p>
-              )}
-            </div>
+          <CardContent className="p-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Sección Principal - Monto y Categoría */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Monto */}
+                <div className="space-y-2">
+                  <Label htmlFor="amount" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-green-600" />
+                    Monto *
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-semibold text-lg">
+                      $
+                    </span>
+                    <Input
+                      id="amount"
+                      type="text"
+                      placeholder="0"
+                      value={formData.amount ? formatAmount(formData.amount) : ''}
+                      onChange={(e) => handleInputChange('amount', e.target.value)}
+                      onBlur={() => handleFieldBlur('amount')}
+                      className={`h-12 pl-10 text-lg font-semibold border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 ${shouldShowError('amount')
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
+                        : ''
+                        }`}
+                    />
+                  </div>
+                  {shouldShowError('amount') && (
+                    <p className="text-red-500 text-sm flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.amount}
+                    </p>
+                  )}
+                </div>
 
-            {/* Descripción */}
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-semibold flex items-center gap-2">
-                <FileText className="h-4 w-4 text-orange-600" />
-                Descripción
-              </Label>
-              <Textarea
-                id="description"
-                placeholder="Describe detalladamente el motivo del movimiento..."
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                onBlur={() => handleFieldBlur('description')}
-                rows={3}
-                className={shouldShowError('description') ? 'border-red-500 focus:border-red-500' : ''}
-              />
-              {shouldShowError('description') && (
-                <p className="text-red-500 text-sm flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.description}
-                </p>
-              )}
-            </div>
+                {/* Categoría */}
+                <div className="space-y-2">
+                  <Label htmlFor="category" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <Tag className="h-4 w-4 text-blue-600" />
+                    Categoría *
+                  </Label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) => {
+                      handleInputChange('category', value)
+                      handleFieldBlur('category')
+                    }}
+                  >
+                    <SelectTrigger className={`h-12 border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 ${shouldShowError('category')
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
+                      : ''
+                      }`}>
+                      <SelectValue placeholder="Seleccionar categoría" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {categories.map((category) => {
+                        const IconComponent = category.icon
+                        return (
+                          <SelectItem key={category.value} value={category.value} className="py-3">
+                            <div className="flex items-center gap-3">
+                              <IconComponent className="h-4 w-4" />
+                              <span className="font-medium">{category.label}</span>
+                            </div>
+                          </SelectItem>
+                        )
+                      })}
+                    </SelectContent>
+                  </Select>
+                  {shouldShowError('category') && (
+                    <p className="text-red-500 text-sm flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.category}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-            {/* Fecha y Referencia */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Método de Pago y Fecha */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Método de Pago */}
+                <div className="space-y-2">
+                  <Label htmlFor="paymentMethod" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 text-purple-600" />
+                    Método de Pago *
+                  </Label>
+                  <Select
+                    value={formData.paymentMethod}
+                    onValueChange={(value) => {
+                      handleInputChange('paymentMethod', value)
+                      handleFieldBlur('paymentMethod')
+                    }}
+                  >
+                    <SelectTrigger className={`h-12 border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 ${shouldShowError('paymentMethod')
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
+                      : ''
+                      }`}>
+                      <SelectValue placeholder="Seleccionar método" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paymentMethods.map((method) => {
+                        const IconComponent = method.icon
+                        return (
+                          <SelectItem key={method.value} value={method.value} className="py-3">
+                            <div className="flex items-center gap-3">
+                              <IconComponent className="h-4 w-4" />
+                              <span className="font-medium">{method.label}</span>
+                            </div>
+                          </SelectItem>
+                        )
+                      })}
+                    </SelectContent>
+                  </Select>
+                  {shouldShowError('paymentMethod') && (
+                    <p className="text-red-500 text-sm flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.paymentMethod}
+                    </p>
+                  )}
+                </div>
+
+                {/* Fecha */}
+                <div className="space-y-2">
+                  <Label htmlFor="date" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-indigo-600" />
+                    Fecha *
+                  </Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => handleInputChange('date', e.target.value)}
+                    onBlur={() => handleFieldBlur('date')}
+                    className={`h-12 border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 ${shouldShowError('date')
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
+                      : ''
+                      }`}
+                  />
+                  {shouldShowError('date') && (
+                    <p className="text-red-500 text-sm flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.date}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Descripción */}
               <div className="space-y-2">
-                <Label htmlFor="date" className="text-sm font-semibold flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-indigo-600" />
-                  Fecha
+                <Label htmlFor="description" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-orange-600" />
+                  Descripción *
                 </Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => handleInputChange('date', e.target.value)}
-                  onBlur={() => handleFieldBlur('date')}
-                  className={`h-12 ${shouldShowError('date') ? 'border-red-500 focus:border-red-500' : ''}`}
+                <Textarea
+                  id="description"
+                  placeholder="Describe detalladamente el motivo del movimiento..."
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  onBlur={() => handleFieldBlur('description')}
+                  rows={4}
+                  className={`border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 resize-none ${shouldShowError('description')
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
+                    : ''
+                    }`}
                 />
-                {shouldShowError('date') && (
+                {shouldShowError('description') && (
                   <p className="text-red-500 text-sm flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
-                    {errors.date}
+                    {errors.description}
                   </p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="reference" className="text-sm font-semibold flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-gray-600" />
-                  Referencia
-                </Label>
-                <Input
-                  id="reference"
-                  placeholder="Número de factura, boleta, etc."
-                  value={formData.reference}
-                  onChange={(e) => handleInputChange('reference', e.target.value)}
-                  className="h-12"
-                />
-              </div>
-            </div>
+              {/* Referencia y Notas */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Referencia */}
+                <div className="space-y-2">
+                  <Label htmlFor="reference" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-gray-600" />
+                    Referencia
+                  </Label>
+                  <Input
+                    id="reference"
+                    placeholder="Número de factura, boleta, etc."
+                    value={formData.reference}
+                    onChange={(e) => handleInputChange('reference', e.target.value)}
+                    className="h-12 border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200"
+                  />
+                  <p className="text-xs text-gray-500">Opcional: Número de documento relacionado</p>
+                </div>
 
-            {/* Notas adicionales */}
-            <div className="space-y-2">
-              <Label htmlFor="notes" className="text-sm font-semibold flex items-center gap-2">
-                <FileText className="h-4 w-4 text-teal-600" />
-                Notas Adicionales
-              </Label>
-              <Textarea
-                id="notes"
-                placeholder="Información adicional relevante..."
-                value={formData.notes}
-                onChange={(e) => handleInputChange('notes', e.target.value)}
-                rows={2}
-              />
-            </div>
-
-            {/* Resumen de la transacción */}
-            {formData.amount && formData.category && (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-                <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  Resumen de la Transacción
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <span className="text-sm text-gray-600">Monto:</span>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {formatCurrency(formData.amount)}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <span className="text-sm text-gray-600">Categoría:</span>
-                    <div className="flex items-center">
-                      {(() => {
-                        const category = categories.find(cat => cat.value === formData.category)
-                        const IconComponent = category?.icon || Plus
-                        return (
-                          <div className="flex items-center gap-2">
-                            <IconComponent className="h-4 w-4" />
-                            <Badge variant="secondary" className={category?.color}>
-                              {category?.label}
-                            </Badge>
-                          </div>
-                        )
-                      })()}
-                    </div>
-                  </div>
+                {/* Notas adicionales */}
+                <div className="space-y-2">
+                  <Label htmlFor="notes" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-teal-600" />
+                    Notas Adicionales
+                  </Label>
+                  <Textarea
+                    id="notes"
+                    placeholder="Información adicional relevante..."
+                    value={formData.notes}
+                    onChange={(e) => handleInputChange('notes', e.target.value)}
+                    rows={4}
+                    className="border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 resize-none"
+                  />
+                  <p className="text-xs text-gray-500">Opcional: Comentarios adicionales</p>
                 </div>
               </div>
-            )}
 
-            <Separator />
+              {/* Resumen de la transacción */}
+              {formData.amount && formData.category && (
+                <Card className="border-0 shadow-soft">
+                  <CardContent className="p-6">
+                    <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2 text-lg">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      Resumen de la Transacción
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-1">
+                        <span className="text-sm font-medium text-gray-600">Monto:</span>
+                        <div className="text-2xl font-bold text-gray-900">
+                          {formatCurrency(formData.amount)}
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm font-medium text-gray-600">Categoría:</span>
+                        <div className="flex items-center">
+                          {(() => {
+                            const category = categories.find(cat => cat.value === formData.category)
+                            const IconComponent = category?.icon || Plus
+                            return (
+                              <div className="flex items-center gap-2">
+                                <IconComponent className="h-4 w-4" />
+                                <Badge variant="secondary" className={`${category?.color} text-xs font-medium px-2 py-1`}>
+                                  {category?.label}
+                                </Badge>
+                              </div>
+                            )
+                          })()}
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm font-medium text-gray-600">Método:</span>
+                        <div className="flex items-center">
+                          {(() => {
+                            const method = paymentMethods.find(m => m.value === formData.paymentMethod)
+                            const IconComponent = method?.icon || CreditCard
+                            return (
+                              <div className="flex items-center gap-2">
+                                <IconComponent className="h-4 w-4 text-gray-600" />
+                                <span className="font-medium text-gray-900 text-sm">{method?.label}</span>
+                              </div>
+                            )
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
-            {/* Botones de acción */}
-            <div className="flex space-x-4 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                className="flex-1 h-12 text-gray-700 hover:bg-gray-50"
-                disabled={loading}
-              >
-                <X className="h-4 w-4 mr-2" />
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                className={`flex-1 h-12 shadow-lg transition-all duration-200 hover:scale-105 ${
-                  type === 'income' 
-                    ? 'bg-green-600 hover:bg-green-700' 
-                    : 'bg-red-600 hover:bg-red-700'
-                } ${!isValid ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={loading || !isValid}
-              >
-                {loading ? (
-                  <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Guardando...
-                  </div>
-                ) : (
-                  <div className="flex items-center">
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    {`Registrar ${type === 'income' ? 'Ingreso' : 'Gasto'}`}
-                  </div>
-                )}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              <Separator className="my-6" />
+
+              {/* Botones de acción */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  className="flex-1 h-12 text-gray-700 hover:bg-gray-50 border-gray-200 hover:border-gray-300 transition-colors"
+                  disabled={loading}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  className={`flex-1 h-12 transition-colors font-medium ${type === 'income'
+                    ? 'bg-green-600 hover:bg-green-700 text-white'
+                    : 'bg-red-600 hover:bg-red-700 text-white'
+                    } ${!isValid ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={loading || !isValid}
+                >
+                  {loading ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Guardando...
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      {`Registrar ${type === 'income' ? 'Ingreso' : 'Gasto'}`}
+                    </div>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

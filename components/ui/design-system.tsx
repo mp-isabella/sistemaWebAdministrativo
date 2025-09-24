@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 // Colores del sistema de diseño
@@ -345,9 +346,11 @@ export const Avatar: React.FC<AvatarProps> = ({
       {...props}
     >
       {src ? (
-        <img
+        <Image
           src={src}
           alt={alt}
+          width={100}
+          height={100}
           className="h-full w-full rounded-full object-cover"
         />
       ) : (

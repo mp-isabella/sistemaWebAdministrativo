@@ -1,164 +1,114 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { RoleGuard } from '@/components/auth/role-guard';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { 
-  UserCheck, 
-  DollarSign, 
-  Clock, 
-  CheckCircle, 
-  XCircle,
-  Plus,
-  Download,
-  Filter,
-  Search,
-  Calendar,
-  User,
-  Building2,
-  TrendingUp,
-  Eye,
-  FileText,
-  Calculator,
-  Loader2
-} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Building, Calendar, Download, Edit, Filter, Mail, MoreVertical, Phone, Plus, Search, Trash2, UserCheck } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 
+// Interface para liquidaciones
 interface Liquidation {
   id: string;
   liquidationNumber: string;
+  periodStart: string;
+  periodEnd: string;
+  baseSalary: number;
+  totalEarnings: number;
+  totalDeductions: number;
+  totalAdvances: number;
+  netSalary: number;
+  finalAmount: number;
+  status: string;
+  createdAt: string;
   technician: {
     id: string;
     name: string;
     email: string;
+    phone: string;
   };
   company: {
     id: string;
     name: string;
   };
-  periodStart: string;
-  periodEnd: string;
-  baseSalary: number;
-  totalHours: number;
-  totalServices: number;
-  bonuses: number;
-  deductions: number;
-  finalAmount: number;
-  status: string;
-  createdAt: string;
-  notes?: string;
 }
 
-export default function LiquidationsDashboard() {
-  const router = useRouter();
-  const { toast } = useToast();
+// Componente principal de liquidaciones
+function LiquidationsPage() {
   const [liquidations, setLiquidations] = useState<Liquidation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [liquidationToDelete, setLiquidationToDelete] = useState<Liquidation | null>(null);
+  const { toast } = useToast();
+  const router = useRouter();
 
-  // Estadísticas calculadas
-  const stats = [
-    {
-      title: "Total Liquidaciones",
-      value: liquidations.length.toString(),
-      change: "+0%",
-      trend: "neutral",
-      icon: UserCheck,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50"
-    },
-    {
-      title: "Aprobadas",
-      value: liquidations.filter(l => l.status === 'APPROVED').length.toString(),
-      change: "+0%",
-      trend: "neutral",
-      icon: CheckCircle,
-      color: "text-green-600",
-      bgColor: "bg-green-50"
-    },
-    {
-      title: "Pendientes",
-      value: liquidations.filter(l => l.status === 'PENDING').length.toString(),
-      change: "+0%",
-      trend: "neutral",
-      icon: Clock,
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-50"
-    },
-    {
-      title: "Valor Total",
-      value: `$${(liquidations.reduce((sum, l) => sum + l.finalAmount, 0) / 1000000).toFixed(1)}M`,
-      change: "+0%",
-      trend: "neutral",
-      icon: DollarSign,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50"
-    }
-  ];
-
-  // Cargar liquidaciones
+  // Cargar liquidaciones desde la API
   useEffect(() => {
-    fetchLiquidations();
-  }, []);
+    const fetchLiquidations = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/liquidations');
+        if (response.ok) {
+          const data = await response.json();
+          setLiquidations(data);
+        } else {
+          toast({
+            title: "Error",
+            description: "Error al cargar liquidaciones",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
 
-  const fetchLiquidations = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/liquidations');
-      
-      if (!response.ok) {
-        throw new Error('Error al cargar liquidaciones');
+        toast({
+          title: "Error",
+          description: "Error de conexión",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
       }
-      
-      const data = await response.json();
-      setLiquidations(data);
-    } catch (error) {
-      console.error('Error fetching liquidations:', error);
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar las liquidaciones",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  // Filtrar liquidaciones
-  const filteredLiquidations = liquidations.filter(liquidation => {
-    const matchesSearch = liquidation.technician.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         liquidation.liquidationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         liquidation.company.name.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = filterStatus === 'all' || liquidation.status === filterStatus;
-    
-    return matchesSearch && matchesStatus;
-  });
+    fetchLiquidations();
+  }, [toast]);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'APPROVED':
-        return <Badge className="bg-green-100 text-green-800">Aprobada</Badge>;
-      case 'PENDING':
-        return <Badge className="bg-yellow-100 text-yellow-800">Pendiente</Badge>;
-      case 'REJECTED':
-        return <Badge className="bg-red-100 text-red-800">Rechazada</Badge>;
-      case 'DRAFT':
-        return <Badge className="bg-gray-100 text-gray-800">Borrador</Badge>;
-      default:
-        return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>;
-    }
-  };
+  // Filtrar liquidaciones por término de búsqueda
+  const filteredLiquidations = useMemo(() => {
+    if (!searchTerm) return liquidations;
+
+    return liquidations.filter(liquidation =>
+      liquidation.technician.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      liquidation.company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      liquidation.liquidationNumber.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [liquidations, searchTerm]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CL', {
       style: 'currency',
       currency: 'CLP',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(amount);
   };
 
@@ -166,184 +116,330 @@ export default function LiquidationsDashboard() {
     return new Date(dateString).toLocaleDateString('es-CL');
   };
 
-  const formatPeriod = (start: string, end: string) => {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    return `${startDate.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })}`;
+  // Funciones para las acciones del menú
+  const handleEdit = (liquidationId: string) => {
+
+    try {
+      // Verificar que el router esté disponible
+      if (!router) {
+
+        toast({
+          title: "Error",
+          description: "Error de navegación",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Intentar navegación
+      router.push(`/dashboard/liquidations/${liquidationId}/edit`);
+
+    } catch (error) {
+
+      toast({
+        title: "Error",
+        description: "Error al navegar a la página de edición",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDownloadPDF = async (liquidationId: string) => {
+    try {
+      toast({
+        title: "Descargando...",
+        description: "Generando PDF, por favor espera",
+      });
+
+      const response = await fetch(`/api/liquidations/${liquidationId}/export-pdf`, {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `liquidacion-${liquidationId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toast({
+          title: "Éxito",
+          description: "PDF descargado correctamente",
+        });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al descargar PDF');
+      }
+    } catch (error) {
+
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al descargar el PDF",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteClick = (liquidation: Liquidation) => {
+    setLiquidationToDelete(liquidation);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!liquidationToDelete) return;
+
+    try {
+      toast({
+        title: "Eliminando...",
+        description: "Eliminando liquidación, por favor espera",
+      });
+
+      const response = await fetch(`/api/liquidations/${liquidationToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setLiquidations(prev => prev.filter(l => l.id !== liquidationToDelete.id));
+        toast({
+          title: "Éxito",
+          description: "Liquidación eliminada correctamente",
+        });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al eliminar liquidación');
+      }
+    } catch (error) {
+
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al eliminar la liquidación",
+        variant: "destructive"
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setLiquidationToDelete(null);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setLiquidationToDelete(null);
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Cargando liquidaciones...</p>
+      <div className="w-full p-6">
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-500">Cargando liquidaciones...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="w-full p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestión de Liquidaciones</h1>
-          <p className="text-gray-600 mt-2">
-            Administra y controla las liquidaciones de servicios técnicos y pagos a técnicos.
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <UserCheck className="h-8 w-8 text-blue-600" />
+            Liquidaciones
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Gestiona las liquidaciones de salarios para trabajadores
           </p>
         </div>
-        <Button 
-          onClick={() => router.push('/dashboard/liquidations/new')}
-          className="bg-blue-600 hover:bg-blue-700"
+        <Button
+          onClick={() => window.location.href = '/dashboard/liquidations/new'}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
         >
           <Plus className="h-4 w-4 mr-2" />
           Nueva Liquidación
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <Card key={index} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                </div>
-                <div className={`p-3 rounded-full ${stat.bgColor}`}>
-                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Búsqueda y filtros - Hidden on tablet and mobile */}
+      <div className="flex gap-4 hidden lg:flex">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Buscar liquidaciones..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+        <Button variant="outline">
+          <Filter className="h-4 w-4 mr-2" />
+          Filtros
+        </Button>
       </div>
 
-      {/* Filters and Search */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Buscar por técnico, número o empresa..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">Todos los estados</option>
-                <option value="DRAFT">Borrador</option>
-                <option value="PENDING">Pendiente</option>
-                <option value="APPROVED">Aprobada</option>
-                <option value="REJECTED">Rechazada</option>
-              </select>
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                Filtros
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Liquidations List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Liquidaciones Recientes</CardTitle>
-          <CardDescription>
-            Lista de todas las liquidaciones del sistema
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {filteredLiquidations.length === 0 ? (
-            <div className="text-center py-12">
+      {/* Lista de liquidaciones */}
+      <div className="space-y-4">
+        {filteredLiquidations.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-8">
               <UserCheck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No hay liquidaciones</h3>
-              <p className="text-gray-600 mb-4">
-                {searchTerm || filterStatus !== 'all' 
-                  ? 'No se encontraron liquidaciones con los filtros aplicados'
-                  : 'Comienza creando tu primera liquidación'
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {searchTerm ? 'No se encontraron liquidaciones' : 'No hay liquidaciones'}
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {searchTerm
+                  ? 'Intenta con otros términos de búsqueda'
+                  : 'Crea tu primera liquidación para comenzar'
                 }
               </p>
-              {!searchTerm && filterStatus === 'all' && (
-                <Button onClick={() => router.push('/dashboard/liquidations/new')}>
+              {!searchTerm && (
+                <Button
+                  onClick={() => window.location.href = '/dashboard/liquidations/new'}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Crear Liquidación
                 </Button>
               )}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredLiquidations.map((liquidation) => (
-                <div
-                  key={liquidation.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-semibold text-gray-900">{liquidation.liquidationNumber}</h3>
-                      {getStatusBadge(liquidation.status)}
+            </CardContent>
+          </Card>
+        ) : (
+          filteredLiquidations.map((liquidation) => (
+            <Card key={liquidation.id} className="hover:shadow-md transition-shadow bg-white">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <UserCheck className="h-6 w-6 text-blue-600" />
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-sm text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        <span>{liquidation.technician.name}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {liquidation.technician.name}
+                        </h3>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4" />
-                        <span>{liquidation.company.name}</span>
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <Mail className="h-4 w-4" />
+                          {liquidation.technician.email}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Phone className="h-4 w-4" />
+                          {liquidation.technician.phone}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Building className="h-4 w-4" />
+                          {liquidation.company.name}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>{formatPeriod(liquidation.periodStart, liquidation.periodEnd)}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Calculator className="h-4 w-4" />
-                        <span>{liquidation.totalHours}h / {liquidation.totalServices} servicios</span>
+                      <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          Período: {formatDate(liquidation.periodStart)} - {formatDate(liquidation.periodEnd)}
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-4 sm:mt-0">
+
+                  <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">{formatCurrency(liquidation.finalAmount)}</p>
-                      <p className="text-sm text-gray-500">
-                        Base: {formatCurrency(liquidation.baseSalary)}
-                      </p>
+                      <div className="text-sm text-gray-500">Total a Pagar</div>
+                      <div className="text-lg font-bold text-green-600">
+                        {formatCurrency(liquidation.finalAmount || liquidation.netSalary || 0)}
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => router.push(`/dashboard/liquidations/${liquidation.id}`)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => router.push(`/api/liquidations/${liquidation.id}/export-pdf`)}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-white">
+                        <DropdownMenuItem
+                          onClick={(e) => {
+
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            // Pequeño delay para asegurar que el click se procese
+                            setTimeout(() => {
+                              handleEdit(liquidation.id);
+                            }, 100);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDownloadPDF(liquidation.id)}>
+                          <Download className="h-4 w-4 mr-2" />
+                          Descargar PDF
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-red-600"
+                          onClick={() => handleDeleteClick(liquidation)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Modal de confirmación para eliminar */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="max-w-md bg-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-600" />
+              Confirmar Eliminación
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600">
+              ¿Estás seguro de que deseas eliminar la liquidación de{' '}
+              <span className="font-semibold text-gray-900">
+                {liquidationToDelete?.technician.name}
+              </span>?
+              <br /><br />
+              Esta acción <span className="font-semibold text-red-600">no se puede deshacer</span> y
+              eliminará permanentemente todos los datos asociados a esta liquidación.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel
+              onClick={handleDeleteCancel}
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700"
+            >
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Eliminar Liquidación
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+  );
+}
+
+export default function LiquidationsPageWrapper() {
+  return (
+    <RoleGuard requiredPermission="canAccessLiquidations">
+      <LiquidationsPage />
+    </RoleGuard>
   );
 }

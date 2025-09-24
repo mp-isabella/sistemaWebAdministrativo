@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     // Análisis por categorías
     const categoryAnalysis = transactions.reduce((acc, transaction) => {
-      const category = transaction.category
+      const category = transaction.category || 'Sin categoría'
       if (!acc[category]) {
         acc[category] = { income: 0, expense: 0, count: 0 }
       }
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     // Análisis por método de pago
     const paymentMethodAnalysis = transactions.reduce((acc, transaction) => {
-      const method = transaction.paymentMethod
+      const method = transaction.paymentMethod || 'Sin método'
       if (!acc[method]) {
         acc[method] = { income: 0, expense: 0, count: 0 }
       }
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Error generating monthly report:', error)
+    
     return NextResponse.json({ error: 'Error generando reporte mensual' }, { status: 500 })
   }
 }

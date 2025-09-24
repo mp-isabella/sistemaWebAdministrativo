@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from "next/server"
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(servicesWithStats)
   } catch (error) {
-    console.error("Error fetching services:", error)
+    
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
@@ -49,14 +49,13 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         description,
-        price: parseFloat(price),
-        createdById: session.user.id
+        price: parseFloat(price)
       }
     })
 
     return NextResponse.json(newService, { status: 201 })
   } catch (error) {
-    console.error("Error creating service:", error)
+    
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

@@ -1,8 +1,9 @@
-import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -12,15 +13,22 @@ export const authOptions = {
       },
       async authorize(credentials) {
         try {
-          console.log("🔐 Iniciando autorización de credenciales...");
-          
+
           if (!credentials?.email || !credentials?.password) {
-            console.log("❌ Credenciales faltantes");
-            return null;
+
+            throw new Error("Credenciales faltantes");
           }
 
           const email = credentials.email.trim().toLowerCase();
-          console.log("📧 Buscando usuario con email:", email);
+
+          // Verificar conexión a la base de datos
+          try {
+            await prisma.$connect();
+
+          } catch (dbError) {
+
+            throw new Error("Error de conexión a base de datos");
+          }
 
           const user = await prisma.user.findUnique({
             where: { email },
@@ -28,45 +36,41 @@ export const authOptions = {
           });
 
           if (!user) {
-            console.log("❌ Usuario no encontrado:", email);
-            return null;
+
+            throw new Error("Usuario no encontrado");
           }
 
           if (!user.isActive) {
-            console.log("❌ Usuario inactivo:", email);
-            return null;
-          }
 
-          console.log("✅ Usuario encontrado, verificando contraseña...");
+            throw new Error("Usuario inactivo");
+          }
 
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
           if (!isPasswordValid) {
-            console.log("❌ Contraseña inválida para usuario:", email);
-            return null;
-          }
 
-          console.log("✅ Autenticación exitosa para usuario:", email);
-          console.log("👤 Rol del usuario:", user.role.name);
+            throw new Error("Contraseña inválida");
+          }
 
           return {
             id: user.id,
             email: user.email,
             name: user.name,
-            role: user.role.name.toLowerCase(), // Convertir a minúsculas para consistencia
+            role: user.role.name,
           };
         } catch (error) {
-          console.error("💥 Error en authorize:", error);
-          return null;
+
+          // Re-lanzar el error para que NextAuth lo maneje correctamente
+          throw error;
         }
       },
     }),
   ],
   session: {
     strategy: "jwt" as const,
-    maxAge: 60 * 60, // 1 hora
+    maxAge: 24 * 60 * 60, // 24 horas
   },
   jwt: {
-    maxAge: 60 * 60, // 1 hora
+    maxAge: 24 * 60 * 60, // 24 horas
   },
   callbacks: {
     async jwt({ token, user }: { token: any; user: any }) {
@@ -78,7 +82,7 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }: { session: any; token: any }) {
-      if (session.user && token.sub && token.role) {
+      if (session?.user && token?.sub && token?.role) {
         session.user.id = token.sub;
         session.user.role = token.role;
       }
@@ -88,9 +92,9 @@ export const authOptions = {
   pages: {
     signIn: "/login",
   },
-  debug: false,
-  secret: process.env.NEXTAUTH_SECRET,
-  useSecureCookies: false,
+  debug: process.env.NODE_ENV === "development",
+  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
+  useSecureCookies: process.env.NODE_ENV === "production",
   cookies: {
     sessionToken: {
       name: `next-auth.session-token`,

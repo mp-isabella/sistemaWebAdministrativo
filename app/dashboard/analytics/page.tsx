@@ -1,10 +1,10 @@
 'use client';
 
 import { RoleRedirect } from '@/components/auth/role-redirect';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { BarChart3, DollarSign, TrendingUp, Users } from 'lucide-react';
 import '../styles/unified-design.css';
-import { BarChart3, TrendingUp, Users, DollarSign } from 'lucide-react';
 
 export default function AnalyticsPage() {
   return (

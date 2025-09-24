@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from "next/server"
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions as any)
 
@@ -52,10 +52,33 @@ export async function GET(request: NextRequest) {
             email: true
           }
         },
-        company: true
+        company: true,
+        quotes: {
+          include: {
+            items: true,
+            createdBy: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
+          }
+        },
+        payments: {
+          include: {
+            createdBy: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
+          }
+        }
       },
       orderBy: {
-        scheduledAt: 'asc'
+        createdAt: 'desc'
       }
     })
 
@@ -74,17 +97,30 @@ export async function GET(request: NextRequest) {
     // Mapear trabajos al formato esperado
     const mappedJobs = jobs.map((job: any) => {
       // Determinar el professionalId
-      let professionalId = job.technicianId || 'tecnico-generico'
-      
-      // Si no hay técnico asignado, usar 'tecnico-generico'
+      let professionalId = job.technicianId || null
+
+      // Si no hay técnico asignado, usar null para indicar que está sin asignar
       if (!job.technicianId) {
-        professionalId = 'tecnico-generico'
+        professionalId = null
       }
 
       // Formatear fecha y hora
-      const scheduledDate = job.scheduledAt ? new Date(job.scheduledAt) : new Date()
+      let scheduledDate: Date
+      if (job.scheduledAt && job.scheduledAt !== null) {
+        scheduledDate = new Date(job.scheduledAt)
+        // Verificar que la fecha es válida y no es la fecha epoch
+        if (isNaN(scheduledDate.getTime()) || scheduledDate.getFullYear() === 1969) {
+
+          // Usar fecha actual como fallback
+          scheduledDate = new Date()
+        }
+      } else {
+
+        // Usar fecha actual como fallback
+        scheduledDate = new Date()
+      }
       const formattedDate = scheduledDate.toISOString().split('T')[0]
-      
+
       // Formatear horarios
       const startTime = job.startTime || '08:00'
       const endTime = job.endTime || '09:00'
@@ -122,30 +158,52 @@ export async function GET(request: NextRequest) {
           id: job.company.id,
           name: job.company.name
         } : null,
-        scheduledAt: job.scheduledAt?.toISOString()
+        scheduledAt: job.scheduledAt?.toISOString(),
+        createdAt: job.createdAt?.toISOString(),
+        totalBudget: job.totalBudget,
+        quote: job.quotes && job.quotes.length > 0 ? job.quotes[0] : null,
+        payments: job.payments || []
       }
     })
 
-    console.log("✅ API Calendar - Datos reales cargados")
-    console.log("Técnicos:", mappedTechnicians.length)
-    console.log("Trabajos:", mappedJobs.length)
-    console.log("Trabajos sin asignar:", mappedJobs.filter(job => job.professionalId === 'tecnico-generico').length)
+    // Eliminar duplicados basándose en el ID del trabajo
+    const uniqueJobs = mappedJobs.filter((job, index, self) =>
+      index === self.findIndex(j => j.id === job.id)
+    )
+
+    // console.log('Total unique jobs:', uniqueJobs.length)
+
+    // Log del ordenamiento para verificar
+
+    uniqueJobs.slice(0, 3).forEach((job) => {
+      console.log('Top job:', job.id);
+    })
+
+    // Mostrar warning si se detectaron duplicados
+    if (mappedJobs.length !== uniqueJobs.length) {
+    }
 
     return NextResponse.json({
       success: true,
-      data: mappedJobs,
+      data: uniqueJobs,
       technicians: mappedTechnicians,
       user: {
         id: (session as any).user?.id,
         name: (session as any).user?.name
       }
+    }, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     })
 
   } catch (error) {
-    console.error("Error en API del calendario:", error)
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       success: false,
-      error: "Error interno del servidor" 
+      error: "Error interno del servidor"
     }, { status: 500 })
   }
 }

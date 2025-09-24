@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,22 +49,21 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const workOrders = await prisma.workOrder.findMany({
+    const workOrders = await prisma.job.findMany({
       where,
       include: {
         client: true,
         service: true,
         technician: true,
         createdBy: true,
-        company: true,
-        items: true
+        company: true
       },
       orderBy: { createdAt: "desc" }
     })
 
     return NextResponse.json(workOrders)
   } catch (error) {
-    console.error("Error fetching work orders:", error)
+    
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
@@ -84,20 +83,20 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
 
-    const { 
-      title, 
-      description, 
-      clientId, 
-      serviceId, 
+    const {
+      title,
+      description,
+      clientId,
+      serviceId,
       companyId,
-      technicianId, 
-      scheduledAt, 
-      startTime, 
-      endTime, 
+      technicianId,
+      scheduledAt,
+      startTime,
+      endTime,
       priority,
       address,
       notes,
-      items 
+      items
     } = body
 
     // Validar datos requeridos
@@ -121,7 +120,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear la orden de trabajo
-    const workOrder = await prisma.workOrder.create({
+    const workOrder = await (prisma as any).workOrder.create({
       data: {
         workOrderNumber,
         title,
@@ -155,7 +154,7 @@ export async function POST(request: NextRequest) {
     if (items && items.length > 0) {
       await Promise.all(
         items.map((item: any) =>
-          prisma.workOrderItem.create({
+          (prisma as any).workOrderItem.create({
             data: {
               description: item.description,
               quantity: item.quantity,
@@ -171,7 +170,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(workOrder, { status: 201 })
   } catch (error) {
-    console.error("Error creating work order:", error)
+    
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

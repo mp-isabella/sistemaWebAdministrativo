@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import Image from "next/image";
-import { useFormSubmitService } from "@/hooks/use-formsubmit-service";
+import { useCustomEmailService } from "@/hooks/use-custom-email-service";
 import { useFormValidation, type FormData as ValidationFormData } from "@/hooks/use-form-validation";
 import { FormAlert, ValidationAlert } from "@/components/ui/form-alert";
 import { REGIONES_Y_COMUNAS } from "@/lib/regions-communes";
@@ -46,7 +46,7 @@ export default function Contact(): React.JSX.Element {
   });
 
   // Hook para envío de correos
-  const { sendQuoteEmail, isLoading: isSubmitting } = useFormSubmitService();
+  const { sendQuoteEmail, isLoading: isSubmitting } = useCustomEmailService();
   
   // Hook para validación de formulario
   const { errors, validateForm, validateSingleField, clearError, clearAllErrors } = useFormValidation();
@@ -153,7 +153,6 @@ export default function Contact(): React.JSX.Element {
 
       setTimeout(() => setStatusMessage(null), 5000);
     } catch (error) {
-      console.error('Error al enviar cotización:', error);
       setStatusMessage({ 
         type: "error", 
         text: "Error inesperado. Por favor, inténtalo nuevamente." 

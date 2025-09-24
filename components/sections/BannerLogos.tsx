@@ -47,24 +47,24 @@ export default function BannerLogos() {
   }
 
   return (
-    <div className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 py-4 overflow-hidden">
+    <div className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 py-3 md:py-4 overflow-hidden" style={{ maxWidth: '100vw' }}>
       <div className={`flex whitespace-nowrap ${isMobile ? 'animate-marquee-mobile' : 'animate-marquee'}`}>
         {/* Primera serie de servicios */}
-        <div className="flex items-center space-x-4 md:space-x-8 mx-4 md:mx-8">
+        <div className="flex items-center space-x-3 md:space-x-6 lg:space-x-8 mx-2 md:mx-4 lg:mx-8">
           {services.map((service, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <span className="text-white text-sm md:text-lg font-medium">{service}</span>
-              <span className="text-white text-xl md:text-2xl">✱</span>
+            <div key={index} className="flex items-center space-x-1 md:space-x-2 flex-shrink-0">
+              <span className="text-white text-xs sm:text-sm md:text-base lg:text-lg font-medium whitespace-nowrap">{service}</span>
+              <span className="text-white text-lg md:text-xl lg:text-2xl flex-shrink-0">✱</span>
             </div>
           ))}
         </div>
 
         {/* Segunda serie duplicada para loop continuo */}
-        <div className="flex items-center space-x-4 md:space-x-8 mx-4 md:mx-8">
+        <div className="flex items-center space-x-3 md:space-x-6 lg:space-x-8 mx-2 md:mx-4 lg:mx-8">
           {services.map((service, index) => (
-            <div key={`duplicate-${index}`} className="flex items-center space-x-2">
-              <span className="text-white text-sm md:text-lg font-medium">{service}</span>
-              <span className="text-white text-xl md:text-2xl">✱</span>
+            <div key={`duplicate-${index}`} className="flex items-center space-x-1 md:space-x-2 flex-shrink-0">
+              <span className="text-white text-xs sm:text-sm md:text-base lg:text-lg font-medium whitespace-nowrap">{service}</span>
+              <span className="text-white text-lg md:text-xl lg:text-2xl flex-shrink-0">✱</span>
             </div>
           ))}
         </div>

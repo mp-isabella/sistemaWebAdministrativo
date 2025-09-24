@@ -1,25 +1,25 @@
 "use client"
 
-import React, { useState, useCallback, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import type { Appointment, Patient, Professional } from "@/types/calendar"
+import { AlertCircle, Menu, X } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { useCallback, useEffect, useState } from "react"
+import { CalendarGrid } from "./calendar-grid"
 import { CalendarHeader } from "./calendar-header"
 import { CalendarSidebar } from "./calendar-sidebar"
-import { CalendarGrid } from "./calendar-grid"
-import { PatientSidebar } from "./patient-sidebar"
 import { JobDetailsModal } from "./job-details-modal"
-import { Button } from "@/components/ui/button"
-import { Plus, Menu, X, AlertCircle, Shield, Calendar } from "lucide-react"
-import type { Professional, Appointment, Patient } from "@/types/calendar"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { PatientSidebar } from "./patient-sidebar"
+// import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
-import { useCalendarSync } from "@/hooks/use-calendar-sync"
+// import { useCalendarSync } from "@/hooks/use-calendar-sync"
 
 export function CalendarDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { toast } = useToast()
-  
+
   // Estados básicos
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -34,7 +34,7 @@ export function CalendarDashboard() {
   const [jobs, setJobs] = useState<Appointment[]>([])
 
   // Obtener el rol del usuario de forma segura
-  const userRole = (session?.user as any)?.role?.toLowerCase() || 'admin'
+  const userRole = (session?.user as any)?.role?.toLowerCase() || 'administrador'
 
   // Función para obtener datos del calendario
   const fetchCalendarData = useCallback(async () => {
@@ -43,13 +43,13 @@ export function CalendarDashboard() {
       setError("")
 
       const response = await fetch('/api/calendar/jobs')
-      
+
       if (!response.ok) {
         throw new Error(`Error HTTP: ${response.status}`)
       }
 
       const data = await response.json()
-      
+
       if (data.success) {
         // Mapear técnicos
         const mappedTechnicians = data.technicians?.map((tech: any) => ({
@@ -100,13 +100,13 @@ export function CalendarDashboard() {
           company: job.company || null,
           scheduledAt: job.scheduledAt || new Date().toISOString()
         })) || []
-        
+
         setJobs(mappedJobs)
       } else {
         throw new Error(data.error || 'Error al obtener datos del calendario')
       }
     } catch (error) {
-      console.error('Error al obtener datos del calendario:', error)
+
       setError(error instanceof Error ? error.message : 'Error desconocido')
     } finally {
       setLoading(false)
@@ -120,8 +120,8 @@ export function CalendarDashboard() {
 
   // Event listeners para sincronización en tiempo real
   useEffect(() => {
-    const handleNewJobCreated = (event: CustomEvent) => {
-      console.log('🔄 Nuevo trabajo creado, refrescando calendario...', event.detail)
+    const handleNewJobCreated = () => {
+
       // Pequeño delay para asegurar que la base de datos se actualice
       setTimeout(() => {
         fetchCalendarData()
@@ -129,22 +129,22 @@ export function CalendarDashboard() {
     }
 
     const handleJobUpdated = (event: CustomEvent) => {
-      console.log('🔄 Trabajo actualizado, refrescando calendario...', event.detail)
+
       // Si es una asignación de técnico, refrescar el calendario completo
       if (event.detail?.action === 'technicianAssigned') {
-        console.log('👨‍🔧 Técnico asignado, refrescando calendario completo...')
+
         setTimeout(() => {
           fetchCalendarData()
         }, 500)
         return
       }
-      
+
       // Para otras actualizaciones, refrescar inmediatamente
       fetchCalendarData()
     }
 
-    const handleJobDeleted = (event: CustomEvent) => {
-      console.log('🔄 Trabajo eliminado, refrescando calendario...', event.detail)
+    const handleJobDeleted = () => {
+
       fetchCalendarData()
     }
 
@@ -183,21 +183,27 @@ export function CalendarDashboard() {
   }, [fetchCalendarData, toast])
 
   const handleJobUpdate = useCallback((updatedJob: Appointment) => {
-    setJobs(prevJobs => 
-      prevJobs.map(job => 
+    setJobs(prevJobs =>
+      prevJobs.map(job =>
         job.id === updatedJob.id ? updatedJob : job
       )
     )
-    setSelectedJob(null)
+    // Actualizar también el trabajo seleccionado si es el mismo
+    setSelectedJob(prevSelected =>
+      prevSelected?.id === updatedJob.id ? updatedJob : prevSelected
+    )
     toast({
       title: "Trabajo actualizado",
       description: "El trabajo ha sido actualizado correctamente.",
     })
   }, [toast])
 
-  const handlePatientSelect = useCallback((patient: Patient) => {
+  const _handlePatientSelect = useCallback((patient: Patient) => {
+    // Intentionally unused - reserved for future patient selection functionality
     setSelectedPatient(patient)
   }, [])
+  // _handlePatientSelect is intentionally unused - reserved for future patient selection functionality
+  void _handlePatientSelect
 
   const handleJobSelect = useCallback((job: Appointment) => {
     setSelectedJob(job)
@@ -273,7 +279,7 @@ export function CalendarDashboard() {
     <div className="calendar-dashboard-container">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="calendar-sidebar-overlay lg:hidden"
           onClick={closeSidebar}
         />
@@ -284,10 +290,10 @@ export function CalendarDashboard() {
         data-menu-button
         variant="outline"
         size="icon"
-        className="lg:hidden fixed top-4 left-4 z-50 bg-white shadow-lg"
+        className="lg:hidden fixed top-3 left-3 sm:top-4 sm:left-4 z-50 bg-white shadow-lg h-8 w-8 sm:h-10 sm:w-10"
         onClick={toggleSidebar}
       >
-        {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+        {sidebarOpen ? <X className="h-3 w-3 sm:h-4 sm:w-4" /> : <Menu className="h-3 w-3 sm:h-4 sm:w-4" />}
       </Button>
 
       {/* Left Sidebar */}
@@ -324,7 +330,7 @@ export function CalendarDashboard() {
             onRefresh={handleRefresh}
           />
         </div>
-        
+
         {/* Calendar Grid */}
         <div className="calendar-grid-container">
           {loading ? (
@@ -347,16 +353,14 @@ export function CalendarDashboard() {
             </div>
           ) : (
             <CalendarGrid
-              selectedDate={selectedDate}
               professionals={technicians}
               appointments={jobs}
-              onPatientSelect={handlePatientSelect}
               onJobSelect={handleJobSelect}
             />
           )}
         </div>
       </div>
-      
+
       {/* Patient Modal */}
       {selectedPatient && (
         <div

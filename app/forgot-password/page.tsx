@@ -28,9 +28,6 @@ export default function ForgotPasswordPage() {
         setLoading(false);
         return;
       }
-
-      console.log("📧 Enviando solicitud de restablecimiento de contraseña...");
-
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: {
@@ -42,14 +39,11 @@ export default function ForgotPasswordPage() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log("✅ Solicitud enviada exitosamente");
         setSuccess(true);
       } else {
-        console.error("❌ Error al enviar solicitud:", data.error);
         setError(data.error || "Error al enviar la solicitud. Por favor, intenta nuevamente.");
       }
     } catch (error) {
-      console.error("💥 Error inesperado:", error);
       setError("Error de conexión. Por favor, verifica tu conexión e intenta nuevamente.");
     } finally {
       setLoading(false);

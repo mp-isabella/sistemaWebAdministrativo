@@ -1,26 +1,25 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import JobManagementModal from "@/components/dashboard/job-management-modal"
 import { Badge } from "@/components/ui/badge"
-import { 
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
   ArrowLeft,
-  User,
-  Phone,
+  Camera,
+  FileText,
   Mail,
   MapPin,
-  Calendar,
-  Clock,
-  Wrench,
+  Phone,
   Settings,
-  FileText,
-  Camera,
-  Signature
+  Signature,
+  User,
+  Wrench
 } from "lucide-react"
-import JobManagementModal from "@/components/dashboard/job-management-modal"
+import { useSession } from "next-auth/react"
+import Image from "next/image"
+import { useParams, useRouter } from "next/navigation"
+import { useCallback, useEffect, useState } from "react"
 
 interface Job {
   id: string
@@ -81,13 +80,7 @@ export default function JobDetailPage() {
   const [loading, setLoading] = useState(true)
   const [isManagementModalOpen, setIsManagementModalOpen] = useState(false)
 
-  useEffect(() => {
-    if (session && params.id) {
-      fetchJob()
-    }
-  }, [session, params.id])
-
-  const fetchJob = async () => {
+  const fetchJob = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch(`/api/jobs/${params.id}`)
@@ -96,17 +89,23 @@ export default function JobDetailPage() {
         setJob(data)
       } else {
         // Si no hay datos reales, usar datos de ejemplo
-        console.warn("Error fetching job, using mock data")
+        
         setJob(mockJob)
       }
     } catch (error) {
-      console.error("Error:", error)
+      
       // En caso de error, usar datos de ejemplo
       setJob(mockJob)
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id])
+
+  useEffect(() => {
+    if (session && params.id) {
+      fetchJob()
+    }
+  }, [session, params.id, fetchJob])
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -175,9 +174,9 @@ export default function JobDetailPage() {
           <div className="section-header">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => router.push('/dashboard/my-jobs')}
                   className="flex items-center gap-2"
                 >
@@ -189,8 +188,8 @@ export default function JobDetailPage() {
               <p className="section-subtitle">Detalles completos del trabajo</p>
             </div>
             <div className="header-actions">
-              <Button 
-                onClick={() => setIsManagementModalOpen(true)} 
+              <Button
+                onClick={() => setIsManagementModalOpen(true)}
                 className="btn-primary"
               >
                 <Settings className="mr-2 h-4 w-4" />
@@ -264,10 +263,12 @@ export default function JobDetailPage() {
                   {job.images ? (
                     <div className="grid grid-cols-2 gap-4">
                       {job.images.split(",").map((image, index) => (
-                        <img
+                        <Image
                           key={index}
                           src={image}
                           alt={`Evidencia ${index + 1}`}
+                          width={200}
+                          height={192}
                           className="w-full h-48 object-cover rounded-lg border"
                         />
                       ))}
@@ -288,9 +289,11 @@ export default function JobDetailPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <img
+                    <Image
                       src={job.signature}
                       alt="Firma del cliente"
+                      width={300}
+                      height={128}
                       className="max-w-full h-32 object-contain border rounded-lg"
                     />
                   </CardContent>
@@ -317,10 +320,12 @@ export default function JobDetailPage() {
                     <Phone className="h-4 w-4 text-gray-500" />
                     <span className="text-sm">{job.client.phone}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm">{job.client.email}</span>
-                  </div>
+                  {job.client.email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm">{job.client.email}</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-gray-500" />
                     <span className="text-sm">{job.client.address}</span>
@@ -347,15 +352,15 @@ export default function JobDetailPage() {
                   <CardTitle>Acciones</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button 
-                    onClick={() => setIsManagementModalOpen(true)} 
+                  <Button
+                    onClick={() => setIsManagementModalOpen(true)}
                     className="w-full"
                   >
                     <Settings className="mr-2 h-4 w-4" />
                     Gestionar Trabajo
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => router.push('/dashboard/my-jobs')}
                     className="w-full"
                   >

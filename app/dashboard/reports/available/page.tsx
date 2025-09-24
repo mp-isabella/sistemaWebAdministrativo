@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { FileText, Download, Calendar, TrendingUp, Users, DollarSign, Wrench, Eye, Clock } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Calendar, DollarSign, Download, Eye, FileText, TrendingUp, Users, Wrench } from 'lucide-react'
+import { useState } from "react"
 
 export default function AvailableReportsPage() {
   const [loading, setLoading] = useState(false)
@@ -81,20 +81,52 @@ export default function AvailableReportsPage() {
   const exportReport = async (reportId: string, format: string = 'pdf') => {
     setLoading(true)
     try {
-      console.log(`Exportando reporte ${reportId} en formato ${format}`)
-      // Simulación de exportación
-      setTimeout(() => {
-        setLoading(false)
-        alert(`Reporte ${reportId} exportado en ${format}`)
-      }, 1000)
+      const response = await fetch(`/api/reports/export?reportId=${reportId}&format=${format}`, {
+        method: 'GET',
+      })
+
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+
+        // Definir nombre de archivo según el formato
+        const timestamp = new Date().toISOString().split('T')[0]
+        const fileName = `reporte-${reportId}-${timestamp}.${format}`
+        a.download = fileName
+
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+
+        // Mostrar notificación de éxito
+        alert(`Reporte ${reportId} exportado exitosamente en formato ${format.toUpperCase()}`)
+      } else {
+        throw new Error('Error al exportar reporte')
+      }
     } catch (error) {
-      console.error('Error:', error)
+      
+      alert(`Error al exportar el reporte: ${error}`)
+    } finally {
       setLoading(false)
     }
   }
 
   const viewReport = (reportId: string) => {
-    alert(`Viendo reporte: ${reportId}`)
+    // Mapear reportId a un ID de reporte existente
+    const reportIdMap: Record<string, string> = {
+      'jobs-summary': 'REP-2024-002',
+      'technician-performance': 'REP-2024-003',
+      'schedule-overview': 'REP-2024-002',
+      'revenue-analysis': 'REP-2024-001',
+      'expense-tracking': 'REP-2024-001',
+      'profit-loss': 'REP-2024-001'
+    }
+
+    const actualReportId = reportIdMap[reportId] || 'REP-2024-001'
+    window.location.href = `/dashboard/reports/${actualReportId}`
   }
 
   const getFrequencyColor = (frequency: string) => {
@@ -118,7 +150,7 @@ export default function AvailableReportsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Reportes Disponibles</h1>
@@ -184,23 +216,23 @@ export default function AvailableReportsPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-600 mb-4">{report.description}</p>
-                    
+
                     <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
                       <span>Último reporte: {report.lastGenerated}</span>
                     </div>
 
                     <div className="flex space-x-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => viewReport(report.id)}
                         className="flex-1"
                       >
                         <Eye className="mr-2 h-4 w-4" />
                         Ver
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         onClick={() => exportReport(report.id, 'pdf')}
                         disabled={loading}
                         className="flex-1 bg-blue-600 hover:bg-blue-700"
@@ -211,18 +243,18 @@ export default function AvailableReportsPage() {
                     </div>
 
                     <div className="flex space-x-2 mt-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => exportReport(report.id, 'excel')}
                         disabled={loading}
                         className="flex-1"
                       >
                         Excel
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => exportReport(report.id, 'csv')}
                         disabled={loading}
                         className="flex-1"

@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { RoleRedirect } from '@/components/auth/role-redirect'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useToast } from '@/hooks/use-toast'
+import { ArrowLeft, Calculator, Download, Edit, Trash2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useParams, useRouter } from 'next/navigation'
-import { RoleRedirect } from '@/components/auth/role-redirect'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Download, Edit, Trash2, Calculator } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { useCallback, useEffect, useState } from 'react'
 
 interface LiquidationItem {
   id: string
@@ -77,17 +77,11 @@ export default function LiquidationDetailPage() {
   const [downloading, setDownloading] = useState(false)
   const { toast } = useToast()
 
-  useEffect(() => {
-    if (params.id) {
-      fetchLiquidation()
-    }
-  }, [params.id])
-
-  const fetchLiquidation = async () => {
+  const fetchLiquidation = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch(`/api/liquidations/${params.id}`)
-      
+
       if (response.ok) {
         const data = await response.json()
         setLiquidation(data)
@@ -100,7 +94,7 @@ export default function LiquidationDetailPage() {
         router.push('/dashboard/liquidations')
       }
     } catch (error) {
-      console.error('Error fetching liquidation:', error)
+
       toast({
         title: "Error",
         description: "Error de conexión",
@@ -109,13 +103,19 @@ export default function LiquidationDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id, toast, router])
+
+  useEffect(() => {
+    if (params.id) {
+      fetchLiquidation()
+    }
+  }, [params.id, fetchLiquidation])
 
   const downloadPDF = async () => {
     try {
       setDownloading(true)
       const response = await fetch(`/api/liquidations/${params.id}/export-pdf`)
-      
+
       if (response.ok) {
         const blob = await response.blob()
         const url = window.URL.createObjectURL(blob)
@@ -126,7 +126,7 @@ export default function LiquidationDetailPage() {
         a.click()
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
-        
+
         toast({
           title: "Éxito",
           description: "PDF descargado correctamente"
@@ -139,7 +139,7 @@ export default function LiquidationDetailPage() {
         })
       }
     } catch (error) {
-      console.error('Error downloading PDF:', error)
+
       toast({
         title: "Error",
         description: "Error al descargar PDF",
@@ -175,7 +175,7 @@ export default function LiquidationDetailPage() {
         })
       }
     } catch (error) {
-      console.error('Error deleting liquidation:', error)
+
       toast({
         title: "Error",
         description: "Error de conexión",
@@ -230,7 +230,7 @@ export default function LiquidationDetailPage() {
 
   if (!session) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="w-full p-6">
         <div className="text-center">
           <p className="text-gray-500">Cargando...</p>
         </div>
@@ -240,7 +240,7 @@ export default function LiquidationDetailPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="w-full p-6">
         <div className="text-center">
           <p className="text-gray-500">Cargando liquidación...</p>
         </div>
@@ -250,7 +250,7 @@ export default function LiquidationDetailPage() {
 
   if (!liquidation) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="w-full p-6">
         <div className="text-center">
           <p className="text-gray-500">Liquidación no encontrada</p>
           <Button onClick={() => router.push('/dashboard/liquidations')} className="mt-4">
@@ -262,13 +262,13 @@ export default function LiquidationDetailPage() {
   }
 
   return (
-    <RoleRedirect allowedRoles={["admin"]}>
-      <div className="container mx-auto p-6 space-y-6">
+    <RoleRedirect allowedRoles={["admin", "administrador"]}>
+      <div className="w-full p-6 space-y-6">
         {/* Header */}
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => router.push('/dashboard/liquidations')}
               className="flex items-center gap-2"
             >
@@ -280,18 +280,18 @@ export default function LiquidationDetailPage() {
               <p className="text-gray-600">Detalles completos de la liquidación</p>
             </div>
           </div>
-          
+
           <div className="flex gap-2">
             {getStatusBadge(liquidation.status)}
-            <Button 
-              onClick={downloadPDF} 
+            <Button
+              onClick={downloadPDF}
               disabled={downloading}
               className="flex items-center gap-2"
             >
               <Download className="h-4 w-4" />
               {downloading ? 'Generando...' : 'Descargar PDF'}
             </Button>
-            <Button 
+            <Button
               variant="outline"
               onClick={() => router.push(`/dashboard/liquidations/${liquidation.id}/edit`)}
               className="flex items-center gap-2"
@@ -299,7 +299,7 @@ export default function LiquidationDetailPage() {
               <Edit className="h-4 w-4" />
               Editar
             </Button>
-            <Button 
+            <Button
               variant="destructive"
               onClick={deleteLiquidation}
               className="flex items-center gap-2"
@@ -329,7 +329,7 @@ export default function LiquidationDetailPage() {
                       <p><strong>Dirección:</strong> {liquidation.technician.address || 'No especificada'}</p>
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Empresa</h3>
                     <div className="space-y-1 text-sm">
@@ -340,7 +340,7 @@ export default function LiquidationDetailPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
                   <div>
                     <p className="text-sm text-gray-600">Período de Liquidación</p>

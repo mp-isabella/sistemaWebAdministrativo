@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
       prisma.job.count({ where: { ...where, status: "IN_PROGRESS" } }),
       prisma.job.count({ where: { ...where, status: "COMPLETED" } }),
       prisma.client.count(),
-      prisma.user.count({ where: { role: { name: { not: "admin" } } } }),
+      prisma.user.count({ where: { role: { name: { not: "administrador" } } } }),
       prisma.service.count()
     ])
 
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error("Error fetching dashboard stats:", error)
+    
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

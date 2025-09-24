@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verificar permisos: solo admin puede ver facturas
-    if (!(session.user as any).role || (session.user as any).role.toLowerCase() !== "admin") {
+    if (!(session.user as any).role || (session.user as any).role.toLowerCase() !== "administrador") {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(invoices)
 
   } catch (error) {
-    console.error('Error fetching invoices:', error)
+    
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar permisos: solo admin puede crear facturas
-    if (!(session.user as any).role || (session.user as any).role.toLowerCase() !== "admin") {
+    if (!(session.user as any).role || (session.user as any).role.toLowerCase() !== "administrador") {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 
@@ -98,9 +98,9 @@ export async function POST(request: NextRequest) {
         subtotal,
         tax,
         total,
-        taxRate,
         notes,
         clientId,
+        companyId: (session.user as any).companyId,
         createdById: session.user.id,
         items: {
           create: items.map((item: any) => ({
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(invoice, { status: 201 })
 
   } catch (error) {
-    console.error('Error creating invoice:', error)
+    
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

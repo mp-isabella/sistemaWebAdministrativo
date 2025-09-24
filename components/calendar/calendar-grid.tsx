@@ -1,19 +1,12 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import type { Professional, Appointment, Patient } from "@/types/calendar"
-import { DollarSign } from "lucide-react"
-import { TechnicianHeader } from "./technician-header"
 import { useCalendarOptimization } from "@/hooks/use-calendar-optimization"
+import type { Appointment, Professional } from "@/types/calendar"
+import { useEffect, useState } from "react"
 
 interface CalendarGridProps {
-  selectedDate: Date
   professionals: Professional[]
   appointments: Appointment[]
-  onPatientSelect: (patient: Patient) => void
   onJobSelect: (job: Appointment) => void
 }
 
@@ -26,30 +19,15 @@ interface AppointmentPosition {
   zIndex?: number
 }
 
-const mockPatient: Patient = {
-  id: "1",
-  name: "BÁRBARA TRONCOSO",
-  appointmentType: "Primera consulta",
-  price: "$45.000",
-  date: "Miércoles 14 de agosto",
-  time: "14:00 a 15:00 hrs",
-  attendedBy: "Camila Torres",
-  phone: "+56912345678",
-  email: "barbarat89@email.com",
-  id_number: "19.294.498-8",
-  notes: "Primera consulta - Paciente nuevo",
-}
 
-export function CalendarGrid({ selectedDate, professionals, appointments, onPatientSelect, onJobSelect }: CalendarGridProps) {
-  const [currentTime, setCurrentTime] = useState(new Date())
-  
+export function CalendarGrid({ professionals, appointments, onJobSelect }: CalendarGridProps) {
+  const [, setCurrentTime] = useState(new Date())
+
   // Hook de optimización del calendario
   const {
     timeConfig,
     getTechnicianColumnWidth,
-    calculateAppointmentPosition,
-    getCurrentTimePosition: getOptimizedCurrentTimePosition,
-    responsiveStyles
+    calculateAppointmentPosition
   } = useCalendarOptimization({ professionalsCount: professionals.length })
 
   useEffect(() => {
@@ -60,43 +38,48 @@ export function CalendarGrid({ selectedDate, professionals, appointments, onPati
   }, [])
 
   const getAppointmentsForProfessional = (professionalId: string) => {
-    return appointments.filter((apt) => apt.professionalId === professionalId)
+    return appointments.filter((apt) => (apt as any).professionalId === professionalId)
   }
 
   // Función para agrupar trabajos por horario
   const groupAppointmentsByTimeSlot = (appointments: Appointment[]) => {
     const grouped: { [key: string]: Appointment[] } = {}
-    
+
     appointments.forEach(appointment => {
       if (!appointment.startTime || !appointment.endTime) return
-      
+
       // Crear clave única para el horario
       const timeKey = `${appointment.startTime}-${appointment.endTime}`
-      
+
       if (!grouped[timeKey]) {
         grouped[timeKey] = []
       }
-      
+
       grouped[timeKey].push(appointment)
     })
-    
+
     return grouped
   }
 
   // Función para obtener el estilo de posicionamiento para múltiples trabajos
   const getMultiJobPosition = (appointments: Appointment[], index: number, total: number): AppointmentPosition | null => {
     if (total === 1) {
-      return calculateAppointmentPosition(appointments[0].startTime, appointments[0].endTime)
+      const firstAppointment = appointments[0]
+      if (!firstAppointment) return null
+      return calculateAppointmentPosition(firstAppointment.startTime, firstAppointment.endTime)
     }
-    
-    const basePosition = calculateAppointmentPosition(appointments[0].startTime, appointments[0].endTime)
+
+    const firstAppointment = appointments[0]
+    if (!firstAppointment) return null
+
+    const basePosition = calculateAppointmentPosition(firstAppointment.startTime, firstAppointment.endTime)
     if (!basePosition) return null
-    
+
     // Calcular ancho y posición para múltiples trabajos
     const maxWidth = getTechnicianColumnWidth() - 8 // Ancho dinámico menos padding
     const jobWidth = Math.min(maxWidth / total, Math.max(80, maxWidth / 3)) // Ancho adaptativo
     const leftOffset = (index * jobWidth) % maxWidth
-    
+
     return {
       ...basePosition,
       left: `${leftOffset}px`,
@@ -111,36 +94,21 @@ export function CalendarGrid({ selectedDate, professionals, appointments, onPati
     const chileTime = new Date(now.getTime() - (3 * 60 * 60 * 1000))
     const hours = chileTime.getHours()
     const minutes = chileTime.getMinutes()
-    
+
     // Calcular posición basada en el horario de trabajo (8:00 - 20:00)
     const startHour = timeConfig.startHour
     const endHour = timeConfig.endHour
-    
+
     if (hours < startHour || hours >= endHour) return null
-    
+
     const hourPosition = (hours - startHour) * timeConfig.slotHeight
     const minuteOffset = (minutes / 60) * timeConfig.slotHeight
-    
+
     return hourPosition + minuteOffset
   }
 
   const currentTimePosition = getCurrentTimePosition()
 
-  // Función para obtener el estado del trabajo
-  const getJobStatusBadge = (status: string | undefined) => {
-    switch (status?.toUpperCase()) {
-      case "PENDING":
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pendiente</Badge>
-      case "IN_PROGRESS":
-        return <Badge variant="secondary" className="bg-blue-100 text-blue-800">En Progreso</Badge>
-      case "COMPLETED":
-        return <Badge variant="secondary" className="bg-green-100 text-green-800">Completado</Badge>
-      case "CANCELLED":
-        return <Badge variant="secondary" className="bg-red-100 text-red-800">Cancelado</Badge>
-      default:
-        return <Badge variant="outline">Sin Estado</Badge>
-    }
-  }
 
   return (
     <div className="w-full h-full bg-white overflow-hidden">
@@ -153,8 +121,8 @@ export function CalendarGrid({ selectedDate, professionals, appointments, onPati
           </div>
 
           {/* Professional columns header */}
-          {professionals.map((professional, index) => (
-            <div 
+          {professionals.map((professional) => (
+            <div
               key={professional.id}
               className="border-r-2 border-gray-300 bg-gray-100 px-3 py-2 text-center flex-shrink-0 w-50"
             >
@@ -168,9 +136,9 @@ export function CalendarGrid({ selectedDate, professionals, appointments, onPati
         <div className="flex relative m-0 p-0 gap-0">
           {/* Time column */}
           <div className="w-16 flex-shrink-0 border-r-2 border-gray-300 bg-gray-50">
-            {timeConfig.timeSlots.map((time: string, timeIndex: number) => (
-              <div 
-                key={time} 
+            {timeConfig.timeSlots.map((time: string) => (
+              <div
+                key={time}
                 className="px-3 py-1 text-xs text-gray-700 border-b-2 border-gray-200 flex items-center justify-center bg-gray-50"
                 style={{ height: `${timeConfig.slotHeight}px` }}
               >
@@ -180,56 +148,54 @@ export function CalendarGrid({ selectedDate, professionals, appointments, onPati
           </div>
 
           {/* Professional columns */}
-          {professionals.map((professional, index) => (
-            <div 
+          {professionals.map((professional) => (
+            <div
               key={professional.id}
               className="flex-shrink-0 border-r-2 border-gray-300 bg-white relative w-50"
             >
               {/* Grid lines for each time slot */}
               {timeConfig.timeSlots.map((time: string, timeIndex: number) => (
-                <div 
+                <div
                   key={`grid-${professional.id}-${time}`}
                   className="absolute left-0 right-0 border-b border-gray-200"
-                  style={{ 
+                  style={{
                     top: `${timeIndex * timeConfig.slotHeight}px`,
                     height: '1px'
                   }}
                 />
               ))}
-              
+
               {/* Empty time slots for visual consistency */}
               {timeConfig.timeSlots.map((time: string, timeIndex: number) => (
-                <div 
+                <div
                   key={`empty-${professional.id}-${time}`}
                   className="absolute left-0 right-0"
-                  style={{ 
+                  style={{
                     top: `${timeIndex * timeConfig.slotHeight}px`,
                     height: `${timeConfig.slotHeight}px`
                   }}
                 />
               ))}
-              
+
               {/* Appointments for this professional */}
               {(() => {
                 const professionalAppointments = getAppointmentsForProfessional(professional.id)
                 const groupedAppointments = groupAppointmentsByTimeSlot(professionalAppointments)
-                
-                return Object.entries(groupedAppointments).map(([timeSlot, appointments]) => {
+
+                return Object.entries(groupedAppointments).map(([, appointments]) => {
                   if (appointments.length === 0) return null
-                  
+
                   return appointments.map((appointment, index) => {
                     const position = getMultiJobPosition(appointments, index, appointments.length)
                     if (!position) return null
-                    
-                    // Para la columna "Técnico" genérica, permitir superposición
-                    const isGenericTechnician = professional.id === "tecnico-generico"
-                    
+
+
                     // Determinar clases CSS basadas en el estado del trabajo
                     const getJobCardClasses = (status: string | undefined, isUnassigned: boolean) => {
                       if (isUnassigned) {
                         return "absolute rounded-lg p-2 text-xs font-medium cursor-pointer hover:scale-105 transition-all bg-orange-100 text-orange-800 border-2 border-dashed border-orange-400 shadow-lg"
                       }
-                      
+
                       switch (status?.toUpperCase()) {
                         case "PENDING":
                           return "absolute rounded-lg p-2 text-xs font-medium cursor-pointer hover:scale-105 transition-all bg-yellow-100 text-yellow-800 shadow-md"
@@ -243,14 +209,14 @@ export function CalendarGrid({ selectedDate, professionals, appointments, onPati
                           return "absolute rounded-lg p-2 text-xs font-medium cursor-pointer hover:scale-105 transition-all bg-gray-100 text-gray-800 shadow-md"
                       }
                     }
-                    
+
                     // Estilo especial para trabajos sin técnico asignado
-                    const isUnassigned = appointment.professionalId === "tecnico-generico"
+                    const isUnassigned = (appointment as any).professionalId === "tecnico-generico"
                     const cardClasses = getJobCardClasses(appointment.status, isUnassigned)
-                    
+
                     // Mostrar indicador de múltiples trabajos si hay más de uno
                     const showMultiIndicator = appointments.length > 1
-                    
+
                     return (
                       <div
                         key={appointment.id}
@@ -297,10 +263,10 @@ export function CalendarGrid({ selectedDate, professionals, appointments, onPati
             </div>
           ))}
         </div>
-        
+
         {/* Línea de tiempo actual en Chile */}
         {currentTimePosition && (
-          <div 
+          <div
             className="absolute left-16 right-0 z-10 pointer-events-none"
             style={{ top: `${currentTimePosition}px` }}
           >

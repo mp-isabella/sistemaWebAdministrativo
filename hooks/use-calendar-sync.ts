@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 interface UseCalendarSyncProps {
   onRefresh: () => void
@@ -6,13 +6,13 @@ interface UseCalendarSyncProps {
 }
 
 export function useCalendarSync({ onRefresh, onJobUpdate }: UseCalendarSyncProps) {
-  const handleRefreshCalendar = useCallback((event: CustomEvent) => {
-    console.log('🔄 Hook: Evento refreshCalendar recibido:', event.detail)
+  const handleRefreshCalendar = useCallback(() => {
+
     onRefresh()
   }, [onRefresh])
 
   const handleJobUpdated = useCallback((event: CustomEvent) => {
-    console.log('🔄 Hook: Evento jobUpdated recibido:', event.detail)
+
     if (onJobUpdate && event.detail?.jobId) {
       onJobUpdate(event.detail.jobId, event.detail.updatedJob)
     } else {
@@ -42,7 +42,7 @@ export function useCalendarSync({ onRefresh, onJobUpdate }: UseCalendarSyncProps
         }
       })
       window.dispatchEvent(event)
-      console.log('🔄 Hook: Evento refreshCalendar disparado:', event.detail)
+
     }
   }, [])
 
@@ -57,7 +57,7 @@ export function useCalendarSync({ onRefresh, onJobUpdate }: UseCalendarSyncProps
         }
       })
       window.dispatchEvent(event)
-      console.log('🔄 Hook: Evento jobUpdated disparado:', event.detail)
+
     }
   }, [])
 

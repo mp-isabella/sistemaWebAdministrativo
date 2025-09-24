@@ -1,30 +1,24 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { 
-  User, 
-  Wrench, 
-  Clock, 
-  MapPin, 
-  AlertCircle, 
-  CheckCircle, 
-  Building2,
+import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+// import { es } from "date-fns/locale"
+import {
+  Calculator,
+  Clock,
   Plus,
   Trash2,
-  Calculator
+  User,
+  Wrench
 } from 'lucide-react'
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { cn } from "@/lib/utils"
+import { useEffect, useState } from "react"
 
 interface WorkOrderFormProps {
   workOrder?: any
@@ -57,7 +51,7 @@ export default function WorkOrderForm({ workOrder, onSubmit, onCancel, loading =
     address: "",
     notes: ""
   })
-  
+
   const [items, setItems] = useState<WorkOrderItem[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [clients, setClients] = useState<any[]>([])
@@ -89,7 +83,7 @@ export default function WorkOrderForm({ workOrder, onSubmit, onCancel, loading =
         address: workOrder.address || "",
         notes: workOrder.notes || ""
       })
-      
+
       if (workOrder.items) {
         setItems(workOrder.items.map((item: any) => ({
           id: item.id,
@@ -120,19 +114,20 @@ export default function WorkOrderForm({ workOrder, onSubmit, onCancel, loading =
       const companiesData = await companiesRes.json()
       const techniciansData = await techniciansRes.json()
 
-      setClients(clientsData || [])
+      // Filtrar solo clientes activos para órdenes de trabajo
+      const activeClients = (clientsData || []).filter((client: any) => client.status === 'active')
+      setClients(activeClients)
       setServices(Array.isArray(servicesData) ? servicesData.filter((s: any) => s.isActive) : [])
-      setCompanies(companiesData || [])
-      setTechnicians(techniciansData.workers?.filter((w: any) => w.isActive && w.role?.name === 'TECNICO') || [])
 
-      console.log('✅ Datos cargados:', {
-        clients: clientsData?.length || 0,
-        services: servicesData?.length || 0,
-        companies: companiesData?.length || 0,
-        technicians: techniciansData.workers?.filter((w: any) => w.isActive && w.role?.name === 'TECNICO').length || 0
-      })
+      // Filtrar empresas duplicadas por nombre
+      const uniqueCompanies = companiesData ? companiesData.filter((company: any, index: number, self: any[]) =>
+        index === self.findIndex((c: any) => c.name === company.name)
+      ) : []
+
+      setCompanies(uniqueCompanies)
+      setTechnicians(techniciansData.workers?.filter((w: any) => w.isActive && w.role?.name === 'TECNICO') || [])
     } catch (error) {
-      console.error("❌ Error cargando datos:", error)
+
     } finally {
       setLoadingData(false)
     }
@@ -167,7 +162,7 @@ export default function WorkOrderForm({ workOrder, onSubmit, onCancel, loading =
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
@@ -187,7 +182,7 @@ export default function WorkOrderForm({ workOrder, onSubmit, onCancel, loading =
 
       await onSubmit(submitData)
     } catch (error) {
-      console.error("Error submitting work order:", error)
+
     } finally {
       setIsSubmitting(false)
     }
@@ -210,13 +205,20 @@ export default function WorkOrderForm({ workOrder, onSubmit, onCancel, loading =
 
   const updateItem = (index: number, field: keyof WorkOrderItem, value: any) => {
     const updatedItems = [...items]
-    updatedItems[index] = { ...updatedItems[index], [field]: value }
-    
+    const currentItem = updatedItems[index]
+    if (!currentItem) return
+
+    updatedItems[index] = { ...currentItem, [field]: value }
+
     // Calcular total automáticamente
     if (field === 'quantity' || field === 'unitPrice') {
-      updatedItems[index].total = updatedItems[index].quantity * updatedItems[index].unitPrice
+      const quantity = updatedItems[index]?.quantity || 0
+      const unitPrice = updatedItems[index]?.unitPrice || 0
+      if (updatedItems[index]) {
+        updatedItems[index].total = quantity * unitPrice
+      }
     }
-    
+
     setItems(updatedItems)
   }
 
@@ -224,7 +226,7 @@ export default function WorkOrderForm({ workOrder, onSubmit, onCancel, loading =
     const subtotal = items.reduce((sum, item) => sum + item.total, 0)
     const tax = subtotal * 0.19 // IVA 19%
     const total = subtotal + tax
-    
+
     return { subtotal, tax, total }
   }
 
@@ -305,8 +307,8 @@ export default function WorkOrderForm({ workOrder, onSubmit, onCancel, loading =
                   {companies.map((company) => (
                     <SelectItem key={company.id} value={company.id}>
                       <div className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
+                        <div
+                          className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: getCompanyColors(company.type).primary }}
                         />
                         {company.name}

@@ -1,102 +1,102 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+    _request: NextRequest,
+    { params }: { params: { id: string } }
 ) {
-  try {
-    const session = await getServerSession(authOptions)
+    try {
+        const session = await getServerSession(authOptions)
 
-    if (!session) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+        if (!session) {
+            return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+        }
+
+        // Solo admin y secretaria pueden exportar PDFs
+        if (!["admin", "secretaria"].includes((session.user as any).role.toLowerCase())) {
+            return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
+        }
+
+        const workOrder = await prisma.job.findUnique({
+            where: { id: params.id },
+            include: {
+                client: true,
+                service: true,
+                technician: true,
+                createdBy: true,
+                company: true,
+                // items: true // No existe en el modelo Job
+            }
+        })
+
+        if (!workOrder) {
+            return NextResponse.json({ error: "Orden de trabajo no encontrada" }, { status: 404 })
+        }
+
+        // Generar HTML para el PDF
+        const html = generateWorkOrderHTML(workOrder)
+
+        return new NextResponse(html, {
+            headers: {
+                'Content-Type': 'text/html',
+                'Content-Disposition': `inline; filename="orden-trabajo-${workOrder.id}.html"`
+            }
+        })
+    } catch (error) {
+        
+        return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
     }
-
-    // Solo admin y secretaria pueden exportar PDFs
-    if (!["admin", "secretaria"].includes((session.user as any).role.toLowerCase())) {
-      return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
-    }
-
-    const workOrder = await prisma.workOrder.findUnique({
-      where: { id: params.id },
-      include: {
-        client: true,
-        service: true,
-        technician: true,
-        createdBy: true,
-        company: true,
-        items: true
-      }
-    })
-
-    if (!workOrder) {
-      return NextResponse.json({ error: "Orden de trabajo no encontrada" }, { status: 404 })
-    }
-
-    // Generar HTML para el PDF
-    const html = generateWorkOrderHTML(workOrder)
-
-    return new NextResponse(html, {
-      headers: {
-        'Content-Type': 'text/html',
-        'Content-Disposition': `inline; filename="orden-trabajo-${workOrder.workOrderNumber}.html"`
-      }
-    })
-  } catch (error) {
-    console.error("Error generating work order PDF:", error)
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
-  }
 }
 
 function generateWorkOrderHTML(workOrder: any) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      minimumFractionDigits: 0
-    }).format(amount)
-  }
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('es-CL', {
+            style: 'currency',
+            currency: 'CLP',
+            minimumFractionDigits: 0
+        }).format(amount)
+    }
 
-  const formatDate = (date: string | Date) => {
-    return format(new Date(date), 'dd/MM/yyyy', { locale: es })
-  }
+    const formatDate = (date: string | Date) => {
+        return format(new Date(date), 'dd/MM/yyyy', { locale: es })
+    }
 
-  const getCompanyColors = (companyType: string) => {
-    switch (companyType) {
-      case 'AMESTICA':
-        return {
-          primary: '#1e40af',
-          secondary: '#3b82f6',
-          accent: '#dbeafe'
-        }
-      case 'MULTIFUGAS':
-        return {
-          primary: '#059669',
-          secondary: '#10b981',
-          accent: '#d1fae5'
-        }
-      case 'SERVIFUGAS':
-        return {
-          primary: '#dc2626',
-          secondary: '#ef4444',
-          accent: '#fee2e2'
-        }
-      default:
-        return {
-          primary: '#1e40af',
-          secondary: '#3b82f6',
-          accent: '#dbeafe'
+    const getCompanyColors = (companyType: string) => {
+        switch (companyType) {
+            case 'AMESTICA':
+                return {
+                    primary: '#1e40af',
+                    secondary: '#3b82f6',
+                    accent: '#dbeafe'
+                }
+            case 'MULTIFUGAS':
+                return {
+                    primary: '#059669',
+                    secondary: '#10b981',
+                    accent: '#d1fae5'
+                }
+            case 'SERVIFUGAS':
+                return {
+                    primary: '#dc2626',
+                    secondary: '#ef4444',
+                    accent: '#fee2e2'
+                }
+            default:
+                return {
+                    primary: '#1e40af',
+                    secondary: '#3b82f6',
+                    accent: '#dbeafe'
+                }
         }
     }
-  }
 
-  const colors = getCompanyColors(workOrder.company?.type || 'AMESTICA')
+    const colors = getCompanyColors(workOrder.company?.type || 'AMESTICA')
 
-  return `
+    return `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -337,7 +337,7 @@ function generateWorkOrderHTML(workOrder: any) {
             </div>
             <div class="document-info">
                 <h2>ORDEN DE TRABAJO</h2>
-                <p class="document-number">N° ${workOrder.workOrderNumber}</p>
+                <p class="document-number">N° ${workOrder.id}</p>
                 <p class="document-date">Fecha: ${formatDate(workOrder.createdAt)}</p>
             </div>
         </div>

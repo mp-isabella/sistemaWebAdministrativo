@@ -1,25 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import '../../styles/unified-design.css';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import '../../styles/unified-design.css';
+// import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingUp, TrendingDown, DollarSign, Calendar, ArrowUpRight, ArrowDownRight, Download, Eye } from 'lucide-react';
-import { Line, Bar, Doughnut } from "react-chartjs-2";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
+  ArcElement,
   BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
   LineElement,
   PointElement,
-  ArcElement,
   Title,
   Tooltip,
-  Legend,
 } from "chart.js";
+import { ArrowDownRight, ArrowUpRight, DollarSign, Download, TrendingUp } from 'lucide-react';
+import { Bar, Doughnut, Line } from "react-chartjs-2";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend);
 
@@ -74,7 +74,6 @@ export default function CashBalancePage() {
         ],
       });
     } catch (error) {
-      console.error("Error fetching balance data:", error);
     } finally {
       setLoading(false);
     }
@@ -97,7 +96,6 @@ export default function CashBalancePage() {
         }
       }
     } catch (error) {
-      console.error('Error exporting balance report:', error);
     }
   };
 
@@ -126,37 +124,37 @@ export default function CashBalancePage() {
 
   if (loading) {
     return (
-    <div className="dashboard-container">
-      <div className="dashboard-content">
-        {/* Header Unificado */}
-        <div className="section-header">
-          <div>
-            <h1 className="section-title">
-              <span className="text-blue-600">Título</span> de la Sección
-            </h1>
-            <p className="section-subtitle">
-              Descripción de la sección
-            </p>
+      <div className="dashboard-container">
+        <div className="dashboard-content">
+          {/* Header Unificado */}
+          <div className="section-header">
+            <div>
+              <h1 className="section-title">
+                <span className="text-blue-600">Título</span> de la Sección
+              </h1>
+              <p className="section-subtitle">
+                Descripción de la sección
+              </p>
+            </div>
+            <div className="header-actions">
+              <Button className="btn-primary">
+                Acción Principal
+              </Button>
+            </div>
           </div>
-          <div className="header-actions">
-            <Button className="btn-primary">
-              Acción Principal
-            </Button>
-          </div>
-        </div>
 
-        {/* Contenido Principal */}
-        <div className="unified-card">
-          <div className="unified-card-content">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600">Cargando balance...</p>
+          {/* Contenido Principal */}
+          <div className="unified-card">
+            <div className="unified-card-content">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-2 text-gray-600">Cargando balance...</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
   }
 
   return (

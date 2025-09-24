@@ -1,8 +1,8 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { X, Edit, DollarSign, Phone, Mail, User, CheckCircle, Calendar, Clock } from "lucide-react"
 import type { Patient } from "@/types/calendar"
+import { Calendar, CheckCircle, Clock, DollarSign, Edit, Mail, Phone, User, X } from "lucide-react"
 import { memo } from "react"
 
 interface PatientSidebarProps {
@@ -39,7 +39,6 @@ export const PatientSidebar = memo(function PatientSidebar({ patient, onClose }:
                 size="sm"
                 className="px-3 py-1 text-gray-700 hover:bg-gray-50 border-gray-200 hover:border-gray-300 transition-all duration-200"
                 onClick={() => {
-                  console.log('Editar cita:', patient.id);
                 }}
               >
                 <Edit className="h-3 w-3 mr-1" />
@@ -125,22 +124,22 @@ export const PatientSidebar = memo(function PatientSidebar({ patient, onClose }:
                     <button
                       className="w-6 h-6 bg-orange-400 rounded-full hover:scale-110 transition-all duration-200 shadow-md hover:shadow-lg"
                       title="Pendiente"
-                      onClick={() => console.log('Cambiar estado a: Pendiente')}
+                      onClick={() => console.log('Status: Pending')}
                     />
                     <button
                       className="w-6 h-6 bg-blue-400 rounded-full hover:scale-110 transition-all duration-200 shadow-md hover:shadow-lg"
                       title="En Progreso"
-                      onClick={() => console.log('Cambiar estado a: En Progreso')}
+                      onClick={() => console.log('Status: In Progress')}
                     />
                     <button
                       className="w-6 h-6 bg-green-400 rounded-full hover:scale-110 transition-all duration-200 shadow-md hover:shadow-lg"
                       title="Completada"
-                      onClick={() => console.log('Cambiar estado a: Completada')}
+                      onClick={() => console.log('Status: Completed')}
                     />
                     <button
                       className="w-6 h-6 bg-red-400 rounded-full hover:scale-110 transition-all duration-200 shadow-md hover:shadow-lg"
                       title="Cancelada"
-                      onClick={() => console.log('Cambiar estado a: Cancelada')}
+                      onClick={() => console.log('Status: Cancelled')}
                     />
                   </div>
                 </div>
@@ -208,7 +207,6 @@ export const PatientSidebar = memo(function PatientSidebar({ patient, onClose }:
                 size="sm"
                 className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border-gray-200 hover:border-gray-300 transition-all duration-200 h-8"
                 onClick={() => {
-                  console.log('Ver detalles de pago para:', patient.id);
                 }}
               >
                 <DollarSign className="h-3 w-3 mr-2 text-green-600" />
@@ -219,7 +217,6 @@ export const PatientSidebar = memo(function PatientSidebar({ patient, onClose }:
                 size="sm"
                 className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border-gray-200 hover:border-gray-300 transition-all duration-200 h-8"
                 onClick={() => {
-                  console.log('Reagendar cita:', patient.id);
                 }}
               >
                 <Calendar className="h-3 w-3 mr-2 text-blue-600" />
@@ -230,7 +227,6 @@ export const PatientSidebar = memo(function PatientSidebar({ patient, onClose }:
                 size="sm"
                 className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border-gray-200 hover:border-gray-300 transition-all duration-200 h-8"
                 onClick={() => {
-                  console.log('Asignar técnico para:', patient.id);
                 }}
               >
                 <User className="h-3 w-3 mr-2 text-purple-600" />
@@ -242,7 +238,6 @@ export const PatientSidebar = memo(function PatientSidebar({ patient, onClose }:
                 className="w-full justify-start bg-white hover:bg-red-50 text-red-600 hover:text-red-700 border-red-200 hover:border-red-300 transition-all duration-200 h-8"
                 onClick={() => {
                   if (confirm('¿Estás seguro de que quieres cancelar esta cita?')) {
-                    console.log('Cancelar cita:', patient.id);
                   }
                 }}
               >

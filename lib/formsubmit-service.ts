@@ -23,7 +23,6 @@ const serviceNames: Record<string, string> = {
 export const sendViaFormSubmit = async (data: FormSubmitData): Promise<boolean> => {
   try {
     const serviceName = serviceNames[data.servicio] || data.servicio;
-    
     // Crear el contenido del email
     const emailContent = `
 🔥 NUEVA COTIZACIÓN - AMÉSTICA LTDA.
@@ -67,28 +66,43 @@ Améstica Ltda. - Servicios Profesionales
 =======================================
     `.trim();
 
-    // Usar FormSubmit
+    // Usar FormSubmit con configuración optimizada
     const formData = new FormData();
     formData.append('_to', DESTINATION_EMAIL);
     formData.append('_subject', `🔥 Nueva Cotización: ${serviceName} - ${data.nombre}`);
     formData.append('_replyto', data.email);
     formData.append('_captcha', 'false');
+    formData.append('_template', 'table'); // Usar template de tabla para mejor formato
+    formData.append('_next', 'https://amesticaltda.com/gracias'); // Página de confirmación
     
-    // Enviar solo el contenido completo como mensaje
+    // Enviar campos individuales para mejor procesamiento
+    formData.append('nombre', data.nombre);
+    formData.append('email', data.email);
+    formData.append('telefono', data.telefono);
+    formData.append('region', data.region);
+    formData.append('comuna', data.comuna);
+    formData.append('direccion', data.direccion);
+    formData.append('servicio', serviceName);
+    formData.append('mensaje', data.mensaje || '');
+    formData.append('formType', data.formType);
+    
+    // También enviar el contenido completo como mensaje
     formData.append('message', emailContent);
-
     const response = await fetch('https://formsubmit.co/ajax/mpriquelme.dev@gmail.com', {
       method: 'POST',
       body: formData
     });
 
     const result = await response.json();
-    console.log('FormSubmit response:', result);
-    
     // FormSubmit puede devolver success: true o simplemente un status 200
-    return result.success === true || response.ok;
+    const success = result.success === true || response.ok;
+    
+    if (success) {
+    } else {
+    }
+    
+    return success;
   } catch (error) {
-    console.log('FormSubmit error:', error);
     return false;
   }
 };
@@ -99,8 +113,6 @@ export const sendFormSubmitQuote = async (data: FormSubmitData): Promise<{
   message: string;
   service?: string;
 }> => {
-  console.log('📧 Iniciando envío de cotización con FormSubmit...');
-  
   // Validación básica
   if (!data.nombre || !data.email || !data.telefono || !data.servicio) {
     return {
@@ -119,25 +131,21 @@ export const sendFormSubmitQuote = async (data: FormSubmitData): Promise<{
   }
 
   try {
-    console.log('📧 Enviando con FormSubmit...');
     const success = await sendViaFormSubmit(data);
     
     if (success) {
-      console.log('✅ Cotización enviada exitosamente vía FormSubmit');
       return {
         success: true,
         message: '¡Gracias por confiar en nosotros! Nos pondremos en contacto contigo a la brevedad.',
         service: 'FormSubmit'
       };
     } else {
-      console.log('❌ FormSubmit falló');
       return {
         success: false,
         message: 'Lo sentimos, hubo un problema al enviar tu solicitud. Por favor, intenta nuevamente o contáctanos directamente al +56 9 4200 8410.'
       };
     }
   } catch (error) {
-    console.log('❌ FormSubmit error:', error);
     return {
       success: false,
       message: 'Lo sentimos, hubo un problema al enviar tu solicitud. Por favor, intenta nuevamente o contáctanos directamente al +56 9 4200 8410.'

@@ -1,75 +1,57 @@
+// Script para crear un usuario administrador
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
 async function createAdmin() {
-  try {
-    console.log('🔍 Verificando si existe el usuario admin...');
-    
-    // Verificar si ya existe un usuario admin
-    const existingAdmin = await prisma.user.findFirst({
-      where: {
-        email: 'admin@amestica.cl'
-      }
-    });
+    try {
+        // Verificar conexión
+        await prisma.$connect();
+        // Verificar si ya existe un administrador
+        const existingAdmin = await prisma.user.findFirst({
+            where: {
+                role: {
+                    name: 'administrador'
+                },
+                isActive: true
+            }
+        });
 
-    if (existingAdmin) {
-      console.log('✅ El usuario admin ya existe');
-      console.log('Email:', existingAdmin.email);
-      console.log('Rol:', existingAdmin.roleId);
-      return;
-    }
-
-    console.log('🔍 Verificando si existe el rol admin...');
-    
-    // Verificar si existe el rol admin
-    let adminRole = await prisma.role.findFirst({
-      where: {
-        name: 'admin'
-      }
-    });
-
-    if (!adminRole) {
-      console.log('📝 Creando rol admin...');
-      adminRole = await prisma.role.create({
-        data: {
-          name: 'admin',
-          description: 'Administrador del sistema',
-          permissions: ['all']
+        if (existingAdmin) {
+            return;
         }
-      });
-      console.log('✅ Rol admin creado con ID:', adminRole.id);
-    } else {
-      console.log('✅ Rol admin ya existe con ID:', adminRole.id);
+
+        // Verificar si existe el rol de administrador
+        let adminRole = await prisma.role.findFirst({
+            where: { name: 'administrador' }
+        });
+
+        if (!adminRole) {
+            adminRole = await prisma.role.create({
+                data: {
+                    name: 'administrador'
+                }
+            });
+        }
+
+        // Crear usuario administrador
+        const hashedPassword = await bcrypt.hash('admin123', 12);
+
+        const adminUser = await prisma.user.create({
+            data: {
+                name: 'Administrador',
+                email: 'admin@amestica.cl',
+                phone: '+56912345678',
+                password: hashedPassword,
+                roleId: adminRole.id,
+                isActive: true
+            }
+        });
+    } catch (error) {
+    } finally {
+        await prisma.$disconnect();
     }
-
-    console.log('🔐 Generando hash de contraseña...');
-    const hashedPassword = await bcrypt.hash('admin123', 12);
-
-    console.log('👤 Creando usuario admin...');
-    const adminUser = await prisma.user.create({
-      data: {
-        email: 'admin@amestica.cl',
-        password: hashedPassword,
-        name: 'Administrador',
-        isActive: true,
-        roleId: adminRole.id
-      }
-    });
-
-    console.log('✅ Usuario admin creado exitosamente!');
-    console.log('ID:', adminUser.id);
-    console.log('Email:', adminUser.email);
-    console.log('Nombre:', adminUser.name);
-    console.log('Rol ID:', adminUser.roleId);
-    console.log('Activo:', adminUser.isActive);
-
-  } catch (error) {
-    console.error('❌ Error al crear usuario admin:', error);
-  } finally {
-    await prisma.$disconnect();
-  }
 }
 
 createAdmin();

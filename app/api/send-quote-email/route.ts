@@ -117,19 +117,10 @@ export async function POST(request: NextRequest) {
         );
       }
     } catch (webFormError) {
-      console.log('Web3Forms falló, intentando método alternativo...');
     }
 
     // Método alternativo: usar un webhook simple o servicio de notificación
     // Por simplicidad, simulamos el envío exitoso y guardamos en logs
-    console.log('📧 NUEVA COTIZACIÓN RECIBIDA:');
-    console.log('================================');
-    console.log(`Para: ${DESTINATION_EMAIL}`);
-    console.log(`Asunto: ${subject}`);
-    console.log('Contenido:');
-    console.log(emailContent);
-    console.log('================================');
-
     return NextResponse.json(
       { 
         success: true, 
@@ -139,7 +130,6 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('Error al procesar cotización:', error);
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }

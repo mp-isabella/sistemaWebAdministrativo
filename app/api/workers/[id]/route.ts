@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from "next/server"
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -12,7 +12,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    if ((session.user as any).role !== "admin") {
+    const userRole = (session.user as any).role;
+    if (userRole !== "ADMIN" && userRole !== "administrador" && userRole !== "admin") {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
@@ -42,12 +43,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(updatedWorker)
   } catch (error) {
-    console.error("Error updating worker:", error)
+    
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -55,7 +56,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    if ((session.user as any).role !== "admin") {
+    const userRole = (session.user as any).role;
+    if (userRole !== "ADMIN" && userRole !== "administrador" && userRole !== "admin") {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 
@@ -72,7 +74,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     const workerToDelete = await prisma.user.findUnique({
       where: { id: workerId },
-      include: { 
+      include: {
         role: true,
         assignedJobs: {
           where: {
@@ -88,14 +90,14 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ error: "Trabajador no encontrado" }, { status: 404 })
     }
 
-    if (workerToDelete.role.name === "admin" && adminCount <= 1) {
+    if (workerToDelete.role.name === "administrador" && adminCount <= 1) {
       return NextResponse.json({ error: "No se puede eliminar el último administrador" }, { status: 400 })
     }
 
     // Verificar si tiene trabajos pendientes o en progreso
     if (workerToDelete.assignedJobs.length > 0) {
-      return NextResponse.json({ 
-        error: "No se puede eliminar el trabajador porque tiene trabajos pendientes o en progreso asignados" 
+      return NextResponse.json({
+        error: "No se puede eliminar el trabajador porque tiene trabajos pendientes o en progreso asignados"
       }, { status: 400 })
     }
 
@@ -111,7 +113,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     return NextResponse.json({ message: "Trabajador eliminado exitosamente" })
   } catch (error) {
-    console.error("Error deleting worker:", error)
+    
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

@@ -102,7 +102,6 @@ export function ChangeProtectionProvider({ children }: ChangeProtectionProviderP
           // Limpiar estado antiguo
           localStorage.removeItem('lastSavedState');
         } catch (error) {
-          console.warn('Error al restaurar estado:', error);
         }
       }
     }

@@ -72,7 +72,7 @@ export function useScheduleValidation() {
         return errorResult
       }
     } catch (error) {
-      console.error('Error validating schedule:', error)
+      
       const errorResult = {
         hasConflict: false,
         conflictingJobs: [],

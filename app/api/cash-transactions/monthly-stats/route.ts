@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ monthlyStats: result })
 
   } catch (error) {
-    console.error('Error fetching monthly stats:', error)
+    
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

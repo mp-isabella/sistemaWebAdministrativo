@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffect, useState } from "react"
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+// import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Users, Calendar, FileText, Plus, Search, Download, Receipt, ExternalLink, Clock, TrendingUp, CreditCard } from "lucide-react"
+import { Calendar, Clock, CreditCard, Download, ExternalLink, FileText, Plus, Receipt, Search, TrendingUp, Users } from "lucide-react"
 
 interface Activity {
   id: number;
@@ -103,15 +103,15 @@ export default function SecretariaDashboard() {
                 Gestión administrativa y coordinación de servicios
               </p>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
+              <Button
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
               >
                 <Plus className="h-5 w-5 mr-2" />
                 Nuevo Cliente
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 className="border-2 border-blue-200 text-blue-700 hover:bg-blue-50 px-8 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200"
               >
@@ -197,16 +197,16 @@ export default function SecretariaDashboard() {
                 />
               </div>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button 
+              <Button
                 variant="outline"
                 className="border-2 border-green-200 text-green-700 hover:bg-green-50 px-6 py-3 rounded-xl font-medium shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200"
               >
                 <Download className="h-5 w-5 mr-2" />
                 Exportar Reportes
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 className="border-2 border-purple-200 text-purple-700 hover:bg-purple-50 px-6 py-3 rounded-xl font-medium shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200"
               >
@@ -224,19 +224,19 @@ export default function SecretariaDashboard() {
               <TrendingUp className="h-6 w-6 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-800">Actividades Recientes</h2>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="border-2 border-blue-200 text-blue-700 hover:bg-blue-50 px-6 py-2 rounded-xl font-medium shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200"
             >
               Ver Todas
             </Button>
           </div>
-          
+
           <div className="space-y-4">
             {recentActivities.map((activity) => (
-              <div 
-                key={activity.id} 
+              <div
+                key={activity.id}
                 className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md ${getActivityColor(activity.type)}`}
               >
                 <div className="flex-shrink-0">
@@ -248,8 +248,8 @@ export default function SecretariaDashboard() {
                     {formatTime(activity.timestamp)}
                   </p>
                 </div>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
                   className="text-gray-600 hover:text-gray-800 hover:bg-white/50 rounded-lg"
                 >

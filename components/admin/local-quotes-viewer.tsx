@@ -40,7 +40,6 @@ export function LocalQuotesViewer() {
         setQuotes(parsedQuotes);
       }
     } catch (error) {
-      console.error('Error loading quotes:', error);
     }
   };
 

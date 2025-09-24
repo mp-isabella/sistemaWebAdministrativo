@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
+import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from "next/server"
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
     if (!session) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         success: false,
         error: "No autorizado",
         session: null
@@ -29,8 +29,8 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error("Error en test endpoint:", error)
-    return NextResponse.json({ 
+    
+    return NextResponse.json({
       success: false,
       error: "Error interno del servidor",
       details: error instanceof Error ? error.message : "Error desconocido"

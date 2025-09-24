@@ -1,26 +1,26 @@
 // hooks/use-component-optimization.ts
 // Hook para optimización de componentes
 
-import { useCallback, useMemo, useRef, useEffect, useState } from 'react';
 import { PERFORMANCE_CONFIG, performanceUtils } from '@/lib/performance-optimizations';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface ComponentOptimizationOptions {
   // Debounce para eventos
   debounceEvents?: boolean;
   debounceDelay?: number;
-  
+
   // Throttle para eventos
   throttleEvents?: boolean;
   throttleDelay?: number;
-  
+
   // Memoización
   memoizeProps?: boolean;
   memoizeCallbacks?: boolean;
-  
+
   // Lazy loading
   lazyLoad?: boolean;
   intersectionThreshold?: number;
-  
+
   // Preload
   preload?: boolean;
   preloadDelay?: number;
@@ -33,7 +33,6 @@ export const useComponentOptimization = (options: ComponentOptimizationOptions =
     throttleEvents = false,
     throttleDelay = 100,
     memoizeProps = true,
-    memoizeCallbacks = true,
     lazyLoad = false,
     intersectionThreshold = PERFORMANCE_CONFIG.LOADING.INTERSECTION_THRESHOLD,
     preload = false,
@@ -48,7 +47,7 @@ export const useComponentOptimization = (options: ComponentOptimizationOptions =
   // Memoización de props
   const memoizedProps = useMemo(() => {
     if (!memoizeProps) return {};
-    
+
     return {
       // Props memoizados para evitar re-renders innecesarios
       className: 'optimized-component',
@@ -60,7 +59,7 @@ export const useComponentOptimization = (options: ComponentOptimizationOptions =
   const debouncedCallback = useCallback(
     <T extends (...args: any[]) => any>(callback: T): T => {
       if (!debounceEvents) return callback;
-      
+
       return performanceUtils.debounce(callback, debounceDelay) as T;
     },
     [debounceEvents, debounceDelay]
@@ -70,7 +69,7 @@ export const useComponentOptimization = (options: ComponentOptimizationOptions =
   const throttledCallback = useCallback(
     <T extends (...args: any[]) => any>(callback: T): T => {
       if (!throttleEvents) return callback;
-      
+
       return performanceUtils.throttle(callback, throttleDelay) as T;
     },
     [throttleEvents, throttleDelay]
@@ -85,7 +84,7 @@ export const useComponentOptimization = (options: ComponentOptimizationOptions =
         entries.forEach((entry) => {
           if (entry.isIntersecting && !isVisibleRef.current) {
             isVisibleRef.current = true;
-            
+
             // Trigger lazy load
             if (preload && preloadDelay > 0) {
               setTimeout(() => {
@@ -117,21 +116,18 @@ export const useComponentOptimization = (options: ComponentOptimizationOptions =
     const handlers: Record<string, any> = {};
 
     if (debounceEvents) {
-      handlers.onClick = debouncedCallback((e: Event) => {
+      handlers.onClick = debouncedCallback(() => {
         // Handle click with debounce
-        console.log('Debounced click event');
       });
-      
-      handlers.onScroll = debouncedCallback((e: Event) => {
+
+      handlers.onScroll = debouncedCallback(() => {
         // Handle scroll with debounce
-        console.log('Debounced scroll event');
       });
     }
 
     if (throttleEvents) {
-      handlers.onResize = throttledCallback((e: Event) => {
+      handlers.onResize = throttledCallback(() => {
         // Handle resize with throttle
-        console.log('Throttled resize event');
       });
     }
 
@@ -179,20 +175,20 @@ export const useComponentOptimization = (options: ComponentOptimizationOptions =
   return {
     // Refs
     componentRef,
-    
+
     // Props optimizados
     optimizedProps: memoizedProps,
-    
+
     // Event handlers optimizados
     optimizedEventHandlers,
-    
+
     // Funciones de optimización
     optimizeCallback,
     forceOptimizedRender,
-    
+
     // Estado
     optimizationState,
-    
+
     // Utilidades
     debouncedCallback,
     throttledCallback
@@ -210,7 +206,6 @@ export const useListOptimization = <T>(
 ) => {
   const {
     pageSize = 20,
-    virtualScroll = false,
     lazyLoad = true
   } = options;
 
@@ -228,7 +223,7 @@ export const useListOptimization = <T>(
   // Cargar más items
   const loadMore = useCallback(() => {
     if (isLoading) return;
-    
+
     setIsLoading(true);
     setTimeout(() => {
       setCurrentPage(prev => prev + 1);

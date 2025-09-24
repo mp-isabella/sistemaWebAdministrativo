@@ -1,32 +1,32 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSession } from "next-auth/react";
+import { useState } from "react";
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { 
-  Search, 
-  Filter, 
-  ImageIcon, 
-  FileText, 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertCircle,
   Calendar,
-  Download,
-  Eye,
-  Trash2,
-  Upload,
-  Plus,
-  RefreshCw,
-  X,
+  Camera,
   CheckCircle,
   Clock,
-  AlertCircle,
+  Download,
+  Eye,
+  FileText,
+  // Filter, 
+  ImageIcon,
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2,
+  Upload,
   Video,
-  Camera
+  X
 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+// import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import "../styles/unified-design.css";
 
@@ -47,14 +47,14 @@ interface Evidence {
 }
 
 export default function EvidencesPage() {
-  const { data: session } = useSession();
+  const { data: _session } = useSession();
   const { toast } = useToast();
-  
+
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [_loading, _setLoading] = useState(true);
+  const [_error, _setError] = useState("");
   const [showUploadModal, setShowUploadModal] = useState(false);
 
   // Datos de ejemplo mejorados
@@ -179,11 +179,11 @@ export default function EvidencesPage() {
 
   const filteredEvidence = evidenceData.filter(evidence => {
     const matchesSearch = evidence.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         evidence.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         evidence.technicianName.toLowerCase().includes(searchTerm.toLowerCase());
+      evidence.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      evidence.technicianName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === "all" || evidence.type === typeFilter;
     const matchesStatus = statusFilter === "all" || evidence.status === statusFilter;
-    
+
     return matchesSearch && matchesType && matchesStatus;
   });
 
@@ -239,7 +239,7 @@ export default function EvidencesPage() {
             </p>
           </div>
           <div className="header-actions">
-            <Button 
+            <Button
               className="btn-primary"
               onClick={handleUploadEvidence}
             >
@@ -260,7 +260,7 @@ export default function EvidencesPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="stat-card">
             <div className="flex items-center">
               <CheckCircle className="h-8 w-8 text-green-600" />
@@ -270,7 +270,7 @@ export default function EvidencesPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="stat-card">
             <div className="flex items-center">
               <Clock className="h-8 w-8 text-yellow-600" />
@@ -280,7 +280,7 @@ export default function EvidencesPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="stat-card">
             <div className="flex items-center">
               <AlertCircle className="h-8 w-8 text-red-600" />
@@ -299,7 +299,7 @@ export default function EvidencesPage() {
           </div>
           <div className="unified-card-content">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="form-group">
+              <div className="form-group hidden lg:block">
                 <label className="form-label">Buscar</label>
                 <div className="search-container">
                   <Search className="search-icon" />
@@ -312,7 +312,7 @@ export default function EvidencesPage() {
                   />
                 </div>
               </div>
-              
+
               <div className="form-group">
                 <label className="form-label">Tipo</label>
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
@@ -327,7 +327,7 @@ export default function EvidencesPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="form-group">
                 <label className="form-label">Estado</label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -342,7 +342,7 @@ export default function EvidencesPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="form-group">
                 <label className="form-label">Acciones</label>
                 <div className="flex space-x-2">
@@ -380,7 +380,7 @@ export default function EvidencesPage() {
                     "Aún no hay evidencias registradas en el sistema. Comienza subiendo la primera evidencia."
                   }
                 </p>
-                <Button 
+                <Button
                   className="btn-primary"
                   onClick={handleUploadEvidence}
                 >
@@ -404,9 +404,9 @@ export default function EvidencesPage() {
                           {getStatusLabel(evidence.status)}
                         </Badge>
                       </div>
-                      
+
                       <p className="text-gray-600 mb-4 leading-relaxed">{evidence.description}</p>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-gray-600 mb-4">
                         <div className="flex items-center space-x-2">
                           <FileText className="h-4 w-4 text-gray-400" />
@@ -426,7 +426,7 @@ export default function EvidencesPage() {
                           <span>{evidence.clientName}</span>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <span className="font-medium">Técnico:</span>
                         <span>{evidence.technicianName}</span>
@@ -436,7 +436,7 @@ export default function EvidencesPage() {
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="flex flex-col space-y-2 ml-6">
                       <Button
                         variant="outline"

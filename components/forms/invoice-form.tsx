@@ -1,15 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Plus, Trash2, Calculator } from 'lucide-react'
+import { useEffect, useState } from 'react'
+// import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
+import { Plus, Trash2 } from 'lucide-react'
 
 interface InvoiceFormProps {
   onSubmit: (data: any) => void
@@ -29,10 +29,10 @@ export default function InvoiceForm({ onSubmit, onCancel, loading = false, initi
   const { toast } = useToast()
   const [clients, setClients] = useState<any[]>([])
   const [companies, setCompanies] = useState<any[]>([])
-  const [services, setServices] = useState<any[]>([])
+  const [_services, setServices] = useState<any[]>([])
   const [selectedCompany, setSelectedCompany] = useState('')
   const [selectedClient, setSelectedClient] = useState('')
-  
+
   const [formData, setFormData] = useState({
     invoiceNumber: '',
     date: new Date().toISOString().split('T')[0],
@@ -67,17 +67,19 @@ export default function InvoiceForm({ onSubmit, onCancel, loading = false, initi
       setSelectedClient(initialData.clientId || '')
       setSelectedCompany(initialData.companyId || '')
     }
-  }, [initialData])
+  }, [initialData, formData.date, formData.dueDate])
 
   const fetchClients = async () => {
     try {
       const response = await fetch('/api/clients')
       if (response.ok) {
         const data = await response.json()
-        setClients(data)
+        // Filtrar solo clientes activos para facturación
+        const activeClients = data.filter((client: any) => client.status === 'active')
+        setClients(activeClients)
       }
     } catch (error) {
-      console.error('Error fetching clients:', error)
+      
     }
   }
 
@@ -86,10 +88,16 @@ export default function InvoiceForm({ onSubmit, onCancel, loading = false, initi
       const response = await fetch('/api/companies')
       if (response.ok) {
         const data = await response.json()
-        setCompanies(data)
+
+        // Filtrar empresas duplicadas por nombre
+        const uniqueCompanies = data ? data.filter((company: any, index: number, self: any[]) =>
+          index === self.findIndex((c: any) => c.name === company.name)
+        ) : []
+
+        setCompanies(uniqueCompanies)
       }
     } catch (error) {
-      console.error('Error fetching companies:', error)
+      
     }
   }
 
@@ -101,7 +109,7 @@ export default function InvoiceForm({ onSubmit, onCancel, loading = false, initi
         setServices(data)
       }
     } catch (error) {
-      console.error('Error fetching services:', error)
+      
     }
   }
 
@@ -196,7 +204,7 @@ export default function InvoiceForm({ onSubmit, onCancel, loading = false, initi
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.clientId || !formData.companyId || formData.items.length === 0) {
       toast({
         title: "Error",
@@ -206,15 +214,15 @@ export default function InvoiceForm({ onSubmit, onCancel, loading = false, initi
       return
     }
 
-         const { subtotal, tax, total, taxRate } = calculateTotals()
-     
-     const invoiceData = {
-       ...formData,
-       subtotal,
-       tax,
-       total,
-       taxRate
-     }
+    const { subtotal, tax, total, taxRate } = calculateTotals()
+
+    const invoiceData = {
+      ...formData,
+      subtotal,
+      tax,
+      total,
+      taxRate
+    }
 
     onSubmit(invoiceData)
   }
@@ -252,54 +260,54 @@ export default function InvoiceForm({ onSubmit, onCancel, loading = false, initi
             <CardTitle>Información de la Factura</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-               <div>
-                 <Label htmlFor="invoiceNumber">Número de Factura</Label>
-                 <Input
-                   id="invoiceNumber"
-                   value={formData.invoiceNumber}
-                   onChange={(e) => setFormData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
-                   placeholder="FAC-001"
-                   required
-                 />
-               </div>
-               <div>
-                 <Label htmlFor="date">Fecha de Emisión</Label>
-                 <Input
-                   id="date"
-                   type="date"
-                   value={formData.date}
-                   onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                   required
-                 />
-               </div>
-               <div>
-                 <Label htmlFor="dueDate">Fecha de Vencimiento</Label>
-                 <Input
-                   id="dueDate"
-                   type="date"
-                   value={formData.dueDate}
-                   onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
-                   required
-                 />
-               </div>
-               <div>
-                 <Label htmlFor="taxRate">Tasa de IVA (%)</Label>
-                 <Input
-                   id="taxRate"
-                   type="number"
-                   value={taxRateInput}
-                   onChange={(e) => {
-                     const value = e.target.value
-                     setTaxRateInput(value)
-                   }}
-                   min="0"
-                   max="100"
-                   step="0.01"
-                   placeholder="19"
-                 />
-               </div>
-             </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <Label htmlFor="invoiceNumber">Número de Factura</Label>
+                <Input
+                  id="invoiceNumber"
+                  value={formData.invoiceNumber}
+                  onChange={(e) => setFormData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+                  placeholder="FAC-001"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="date">Fecha de Emisión</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="dueDate">Fecha de Vencimiento</Label>
+                <Input
+                  id="dueDate"
+                  type="date"
+                  value={formData.dueDate}
+                  onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="taxRate">Tasa de IVA (%)</Label>
+                <Input
+                  id="taxRate"
+                  type="number"
+                  value={taxRateInput}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    setTaxRateInput(value)
+                  }}
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  placeholder="19"
+                />
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -314,7 +322,7 @@ export default function InvoiceForm({ onSubmit, onCancel, loading = false, initi
                         ...company,
                         displayName: company.name.replace(/\s+Ltda\.?$/i, '')
                       }))
-                      .filter((company, index, self) => 
+                      .filter((company, index, self) =>
                         index === self.findIndex(c => c.displayName === company.displayName)
                       )
                       .map((company) => (
@@ -371,29 +379,29 @@ export default function InvoiceForm({ onSubmit, onCancel, loading = false, initi
                   onChange={(e) => setNewItem(prev => ({ ...prev, quantity: parseInt(e.target.value) || 1 }))}
                 />
               </div>
-                             <div>
-                 <Label htmlFor="unitPrice">Precio Unitario</Label>
-                 <Input
-                   id="unitPrice"
-                   type="text"
-                   value={unitPriceInput ? new Intl.NumberFormat('es-CL', {
-                     style: 'currency',
-                     currency: 'CLP',
-                     minimumFractionDigits: 0,
-                     maximumFractionDigits: 0
-                   }).format(parseFloat(unitPriceInput)) : ''}
-                   onChange={(e) => {
-                     const value = e.target.value
-                     // Remover símbolos de moneda y separadores de miles
-                     const cleanValue = value.replace(/[^\d]/g, '')
-                     const numValue = cleanValue === '' ? '' : cleanValue
-                     setUnitPriceInput(numValue)
-                     const parsedValue = cleanValue === '' ? 0 : parseInt(cleanValue) || 0
-                     setNewItem(prev => ({ ...prev, unitPrice: parsedValue }))
-                   }}
-                   placeholder="$0"
-                 />
-               </div>
+              <div>
+                <Label htmlFor="unitPrice">Precio Unitario</Label>
+                <Input
+                  id="unitPrice"
+                  type="text"
+                  value={unitPriceInput ? new Intl.NumberFormat('es-CL', {
+                    style: 'currency',
+                    currency: 'CLP',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  }).format(parseFloat(unitPriceInput)) : ''}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    // Remover símbolos de moneda y separadores de miles
+                    const cleanValue = value.replace(/[^\d]/g, '')
+                    const numValue = cleanValue === '' ? '' : cleanValue
+                    setUnitPriceInput(numValue)
+                    const parsedValue = cleanValue === '' ? 0 : parseInt(cleanValue) || 0
+                    setNewItem(prev => ({ ...prev, unitPrice: parsedValue }))
+                  }}
+                  placeholder="$0"
+                />
+              </div>
               <div>
                 <Button type="button" onClick={addItem} className="w-full">
                   <Plus className="h-4 w-4 mr-2" />
@@ -448,10 +456,10 @@ export default function InvoiceForm({ onSubmit, onCancel, loading = false, initi
                     <span>Subtotal:</span>
                     <span>{formatCurrency(calculateTotals().subtotal)}</span>
                   </div>
-                                     <div className="flex justify-between">
-                     <span>IVA ({calculateTotals().taxRate}%):</span>
-                     <span>{formatCurrency(calculateTotals().tax)}</span>
-                   </div>
+                  <div className="flex justify-between">
+                    <span>IVA ({calculateTotals().taxRate}%):</span>
+                    <span>{formatCurrency(calculateTotals().tax)}</span>
+                  </div>
                   <div className="flex justify-between text-lg font-bold border-t pt-2">
                     <span>Total:</span>
                     <span className={selectedCompanyConfig?.colors.text}>
@@ -484,8 +492,8 @@ export default function InvoiceForm({ onSubmit, onCancel, loading = false, initi
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancelar
           </Button>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={loading || formData.items.length === 0}
             className={selectedCompanyConfig?.colors.primary}
           >

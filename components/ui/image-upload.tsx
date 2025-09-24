@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import React, { useRef, useState } from "react";
+// import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Image as ImageIcon, Upload, X } from "lucide-react";
 import Image from "next/image";
 
 interface ImageUploadProps {
@@ -110,11 +110,10 @@ export default function ImageUpload({
         {label}
       </Label>
 
-      <Card className={`border-2 border-dashed transition-colors ${
-        dragActive 
-          ? "border-blue-500 bg-blue-50" 
-          : "border-gray-300 hover:border-gray-400"
-      }`}>
+      <Card className={`border-2 border-dashed transition-colors ${dragActive
+        ? "border-blue-500 bg-blue-50"
+        : "border-gray-300 hover:border-gray-400"
+        }`}>
         <CardContent className="p-6">
           <input
             ref={inputRef}

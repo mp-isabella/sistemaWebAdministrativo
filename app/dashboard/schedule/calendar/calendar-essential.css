@@ -2,31 +2,42 @@
 
 /* Grid del calendario con columnas dinámicas */
 .calendar-grid {
-  display: grid;
-  grid-template-columns: 100px repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0;
+  display: flex;
   width: 100%;
+  min-width: max-content;
+}
+
+/* Asegurar que el contenedor del calendario use todo el ancho disponible */
+.calendar-scroll {
+  width: 100%;
+}
+
+/* Filas del calendario que se expanden para usar todo el ancho */
+.calendar-row {
+  display: flex;
+  width: 100%;
+  min-width: max-content;
 }
 
 @media (min-width: 1024px) {
   .calendar-grid {
-    grid-template-columns: 120px repeat(auto-fit, minmax(160px, 1fr));
+    display: flex;
   }
 }
 
 /* Columna de tiempo fija */
 .calendar-time-column {
-  width: 100px;
-  min-width: 100px;
-  max-width: 100px;
+  width: 96px; /* w-24 */
+  min-width: 96px;
+  max-width: 96px;
   flex-shrink: 0;
 }
 
 @media (min-width: 1024px) {
   .calendar-time-column {
-    width: 120px;
-    min-width: 120px;
-    max-width: 120px;
+    width: 128px; /* w-32 */
+    min-width: 128px;
+    max-width: 128px;
   }
 }
 
@@ -54,15 +65,31 @@
   }
 }
 
-/* Columnas de técnicos */
+/* Columnas de técnicos - Ocupan todo el ancho disponible */
 .calendar-technician-column {
-  min-width: 140px;
+  flex: 1; /* Ocupa todo el espacio disponible */
+  min-width: 120px; /* Ancho mínimo para mantener legibilidad */
   border-right: 1px solid #e5e7eb;
+  position: relative;
 }
 
 @media (min-width: 1024px) {
   .calendar-technician-column {
-    min-width: 160px;
+    min-width: 140px; /* Ancho mínimo más generoso en desktop */
+  }
+}
+
+/* Asegurar que las columnas de técnicos estén bien organizadas - Ocupan todo el ancho disponible */
+.calendar-grid .technician-column {
+  flex: 1; /* Ocupa todo el espacio disponible */
+  min-width: 120px; /* Ancho mínimo para mantener legibilidad */
+  border-right: 1px solid #e5e7eb;
+  position: relative;
+}
+
+@media (min-width: 1024px) {
+  .calendar-grid .technician-column {
+    min-width: 140px; /* Ancho mínimo más generoso en desktop */
   }
 }
 
@@ -171,37 +198,93 @@
   background: #94a3b8;
 }
 
-/* Responsive para móviles */
-@media (max-width: 768px) {
-  .calendar-grid {
-    grid-template-columns: 80px repeat(auto-fit, minmax(120px, 1fr));
+/* Responsive para tablets */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .calendar-technician-column {
+    min-width: 180px; /* Ancho mínimo más generoso para tablets */
   }
   
   .calendar-time-column {
-    width: 80px;
-    min-width: 80px;
-    max-width: 80px;
+    width: 100px;
+    min-width: 100px;
+    max-width: 100px;
+  }
+  
+  .calendar-time-cell,
+  .calendar-technician-cell {
+    height: 3.5rem;
+    min-height: 3.5rem;
+    max-height: 3.5rem;
+  }
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .calendar-grid {
+    display: flex;
+  }
+  
+  .calendar-time-column {
+    width: 70px; /* Más compacto para móviles */
+    min-width: 70px;
+    max-width: 70px;
   }
   
   .calendar-time-cell {
-    height: 3rem;
-    min-height: 3rem;
-    max-height: 3rem;
+    height: 2.5rem;
+    min-height: 2.5rem;
+    max-height: 2.5rem;
     font-size: 0.75rem;
+    padding: 0.25rem;
   }
   
   .calendar-technician-column {
-    min-width: 120px;
+    flex: 1; /* Ocupa todo el espacio disponible */
+    min-width: 150px; /* Ancho mínimo más generoso para legibilidad */
   }
   
   .calendar-technician-cell {
-    height: 3rem;
-    min-height: 3rem;
-    max-height: 3rem;
+    height: 2.5rem;
+    min-height: 2.5rem;
+    max-height: 2.5rem;
+    padding: 0.25rem;
   }
   
   .calendar-job {
     font-size: 0.625rem;
     padding: 0.125rem 0.25rem;
+  }
+  
+  /* Mejorar el scroll horizontal en móviles */
+  .calendar-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Asegurar que el contenedor use todo el ancho disponible */
+  .calendar-scroll > div {
+    min-width: max-content;
+  }
+}
+
+/* Responsive para móviles muy pequeños */
+@media (max-width: 480px) {
+  .calendar-time-column {
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
+  }
+  
+  .calendar-technician-column {
+    min-width: 100px;
+  }
+  
+  .calendar-time-cell,
+  .calendar-technician-cell {
+    height: 2rem;
+    min-height: 2rem;
+    max-height: 2rem;
+    font-size: 0.625rem;
+    padding: 0.125rem;
   }
 }

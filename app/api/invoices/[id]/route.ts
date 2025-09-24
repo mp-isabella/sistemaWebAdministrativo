@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -51,13 +51,13 @@ export async function GET(
     return NextResponse.json(invoice)
 
   } catch (error) {
-    console.error('Error fetching invoice:', error)
+    
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
 
 export async function PUT(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -72,7 +72,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 
-    const body = await request.json()
+    const body = await _request.json()
     const { dueDate, taxRate, notes, items, status } = body
 
     // Verificar que la factura existe
@@ -100,7 +100,6 @@ export async function PUT(
       where: { id: params.id },
       data: {
         dueDate: dueDate ? new Date(dueDate) : null,
-        taxRate,
         notes,
         status,
         subtotal,
@@ -142,13 +141,13 @@ export async function PUT(
     return NextResponse.json(updatedInvoice)
 
   } catch (error) {
-    console.error('Error updating invoice:', error)
+    
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -180,7 +179,7 @@ export async function DELETE(
     return NextResponse.json({ message: 'Factura eliminada exitosamente' })
 
   } catch (error) {
-    console.error('Error deleting invoice:', error)
+    
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export interface Notification {
   id: string;
@@ -29,7 +29,7 @@ const useNotifications = (userRole: string = '', userId: string = '') => {
   // Ensure we always have valid default values
   const safeUserRole = userRole || '';
   const safeUserId = userId || '';
-  
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [jobNotifications, setJobNotifications] = useState<JobNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -42,16 +42,15 @@ const useNotifications = (userRole: string = '', userId: string = '') => {
       try {
         const savedNotifications = localStorage.getItem('notifications');
         const savedJobNotifications = localStorage.getItem('jobNotifications');
-        
+
         if (savedNotifications) {
           setNotifications(JSON.parse(savedNotifications));
         }
-        
+
         if (savedJobNotifications) {
           setJobNotifications(JSON.parse(savedJobNotifications));
         }
       } catch (error) {
-        console.warn('Error loading notifications from localStorage:', error);
       } finally {
         setIsInitialized(true);
       }
@@ -66,7 +65,6 @@ const useNotifications = (userRole: string = '', userId: string = '') => {
       try {
         localStorage.setItem('notifications', JSON.stringify(newNotifications));
       } catch (error) {
-        console.warn('Error saving notifications to localStorage:', error);
       }
     }
     setNotifications(newNotifications);
@@ -77,7 +75,6 @@ const useNotifications = (userRole: string = '', userId: string = '') => {
       try {
         localStorage.setItem('jobNotifications', JSON.stringify(newJobNotifications));
       } catch (error) {
-        console.warn('Error saving job notifications to localStorage:', error);
       }
     }
     setJobNotifications(newJobNotifications);
@@ -168,11 +165,11 @@ const useNotifications = (userRole: string = '', userId: string = '') => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const filteredNotifications = notifications.filter(notification => 
+    const filteredNotifications = notifications.filter(notification =>
       new Date(notification.timestamp) > thirtyDaysAgo
     );
-    
-    const filteredJobNotifications = jobNotifications.filter(notification => 
+
+    const filteredJobNotifications = jobNotifications.filter(notification =>
       new Date(notification.timestamp) > thirtyDaysAgo
     );
 
@@ -191,15 +188,15 @@ const useNotifications = (userRole: string = '', userId: string = '') => {
   const getFilteredNotifications = useCallback((userRole: string, userId: string = '') => {
     return jobNotifications.filter(notification => {
       let shouldShow = false;
-      
-      if (userRole === 'admin' || userRole === 'secretaria') {
+
+      if (userRole === 'administrador' || userRole === 'secretaria') {
         // Administradores y secretarias ven todas las notificaciones
         shouldShow = true;
       } else if (userRole === 'tecnico' && notification.technicianId) {
         // Técnicos solo ven notificaciones relacionadas con ellos
         shouldShow = notification.technicianId === userId;
       }
-      
+
       return shouldShow;
     });
   }, [jobNotifications]);
@@ -207,7 +204,7 @@ const useNotifications = (userRole: string = '', userId: string = '') => {
   // Función para obtener todas las notificaciones filtradas por rol y usuario
   const getAllNotifications = useCallback(() => {
     const filteredJobNotifications = getFilteredNotifications(safeUserRole, safeUserId);
-    
+
     // Combinar notificaciones generales y de trabajo
     const allNotifications = [
       ...notifications.map(notification => ({
@@ -221,7 +218,7 @@ const useNotifications = (userRole: string = '', userId: string = '') => {
     ];
 
     // Ordenar por timestamp (más recientes primero)
-    return allNotifications.sort((a, b) => 
+    return allNotifications.sort((a, b) =>
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
   }, [notifications, safeUserRole, safeUserId, getFilteredNotifications]);

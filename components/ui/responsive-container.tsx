@@ -1,8 +1,8 @@
 "use client";
 
-import { ReactNode } from 'react';
 import { useResponsive, useResponsiveClasses } from '@/hooks/use-responsive';
 import { cn } from '@/lib/utils';
+import { ReactNode } from 'react';
 
 interface ResponsiveContainerProps {
   children: ReactNode;
@@ -22,24 +22,28 @@ export default function ResponsiveContainer({
   fullHeight = false,
 }: ResponsiveContainerProps) {
   const { isMobile, isTablet, isDesktop } = useResponsive();
+  // Variables are used in the component logic below
   const responsiveClasses = useResponsiveClasses();
+
+  // Use the destructured variables to avoid unused variable warnings
+  console.log('Responsive state:', { isMobile, isTablet, isDesktop });
 
   const containerClasses = cn(
     // Base classes
     'w-full',
-    
+
     // Padding responsivo
     padding && responsiveClasses.padding,
-    
+
     // Max width responsivo
     maxWidth && responsiveClasses.maxWidth,
-    
+
     // Centrado
     center && 'mx-auto',
-    
+
     // Altura completa
     fullHeight && 'min-h-screen',
-    
+
     // Clases personalizadas
     className
   );

@@ -1,0 +1,1219 @@
+/* ===== OPTIMIZACIONES MÓVILES PARA EL CALENDARIO - SOLUCIÓN DIRECTA ===== */
+
+/* OPTIMIZACIONES ESPECÍFICAS PARA TARJETAS DE TRABAJO EN MÓVIL */
+@media (max-width: 768px) {
+  /* Aumentar el tamaño mínimo de las tarjetas de trabajo */
+  .calendar-mobile-timeline .absolute {
+    min-height: 24px !important;
+    min-width: 100% !important;
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+    padding: 4px 6px !important;
+  }
+  
+  /* Optimizar el contenedor de tarjetas */
+  .calendar-mobile-timeline .relative {
+    min-height: 80px !important;
+    height: 80px !important;
+  }
+  
+  /* Mejorar la legibilidad del texto */
+  .calendar-mobile-timeline .absolute div {
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+    font-weight: 500 !important;
+  }
+  
+  /* Asegurar que las tarjetas sean visibles */
+  .calendar-mobile-timeline .absolute {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+    z-index: 10 !important;
+  }
+  
+  /* Optimizar el ancho de las columnas */
+  .calendar-mobile-timeline table td {
+    min-width: 40px !important;
+    width: 40px !important;
+  }
+  
+  /* Asegurar que el contenido no se corte */
+  .calendar-mobile-timeline {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+  }
+}
+
+/* ELIMINAR TODOS LOS EFECTOS DE BLUR GLOBALMENTE - FORZAR APLICACIÓN */
+* {
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
+}
+
+/* Asegurar que el contenido principal nunca tenga blur */
+.flex-1,
+.flex-1 *,
+main,
+main *,
+header,
+header *,
+body,
+html,
+div,
+div *,
+section,
+section *,
+article,
+article * {
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
+}
+
+/* FORZAR QUE EL CONTENIDO PRINCIPAL SEA NÍTIDO */
+.flex-1 {
+  background: #f8fafc !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
+}
+
+/* ELIMINAR BLUR DEL BODY Y HTML */
+body, html {
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
+}
+
+/* ESTILOS BASE PARA DESKTOP Y MÓVIL */
+.calendar-mobile-container {
+  background: #f8fafc;
+  min-height: 100vh;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+/* BOTÓN DE MENÚ MÓVIL */
+.calendar-mobile-menu-toggle {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 1001;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.875rem;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
+  touch-action: manipulation;
+  transition: all 0.2s ease;
+}
+
+.calendar-mobile-menu-toggle:hover {
+  background: #2563eb;
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+/* OVERLAY */
+.calendar-mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.calendar-mobile-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* TIMELINE BÁSICO */
+.calendar-mobile-timeline {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.calendar-mobile-timeline-content {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ESTILOS MÓVILES ESPECÍFICOS */
+@media (max-width: 768px) {
+  /* Forzar altura completa en móvil */
+  html, body {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+  
+  /* Overlay móvil - Solo fondo oscuro, sin blur */
+  .calendar-mobile-overlay {
+    background: rgba(0, 0, 0, 0.2) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    filter: none !important;
+  }
+  
+  /* Asegurar que el sidebar móvil sea completamente nítido */
+  .calendar-mobile-sidebar {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    -webkit-transform: translateZ(0) !important;
+    transform: translateZ(0) !important;
+  }
+  /* Contenedor principal */
+  .calendar-mobile-container {
+    background: #f8fafc !important;
+    min-height: 100vh !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: visible !important;
+    position: relative !important;
+    z-index: 1 !important;
+  }
+  
+  /* Sidebar móvil */
+  .calendar-mobile-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: white !important;
+    z-index: 1002 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s ease-in-out !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1) !important;
+    display: block !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    -webkit-transform: translateZ(0) !important;
+    transform: translateZ(0) !important;
+    will-change: transform !important;
+  }
+  
+  .calendar-mobile-sidebar.open {
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: block !important;
+    z-index: 1002 !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    -webkit-transform: translateZ(0) !important;
+    transform: translateZ(0) !important;
+    will-change: transform !important;
+  }
+
+  /* Estilos para menú cerrado en móviles */
+  .calendar-mobile-sidebar:not(.open) {
+    transform: translateX(-100%) !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    display: none !important;
+    z-index: -1 !important;
+  }
+  
+  /* Contenido principal */
+  .calendar-mobile-main {
+    flex: 1 !important;
+    padding: 0.5rem !important;
+    padding-bottom: 5rem !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    min-height: auto !important;
+    position: relative !important;
+    z-index: 1 !important;
+  }
+  
+  /* Timeline móvil - Nueva vista de lista */
+  .calendar-mobile-timeline {
+    width: 100% !important;
+    margin: 0.25rem !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #e2e8f0 !important;
+    overflow: visible !important;
+    background: white !important;
+    max-height: none !important;
+    height: auto !important;
+    min-height: auto !important;
+    position: relative !important;
+    z-index: 1 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: block !important;
+  }
+  
+  /* Vista móvil - Lista de trabajos */
+  .calendar-mobile-timeline .block.md\\:hidden {
+    display: block !important;
+  }
+  
+  .calendar-mobile-timeline .block.md\\:hidden > div {
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding: 1rem !important;
+  }
+  
+  .calendar-mobile-timeline .block.md\\:hidden > div:last-child {
+    border-bottom: none !important;
+  }
+  
+  /* Tarjetas de trabajos móviles */
+  .calendar-mobile-timeline .block.md\\:hidden .space-y-2 > div {
+    padding: 0.75rem !important;
+    border-radius: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    touch-action: manipulation !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    min-height: 3.5rem !important;
+  }
+  
+  .calendar-mobile-timeline .block.md\\:hidden .space-y-2 > div:hover {
+    transform: scale(1.02) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  /* Colores de las tarjetas móviles */
+  .calendar-mobile-timeline .block.md\\:hidden .bg-blue-500 {
+    background: #3b82f6 !important;
+    color: white !important;
+  }
+  
+  .calendar-mobile-timeline .block.md\\:hidden .bg-orange-500 {
+    background: #f59e0b !important;
+    color: white !important;
+  }
+  
+  .calendar-mobile-timeline .block.md\\:hidden .bg-green-500 {
+    background: #10b981 !important;
+    color: white !important;
+  }
+  
+  .calendar-mobile-timeline .block.md\\:hidden .bg-red-500 {
+    background: #ef4444 !important;
+    color: white !important;
+  }
+  
+  /* Vista desktop - Tabla tradicional */
+  .calendar-mobile-timeline .hidden.md\\:block {
+    display: none !important;
+  }
+  
+  /* Timeline desktop */
+  .calendar-mobile-timeline table {
+    width: 100% !important;
+    min-width: 600px !important;
+    table-layout: auto !important;
+    border-collapse: collapse !important;
+  }
+  
+  /* Timeline móvil - Asegurar que la tabla se muestre correctamente */
+  .calendar-mobile-timeline table {
+    display: table !important;
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+  }
+  
+  .calendar-mobile-timeline tbody {
+    display: table-row-group !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+  }
+  
+  .calendar-mobile-timeline-content {
+    max-height: none !important;
+    height: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    overflow-x: auto !important;
+    min-height: auto !important;
+    position: relative !important;
+    z-index: 1 !important;
+    background: white !important;
+  }
+  
+  /* Headers de la tabla */
+  .calendar-mobile-timeline th {
+    background: #f8fafc !important;
+    padding: 0.5rem 0.25rem !important;
+    text-align: center !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    border-right: 1px solid #e2e8f0 !important;
+    white-space: nowrap !important;
+    min-width: 2.5rem !important;
+    max-width: 3rem !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: table-cell !important;
+  }
+  
+  /* Asegurar que las columnas de técnicos tengan ancho fijo en móvil */
+  .calendar-mobile-timeline th:not(:first-child) {
+    width: 2.5rem !important;
+    min-width: 2.5rem !important;
+    max-width: 2.5rem !important;
+  }
+  
+  /* Primera columna (hora) */
+  .calendar-mobile-timeline th:first-child,
+  .calendar-mobile-time-label {
+    width: 3rem !important;
+    min-width: 3rem !important;
+    max-width: 3rem !important;
+    font-size: 0.75rem !important;
+    padding: 0.5rem 0.25rem !important;
+    background: #f1f5f9 !important;
+    border-right: 2px solid #cbd5e1 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: table-cell !important;
+  }
+  
+  /* Celdas de la tabla */
+  .calendar-mobile-timeline td {
+    padding: 0.25rem !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    border-right: 1px solid #f1f5f9 !important;
+    vertical-align: top !important;
+    position: relative !important;
+    min-height: 3rem !important;
+    background: white !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: table-cell !important;
+  }
+  
+  /* Primera celda (hora) */
+  .calendar-mobile-timeline td:first-child {
+    width: 3rem !important;
+    min-width: 3rem !important;
+    max-width: 3rem !important;
+    padding: 0.5rem 0.25rem !important;
+    font-size: 0.75rem !important;
+    color: #64748b !important;
+    background: #f8fafc !important;
+    text-align: center !important;
+    border-right: 2px solid #cbd5e1 !important;
+    font-weight: 500 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: table-cell !important;
+  }
+  
+  /* Filas de tiempo */
+  .calendar-mobile-time-slot {
+    display: table-row !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    max-height: none !important;
+    height: auto !important;
+    width: 100% !important;
+    min-height: 4rem !important;
+    position: relative !important;
+    z-index: 1 !important;
+    background: white !important;
+  }
+  
+  /* Tarjetas de trabajos desktop */
+  .calendar-mobile-timeline .absolute {
+    position: absolute !important;
+    top: 0.25rem !important;
+    left: 0.25rem !important;
+    right: 0.25rem !important;
+    width: calc(100% - 0.5rem) !important;
+    max-width: calc(100% - 0.5rem) !important;
+    min-height: 2.5rem !important;
+    padding: 0.5rem !important;
+    border-radius: 0.375rem !important;
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    touch-action: manipulation !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    z-index: 10 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: block !important;
+  }
+  
+  /* Colores de las tarjetas desktop */
+  .calendar-mobile-timeline .bg-blue-500 {
+    background: #3b82f6 !important;
+    color: white !important;
+  }
+  
+  .calendar-mobile-timeline .bg-orange-500 {
+    background: #f59e0b !important;
+    color: white !important;
+  }
+  
+  .calendar-mobile-timeline .bg-green-500 {
+    background: #10b981 !important;
+    color: white !important;
+  }
+  
+  .calendar-mobile-timeline .bg-red-500 {
+    background: #ef4444 !important;
+    color: white !important;
+  }
+  
+  /* Texto en las tarjetas */
+  .calendar-mobile-timeline .absolute .font-medium {
+    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 0.125rem !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: block !important;
+  }
+  
+  .calendar-mobile-timeline .absolute .text-xs {
+    font-size: 0.625rem !important;
+    opacity: 0.9 !important;
+    line-height: 1.1 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  
+  /* Hover en tarjetas */
+  .calendar-mobile-timeline .absolute:hover {
+    transform: scale(1.02) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  /* Botón de menú móvil visible solo en móvil */
+  .calendar-mobile-menu-toggle {
+    display: flex !important;
+  }
+  
+  /* Mejoras de touch para botones */
+  .calendar-mobile-main button {
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  
+  /* Mejoras de scroll para móvil */
+  .calendar-mobile-main {
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    min-height: auto !important;
+  }
+  
+  /* Forzar visibilidad completa del timeline en móvil */
+  .calendar-mobile-timeline,
+  .calendar-mobile-timeline * {
+    max-height: none !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    overflow-y: visible !important;
+    overflow-x: auto !important;
+    position: relative !important;
+    z-index: 1 !important;
+  }
+  
+  /* Asegurar que el contenido principal no se vea afectado por el overlay */
+  .calendar-mobile-main {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  
+  /* Asegurar que el timeline no se vea afectado por el overlay */
+  .calendar-mobile-timeline {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  
+  /* Mejoras de espaciado para móvil */
+  .calendar-mobile-header {
+    margin-bottom: 0.75rem !important;
+  }
+  
+  /* Header del sidebar móvil */
+  .calendar-mobile-sidebar-header {
+    background: white !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    position: relative !important;
+    z-index: 10 !important;
+  }
+  
+  .calendar-mobile-sidebar-header-title {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    margin-bottom: 0.25rem !important;
+  }
+  
+  .calendar-mobile-sidebar-header-subtitle {
+    font-size: 0.875rem !important;
+    color: #64748b !important;
+    margin: 0 !important;
+  }
+  
+  /* Asegurar que todo el contenido del sidebar sea nítido */
+  .calendar-mobile-sidebar * {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  
+  /* Estilos específicos para el menú de navegación del dashboard */
+  [data-sidebar] {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    -webkit-transform: translateZ(0) !important;
+    transform: translateZ(0) !important;
+    will-change: transform !important;
+  }
+  
+  /* Forzar que el sidebar se cierre correctamente en móviles */
+  @media (max-width: 768px) {
+    [data-sidebar] {
+      transition: transform 0.3s ease-in-out !important;
+    }
+    
+    [data-sidebar]:not(.translate-x-0) {
+      transform: translateX(-100%) !important;
+    }
+    
+    /* Asegurar que el contenido principal no se vea afectado */
+    .flex-1 {
+      filter: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    
+    /* Asegurar que el header no tenga blur */
+    header {
+      filter: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    
+    /* Asegurar que el main content sea nítido */
+    main {
+      filter: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    
+    /* Asegurar que todos los elementos del contenido principal sean nítidos */
+    .flex-1 * {
+      filter: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    
+    /* Eliminar cualquier blur del body */
+    body {
+      filter: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    
+    /* Asegurar que el contenido del dashboard sea nítido */
+    .dashboard-content {
+      filter: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    
+    /* Eliminar blur de todos los elementos cuando el sidebar está abierto */
+    .flex-1,
+    .flex-1 *,
+    main,
+    main *,
+    header,
+    header *,
+    .bg-white,
+    .bg-white * {
+      filter: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    
+    /* Forzar que el contenido principal no tenga efectos */
+    .flex-1 {
+      background: #f8fafc !important;
+      filter: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+  }
+  
+  [data-sidebar] * {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  
+  /* Botón de cierre del menú móvil */
+  [data-menu-button] {
+    position: relative !important;
+    z-index: 9999 !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+    cursor: pointer !important;
+  }
+  
+  /* Botón de cierre funcional para móviles */
+  @media (max-width: 768px) {
+    .lg\\:hidden .fixed button {
+      z-index: 10001 !important;
+      pointer-events: auto !important;
+      touch-action: manipulation !important;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+    }
+    
+    /* Overlay para móviles */
+    .fixed.inset-0 {
+      z-index: 10000 !important;
+      pointer-events: auto !important;
+      touch-action: manipulation !important;
+    }
+    
+    /* Asegurar que los enlaces del menú sean clickeables */
+    [data-sidebar] a {
+      pointer-events: auto !important;
+      touch-action: manipulation !important;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+      z-index: 10 !important;
+      position: relative !important;
+    }
+    
+    /* Asegurar que el menú de navegación sea funcional */
+    [data-sidebar] nav {
+      pointer-events: auto !important;
+      z-index: 10 !important;
+      position: relative !important;
+    }
+  }
+  
+  /* Contenido del sidebar */
+  .calendar-mobile-sidebar .bg-white,
+  .calendar-mobile-sidebar .rounded-lg,
+  .calendar-mobile-sidebar .border {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Botón de cierre del menú móvil */
+  .calendar-mobile-touch-target {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    background: #ef4444 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 0.5rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+    z-index: 50 !important;
+    position: relative !important;
+  }
+
+  .calendar-mobile-touch-target:hover {
+    background: #dc2626 !important;
+    transform: scale(1.05) !important;
+  }
+
+  .calendar-mobile-touch-target:active {
+    transform: scale(0.95) !important;
+  }
+
+  .calendar-mobile-touch-target svg {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    stroke-width: 2 !important;
+  }
+
+  /* Asegurar que el botón de cierre sea visible en móviles */
+  @media (max-width: 768px) {
+    .calendar-mobile-touch-target {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      position: relative !important;
+      z-index: 100 !important;
+    }
+  }
+
+  /* Mejoras adicionales para el header del sidebar móvil */
+  .calendar-mobile-sidebar-header {
+    position: relative !important;
+    z-index: 10 !important;
+  }
+
+  .calendar-mobile-sidebar-header .flex {
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
+  
+  /* Línea roja del tiempo actual - Ajustes para móvil */
+  .calendar-mobile-timeline .absolute {
+    position: absolute !important;
+    z-index: 30 !important;
+    pointer-events: auto !important;
+  }
+  
+  /* Asegurar que las tarjetas de trabajo sean clickeables en móvil */
+  .calendar-mobile-timeline .absolute.cursor-pointer {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2) !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    cursor: pointer !important;
+    z-index: 100 !important;
+    position: relative !important;
+  }
+  
+  /* Asegurar que las tarjetas de trabajo tengan prioridad sobre otros elementos */
+  .calendar-mobile-timeline .absolute[data-job-id] {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    z-index: 100 !important;
+    position: relative !important;
+    cursor: pointer !important;
+  }
+  
+  /* Línea roja optimizada para móviles - FORZADA */
+  .calendar-mobile-timeline .absolute.bg-red-500,
+  .calendar-mobile-timeline .absolute[class*="bg-red-500"],
+  .calendar-mobile-timeline div[class*="bg-red-500"] {
+    background: #ef4444 !important;
+    background-color: #ef4444 !important;
+    height: 0.5px !important;
+    min-height: 0.5px !important;
+    max-height: 0.5px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    border-radius: 1px !important;
+    box-shadow: none !important;
+    z-index: 50 !important;
+    position: absolute !important;
+    pointer-events: none !important;
+    border: none !important;
+    animation: none !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  
+  /* Estilos adicionales para forzar visibilidad de línea roja */
+  .calendar-mobile-timeline .absolute.bg-red-500 {
+    background: #ef4444 !important;
+    background-color: #ef4444 !important;
+    height: 3px !important;
+    min-height: 3px !important;
+    max-height: 3px !important;
+    width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    bottom: auto !important;
+    z-index: 50 !important;
+    position: absolute !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 1px !important;
+    transform: none !important;
+    filter: none !important;
+    animation: none !important;
+  }
+  
+  /* Forzar visibilidad en todos los elementos con bg-red-500 */
+  [class*="bg-red-500"] {
+    background: #ef4444 !important;
+    background-color: #ef4444 !important;
+  }
+  
+  /* Estilos específicos para móviles - Línea roja SIMPLIFICADA */
+  @media (max-width: 768px) {
+    .calendar-mobile-timeline .absolute.bg-red-500 {
+      background: #ef4444 !important;
+      height: 2px !important;
+      width: 100% !important;
+      z-index: 100 !important;
+      position: absolute !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      pointer-events: none !important;
+    }
+    
+    /* Línea roja para calendario móvil */
+    .calendar-mobile-date-info .bg-red-500 {
+      background: #ef4444 !important;
+      height: 2px !important;
+      width: 100% !important;
+      border-radius: 1px !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+    
+    /* Tarjetas de trabajo en vista principal móvil */
+    .calendar-mobile-jobs-list .cursor-pointer {
+      touch-action: manipulation !important;
+      -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2) !important;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+      min-height: 48px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      cursor: pointer !important;
+      pointer-events: auto !important;
+      z-index: 10 !important;
+      position: relative !important;
+      transition: all 0.2s ease-in-out !important;
+    }
+    
+    .calendar-mobile-jobs-list .cursor-pointer:hover {
+      background-color: #f1f5f9 !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .calendar-mobile-jobs-list .cursor-pointer:active {
+      transform: translateY(0) !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    /* Contenedor de trabajos móvil */
+    .calendar-mobile-jobs-list {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+  }
+  
+  .calendar-mobile-main-calendar {
+    margin-bottom: 0.75rem !important;
+  }
+  
+  /* Mejoras de texto para móvil */
+  .calendar-mobile-header-title {
+    line-height: 1.2 !important;
+  }
+  
+  /* Mejoras de botones de acción */
+  .calendar-mobile-new-job-btn {
+    min-height: 2.5rem !important;
+    padding: 0.5rem 1rem !important;
+    touch-action: manipulation !important;
+  }
+}
+
+/* ESTILOS PARA TABLET Y DESKTOP */
+@media (min-width: 769px) {
+  .calendar-mobile-container {
+    flex-direction: row !important;
+  }
+  
+  .calendar-mobile-sidebar {
+    position: static !important;
+    width: 18rem !important;
+    height: 100vh !important;
+    transform: translateX(0) !important;
+    border-right: 1px solid #e5e7eb !important;
+    background: white !important;
+    overflow-y: auto !important;
+    flex-shrink: 0 !important;
+    order: 1 !important;
+  }
+  
+  .calendar-mobile-main {
+    flex: 1 !important;
+    padding: 1rem !important;
+    overflow-y: auto !important;
+    max-height: none !important;
+    height: auto !important;
+    background: #f8fafc !important;
+    order: 2 !important;
+    width: calc(100% - 18rem) !important;
+  }
+  
+  .calendar-mobile-menu-toggle {
+    display: none !important;
+  }
+  
+  .calendar-mobile-overlay {
+    display: none !important;
+  }
+}
+
+/* MODAL DE DETALLES DEL TRABAJO - OPTIMIZACIONES MÓVILES */
+@media (max-width: 768px) {
+  /* Modal principal - Forzar visibilidad */
+  .fixed.inset-0 {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 9999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    padding: 0.5rem !important;
+  }
+  
+  /* Contenido del modal - Forzar visibilidad */
+  .bg-white.rounded-xl {
+    max-height: 95vh !important;
+    border-radius: 0.75rem !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    background: white !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    width: 100% !important;
+    margin: 0.5rem !important;
+    position: relative !important;
+    z-index: 10000 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: block !important;
+  }
+  
+  /* Títulos del modal */
+  .bg-white.rounded-xl h2 {
+    font-size: 1.125rem !important;
+    line-height: 1.2 !important;
+    color: #1e293b !important;
+    font-weight: 700 !important;
+  }
+  
+  .bg-white.rounded-xl h3 {
+    font-size: 0.875rem !important;
+    line-height: 1.2 !important;
+    color: #374151 !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Espaciado del modal */
+  .bg-white.rounded-xl .space-y-4 {
+    gap: 1rem !important;
+  }
+  
+  .bg-white.rounded-xl .space-y-6 {
+    gap: 1.5rem !important;
+  }
+  
+  /* Botones del modal */
+  .bg-white.rounded-xl button {
+    min-height: 2.5rem !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  
+  /* Modal de detalles del trabajo - máxima prioridad */
+  .fixed.inset-0[style*="z-index: 99999"] {
+    z-index: 99999 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+  }
+  
+  /* Contenido del modal - máxima prioridad */
+  .fixed.inset-0[style*="z-index: 99999"] > div {
+    z-index: 100000 !important;
+    position: relative !important;
+  }
+  
+  /* Botones de acción específicos */
+  .bg-white.rounded-xl .flex-shrink-0 {
+    flex-shrink: 0 !important;
+  }
+  
+  /* Grid responsivo para formularios */
+  .bg-white.rounded-xl .grid-cols-1 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .bg-white.rounded-xl .sm\\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Botones de acción del modal */
+  .calendar-mobile-modal .flex-col {
+    flex-direction: column !important;
+  }
+  
+  .calendar-mobile-modal .sm\\:flex-row {
+    flex-direction: column !important;
+  }
+  
+  /* Orden de botones en móvil */
+  .calendar-mobile-modal .order-1 {
+    order: 1 !important;
+  }
+  
+  .calendar-mobile-modal .order-2 {
+    order: 2 !important;
+  }
+  
+  /* Mejoras de texto para móvil */
+  .calendar-mobile-modal .text-sm {
+    font-size: 0.875rem !important;
+  }
+  
+  .calendar-mobile-modal .text-xs {
+    font-size: 0.75rem !important;
+  }
+  
+  /* Inputs del modal */
+  .calendar-mobile-modal input {
+    min-height: 2.5rem !important;
+    font-size: 1rem !important;
+  }
+  
+  /* Select del modal */
+  .calendar-mobile-modal select {
+    min-height: 2.5rem !important;
+    font-size: 1rem !important;
+  }
+}
+
+/* ESTILOS PARA PANTALLAS GRANDES */
+@media (min-width: 1024px) {
+  .calendar-mobile-sidebar {
+    width: 20rem !important;
+    min-width: 20rem !important;
+    max-width: 20rem !important;
+  }
+  
+  .calendar-mobile-main {
+    padding: 1.5rem !important;
+    width: calc(100% - 20rem) !important;
+  }
+}

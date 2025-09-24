@@ -1,182 +1,182 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from "next-auth/next"
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession()
-    if (!session) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
-
-    // Verificar permisos: solo admin y secretaria pueden exportar cotizaciones
-    if (!(session.user as any).role || !["admin", "secretaria"].includes((session.user as any).role.toLowerCase())) {
-      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
-    }
-
-    const { searchParams } = new URL(request.url)
-    const quoteId = searchParams.get('id')
-    const status = searchParams.get('status')
-    const company = searchParams.get('company')
-    const startDate = searchParams.get('startDate')
-    const endDate = searchParams.get('endDate')
-
-    let quotes: any[] = []
-
-    if (quoteId) {
-      // Exportar cotización específica
-      const quote = await prisma.quote.findUnique({
-        where: { id: quoteId },
-        include: {
-          client: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              phone: true,
-              address: true,
-              company: true,
-              rut: true
-            }
-          },
-          company: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-              logo: true,
-              primaryColor: true,
-              secondaryColor: true
-            }
-          },
-          items: true,
-          createdBy: {
-            select: {
-              id: true,
-              name: true,
-              email: true
-            }
-          }
+    try {
+        const session = await getServerSession()
+        if (!session) {
+            return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
         }
-      })
 
-      if (!quote) {
-        return NextResponse.json({ error: 'Cotización no encontrada' }, { status: 404 })
-      }
+        // Verificar permisos: solo admin y secretaria pueden exportar cotizaciones
+        if (!(session.user as any).role || !["administrador", "secretaria"].includes((session.user as any).role.toLowerCase())) {
+            return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
+        }
 
-      quotes = [quote]
-    } else {
-      // Exportar múltiples cotizaciones con filtros
-      const where: any = {}
+        const { searchParams } = new URL(request.url)
+        const quoteId = searchParams.get('id')
+        const status = searchParams.get('status')
+        const company = searchParams.get('company')
+        const startDate = searchParams.get('startDate')
+        const endDate = searchParams.get('endDate')
 
-      if (status && status !== 'all') where.status = status
-      if (company && company !== 'all') where.companyId = company
-      if (startDate || endDate) {
-        where.date = {}
-        if (startDate) where.date.gte = new Date(startDate)
-        if (endDate) where.date.lte = new Date(endDate)
-      }
+        let quotes: any[] = []
 
-      quotes = await prisma.quote.findMany({
-        where,
-        include: {
-          client: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              phone: true,
-              address: true,
-              company: true,
-              rut: true
+        if (quoteId) {
+            // Exportar cotización específica
+            const quote = await prisma.quote.findUnique({
+                where: { id: quoteId },
+                include: {
+                    client: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            phone: true,
+                            address: true,
+                            company: true,
+                            rut: true
+                        }
+                    },
+                    company: {
+                        select: {
+                            id: true,
+                            name: true,
+                            type: true,
+                            logo: true,
+                            primaryColor: true,
+                            secondaryColor: true
+                        }
+                    },
+                    items: true,
+                    createdBy: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true
+                        }
+                    }
+                }
+            })
+
+            if (!quote) {
+                return NextResponse.json({ error: 'Cotización no encontrada' }, { status: 404 })
             }
-          },
-          company: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-              logo: true,
-              primaryColor: true,
-              secondaryColor: true
+
+            quotes = [quote]
+        } else {
+            // Exportar múltiples cotizaciones con filtros
+            const where: any = {}
+
+            if (status && status !== 'all') where.status = status
+            if (company && company !== 'all') where.companyId = company
+            if (startDate || endDate) {
+                where.date = {}
+                if (startDate) where.date.gte = new Date(startDate)
+                if (endDate) where.date.lte = new Date(endDate)
             }
-          },
-          items: true,
-          createdBy: {
-            select: {
-              id: true,
-              name: true,
-              email: true
-            }
-          }
-        },
-        orderBy: { date: 'desc' }
-      })
+
+            quotes = await prisma.quote.findMany({
+                where,
+                include: {
+                    client: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            phone: true,
+                            address: true,
+                            company: true,
+                            rut: true
+                        }
+                    },
+                    company: {
+                        select: {
+                            id: true,
+                            name: true,
+                            type: true,
+                            logo: true,
+                            primaryColor: true,
+                            secondaryColor: true
+                        }
+                    },
+                    items: true,
+                    createdBy: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true
+                        }
+                    }
+                },
+                orderBy: { createdAt: 'desc' }
+            })
+        }
+
+        if (quotes.length === 0) {
+            return NextResponse.json({ error: 'No se encontraron cotizaciones con los filtros especificados' }, { status: 404 })
+        }
+
+        // Generar HTML para el reporte
+        const html = generateQuotesHTML(quotes, quoteId ? 'single' : 'multiple')
+
+        return new NextResponse(html, {
+            headers: {
+                "Content-Type": "text/html",
+                "Content-Disposition": `attachment; filename="cotizaciones-${new Date().toISOString().split("T")[0]}.html"`,
+            },
+        })
+
+    } catch (error) {
+
+        return NextResponse.json({ error: "Error generando reporte de cotizaciones" }, { status: 500 })
     }
-
-    if (quotes.length === 0) {
-      return NextResponse.json({ error: 'No se encontraron cotizaciones con los filtros especificados' }, { status: 404 })
-    }
-
-    // Generar HTML para el reporte
-    const html = generateQuotesHTML(quotes, quoteId ? 'single' : 'multiple')
-
-    return new NextResponse(html, {
-      headers: {
-        "Content-Type": "text/html",
-        "Content-Disposition": `attachment; filename="cotizaciones-${new Date().toISOString().split("T")[0]}.html"`,
-      },
-    })
-
-  } catch (error) {
-    console.error("Error generating quotes report:", error)
-    return NextResponse.json({ error: "Error generando reporte de cotizaciones" }, { status: 500 })
-  }
 }
 
 function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP'
-    }).format(amount)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-CL', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    })
-  }
-
-  const getStatusLabel = (status: string) => {
-    const statuses = {
-      'DRAFT': 'Borrador',
-      'SENT': 'Guardada',
-      'ACCEPTED': 'Aceptada',
-      'REJECTED': 'Rechazada',
-      'EXPIRED': 'Expirada'
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('es-CL', {
+            style: 'currency',
+            currency: 'CLP'
+        }).format(amount)
     }
-    return statuses[status as keyof typeof statuses] || status
-  }
 
-  const getStatusColor = (status: string) => {
-    const colors = {
-      'DRAFT': '#6b7280',
-      'SENT': '#3b82f6',
-      'ACCEPTED': '#10b981',
-      'REJECTED': '#ef4444',
-      'EXPIRED': '#f59e0b'
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('es-CL', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        })
     }
-    return colors[status as keyof typeof colors] || '#6b7280'
-  }
 
-  if (type === 'single') {
-    const quote = quotes[0]
-    const companyConfig = getCompanyConfig(quote.company?.type || 'AMESTICA')
-    
-    return `
+    const getStatusLabel = (status: string) => {
+        const statuses = {
+            'DRAFT': 'Borrador',
+            'SENT': 'Guardada',
+            'ACCEPTED': 'Aceptada',
+            'REJECTED': 'Rechazada',
+            'EXPIRED': 'Expirada'
+        }
+        return statuses[status as keyof typeof statuses] || status
+    }
+
+    const getStatusColor = (status: string) => {
+        const colors = {
+            'DRAFT': '#6b7280',
+            'SENT': '#3b82f6',
+            'ACCEPTED': '#10b981',
+            'REJECTED': '#ef4444',
+            'EXPIRED': '#f59e0b'
+        }
+        return colors[status as keyof typeof colors] || '#6b7280'
+    }
+
+    if (type === 'single') {
+        const quote = quotes[0]
+        const companyConfig = getCompanyConfig(quote.company?.type || 'AMESTICA')
+
+        return `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -467,28 +467,28 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
 </body>
 </html>
     `
-  } else {
-    // Reporte múltiple
-    const totalQuotes = quotes.length
-    const totalValue = quotes.reduce((sum, quote) => sum + quote.total, 0)
-    const averageValue = totalQuotes > 0 ? totalValue / totalQuotes : 0
-    
-    const statusStats = quotes.reduce((acc: any, quote) => {
-      acc[quote.status] = (acc[quote.status] || 0) + 1
-      return acc
-    }, {})
+    } else {
+        // Reporte múltiple
+        const totalQuotes = quotes.length
+        const totalValue = quotes.reduce((sum, quote) => sum + quote.total, 0)
+        const averageValue = totalQuotes > 0 ? totalValue / totalQuotes : 0
 
-    const companyStats = quotes.reduce((acc: any, quote) => {
-      const companyName = quote.company?.name || 'Sin empresa'
-      if (!acc[companyName]) {
-        acc[companyName] = { count: 0, total: 0 }
-      }
-      acc[companyName].count++
-      acc[companyName].total += quote.total
-      return acc
-    }, {})
+        const statusStats = quotes.reduce((acc: any, quote) => {
+            acc[quote.status] = (acc[quote.status] || 0) + 1
+            return acc
+        }, {})
 
-    return `
+        quotes.reduce((acc: any, quote) => {
+            const companyName = quote.company?.name || 'Sin empresa'
+            if (!acc[companyName]) {
+                acc[companyName] = { count: 0, total: 0 }
+            }
+            acc[companyName].count++
+            acc[companyName].total += quote.total
+            return acc
+        }, {})
+
+        return `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -773,54 +773,54 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
 </body>
 </html>
     `
-  }
+    }
 }
 
 function getCompanyConfig(companyType: string) {
-  const configs = {
-    AMESTICA: {
-      name: 'AMESTICA LIMITADA',
-      service: 'Servicio de detección y reparación de filtraciones de agua potable',
-      rut: '76.508.960-3',
-      address: 'Hamburgo 1398, Ñuñoa.',
-      email: 'amesticaltda@gmail.com',
-      phone: '222660040',
-      logo: '/amestica.png',
-      colors: {
-        primary: '#1e40af',
-        secondary: '#3b82f6',
-        accent: '#f97316'
-      }
-    },
-    MULTIFUGAS: {
-      name: 'MULTIFUGAS',
-      service: 'Servicio de detección y reparación de filtraciones de agua potable',
-      rut: '78.135.216-0',
-      address: 'Av. Américo Vespucio 3121, Macul, Santiago.',
-      email: 'multifugas@gmail.com',
-      phone: '+569 78868002',
-      logo: '/multifugas.png',
-      colors: {
-        primary: '#1e40af',
-        secondary: '#3b82f6',
-        accent: '#f97316'
-      }
-    },
-    SERVIFUGAS: {
-      name: 'SERVIFUGAS SPA',
-      service: 'Servicio de detección de filtraciones en agua potable y reparación de cañerías',
-      rut: '78.135.232-2',
-      address: 'Lo Barnechea 1559.',
-      email: 'Servifugas1@gmail.com',
-      phone: '+569 92492720',
-      logo: '/servifugas.png',
-      colors: {
-        primary: '#059669',
-        secondary: '#10b981',
-        accent: '#1e40af'
-      }
+    const configs = {
+        AMESTICA: {
+            name: 'AMESTICA LIMITADA',
+            service: 'Servicio de detección y reparación de filtraciones de agua potable',
+            rut: '76.508.960-3',
+            address: 'Hamburgo 1398, Ñuñoa.',
+            email: 'amesticaltda@gmail.com',
+            phone: '222660040',
+            logo: '/amestica.png',
+            colors: {
+                primary: '#1e40af',
+                secondary: '#3b82f6',
+                accent: '#f97316'
+            }
+        },
+        MULTIFUGAS: {
+            name: 'MULTIFUGAS',
+            service: 'Servicio de detección y reparación de filtraciones de agua potable',
+            rut: '78.135.216-0',
+            address: 'Av. Américo Vespucio 3121, Macul, Santiago.',
+            email: 'multifugas@gmail.com',
+            phone: '+569 78868002',
+            logo: '/multifugas.png',
+            colors: {
+                primary: '#1e40af',
+                secondary: '#3b82f6',
+                accent: '#f97316'
+            }
+        },
+        SERVIFUGAS: {
+            name: 'SERVIFUGAS SPA',
+            service: 'Servicio de detección de filtraciones en agua potable y reparación de cañerías',
+            rut: '78.135.232-2',
+            address: 'Lo Barnechea 1559.',
+            email: 'Servifugas1@gmail.com',
+            phone: '+569 92492720',
+            logo: '/servifugas.png',
+            colors: {
+                primary: '#059669',
+                secondary: '#10b981',
+                accent: '#1e40af'
+            }
+        }
     }
-  }
 
-  return configs[companyType as keyof typeof configs] || configs.AMESTICA
+    return configs[companyType as keyof typeof configs] || configs.AMESTICA
 }

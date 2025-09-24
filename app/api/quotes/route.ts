@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from "next-auth/next"
-import { authOptions } from '@/lib/auth'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   try {
@@ -39,16 +39,6 @@ export async function GET(request: NextRequest) {
             company: true
           }
         },
-        company: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            logo: true,
-            primaryColor: true,
-            secondaryColor: true
-          }
-        },
         items: true,
         createdBy: {
           select: {
@@ -56,51 +46,61 @@ export async function GET(request: NextRequest) {
             name: true,
             email: true
           }
+        },
+        job: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            scheduledAt: true,
+            startTime: true,
+            endTime: true,
+            technician: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
         }
       },
-      orderBy: { date: 'desc' }
+      orderBy: { createdAt: 'desc' }
     })
 
     return NextResponse.json(quotes)
 
   } catch (error) {
-    console.error('Error fetching quotes:', error)
+
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('POST /api/quotes called')
+
     const session = await getServerSession(authOptions)
-    console.log('Session:', session)
-    
-    if (!session) {
-      console.log('No session found')
+
+    if (!session || !session.user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    console.log('User role:', (session.user as any).role)
-    console.log('User email:', session.user.email)
-    console.log('Session user object:', session.user)
-    
+    const user = { id: (session.user as any).id, role: (session.user as any).role }
+
     // Verificar permisos: permitir todos los roles por ahora para testing
-    console.log('User role:', (session.user as any).role)
-    console.log('User email:', session.user.email)
 
     const body = await request.json()
-    console.log('Received quote data:', body)
-    
-    const { 
+
+    const {
       clientName,
-      clientId, 
-      companyId, 
-      validUntil, 
-      taxRate, 
-      notes, 
-      items, 
-      technician, 
-      diagnosis, 
+      clientId,
+      companyId,
+      validUntil,
+      taxRate,
+      discount,
+      notes,
+      items,
+      technician,
+      diagnosis,
       serviceType,
       clientAddress,
       clientEmail,
@@ -109,21 +109,14 @@ export async function POST(request: NextRequest) {
       clientCommune
     } = body
 
-    console.log('Validating data...')
-    console.log('clientName:', clientName)
-    console.log('companyId:', companyId)
-    console.log('validUntil:', validUntil)
-    console.log('items:', items)
-    console.log('technician:', technician)
-
     // Validación simplificada
     if (!clientName) {
-      console.log('Missing clientName')
+
       return NextResponse.json({ error: 'Nombre del cliente es requerido' }, { status: 400 })
     }
 
     if (!validUntil) {
-      console.log('Missing validUntil')
+
       return NextResponse.json({ error: 'Fecha de validez es requerida' }, { status: 400 })
     }
 
@@ -132,9 +125,9 @@ export async function POST(request: NextRequest) {
       const company = await prisma.company.findUnique({
         where: { id: companyId }
       })
-      
+
       if (!company) {
-        console.log('Company not found:', companyId)
+
         return NextResponse.json({ error: 'Empresa no encontrada' }, { status: 400 })
       }
     }
@@ -144,9 +137,9 @@ export async function POST(request: NextRequest) {
       const client = await prisma.client.findUnique({
         where: { id: clientId }
       })
-      
+
       if (!client) {
-        console.log('Client not found:', clientId)
+
         return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 400 })
       }
     }
@@ -161,43 +154,18 @@ export async function POST(request: NextRequest) {
       const unitPrice = item.unitPrice || 0
       return sum + (quantity * unitPrice)
     }, 0) : 0
-    
-    const tax = subtotal * ((taxRate || 19) / 100)
-    const total = subtotal + tax
 
-    console.log('Creating quote with data:', {
-      quoteNumber,
-      validUntil: new Date(validUntil),
-      subtotal,
-      tax,
-      total,
-      taxRate,
-      notes,
-      technician,
-      diagnosis,
-      serviceType,
-      clientId,
-      companyId,
-      createdById: session.user.id
-    })
-
-    // Obtener el usuario actual
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email || '' }
-    })
-
-    if (!user) {
-      console.log('User not found:', session.user.email)
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
-    }
-
-    console.log('User found:', user.id)
+    const discountAmount = discount || 0
+    const subtotalAfterDiscount = subtotal - discountAmount
+    const tax = subtotalAfterDiscount * ((taxRate || 19) / 100)
+    const total = subtotalAfterDiscount + tax
 
     // Crear cotización de forma simplificada
     const quoteData = {
       quoteNumber,
       validUntil: new Date(validUntil),
       subtotal,
+      discount: discountAmount,
       tax,
       total,
       taxRate,
@@ -217,8 +185,6 @@ export async function POST(request: NextRequest) {
       companyId: companyId || null,
       createdById: user.id,
     }
-
-    console.log('Creating quote with simplified data:', quoteData)
 
     const quote = await prisma.quote.create({
       data: quoteData,
@@ -246,8 +212,6 @@ export async function POST(request: NextRequest) {
         quoteId: quote.id
       }))
 
-      console.log('Creating items:', itemsData)
-
       await prisma.quoteItem.createMany({
         data: itemsData
       })
@@ -256,13 +220,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(quote, { status: 201 })
 
   } catch (error: any) {
-    console.error('Error creating quote:', error)
-    console.error('Error details:', {
-      message: error?.message || 'Unknown error',
-      stack: error?.stack,
-      name: error?.name
-    })
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       error: 'Error interno del servidor',
       details: error?.message || 'Unknown error'
     }, { status: 500 })

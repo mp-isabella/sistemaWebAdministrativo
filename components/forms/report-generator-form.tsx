@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { X, FileText, Download, Calendar, Filter } from 'lucide-react'
+import { Download, FileText, Filter, X } from 'lucide-react'
+import { useState } from "react"
 
 interface ReportGeneratorFormProps {
   onSubmit: (data: any) => void
@@ -59,7 +59,6 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
   ]
 
   const statusOptions: string[] = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']
-  
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -87,7 +86,7 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
     try {
       await onSubmit(formData)
     } catch (error) {
-      console.error('Error generating report:', error)
+      
     } finally {
       setLoading(false)
     }
@@ -117,8 +116,8 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
 
     setFormData(prev => ({
       ...prev,
-      dateFrom: fromDate.toISOString().split('T')[0],
-      dateTo: today.toISOString().split('T')[0]
+      dateFrom: fromDate.toISOString().split('T')[0] || '',
+      dateTo: today.toISOString().split('T')[0] || ''
     }))
   }
 
@@ -143,21 +142,19 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
                 {reportTypes.map((type) => (
                   <Card
                     key={type.value}
-                    className={`cursor-pointer transition-all ${
-                      formData.type === type.value
+                    className={`cursor-pointer transition-all ${formData.type === type.value
                         ? 'ring-2 ring-purple-500 bg-purple-50'
                         : 'hover:bg-gray-50'
-                    }`}
+                      }`}
                     onClick={() => handleInputChange('type', type.value)}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 mt-1">
-                          <div className={`w-4 h-4 rounded-full border-2 ${
-                            formData.type === type.value
+                          <div className={`w-4 h-4 rounded-full border-2 ${formData.type === type.value
                               ? 'bg-purple-500 border-purple-500'
                               : 'border-gray-300'
-                          }`} />
+                            }`} />
                         </div>
                         <div>
                           <h4 className="font-medium">{type.label}</h4>
@@ -297,7 +294,6 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
                       ))}
                     </div>
                   </div>
-
 
                 </div>
               </Card>
