@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/database";
 import bcrypt from "bcryptjs";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -12,23 +12,20 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        console.log('🔐 Intentando autenticar usuario:', credentials?.email);
+
+        if (!credentials?.email || !credentials?.password) {
+          console.log('❌ Credenciales faltantes');
+          throw new Error("Credenciales faltantes");
+        }
+
+        const email = credentials.email.trim().toLowerCase();
+        console.log('📧 Email procesado:', email);
+
         try {
-
-          if (!credentials?.email || !credentials?.password) {
-
-            throw new Error("Credenciales faltantes");
-          }
-
-          const email = credentials.email.trim().toLowerCase();
-
           // Verificar conexión a la base de datos
-          try {
-            await prisma.$connect();
-
-          } catch (dbError) {
-
-            throw new Error("Error de conexión a base de datos");
-          }
+          await prisma.$connect();
+          console.log('✅ Conexión a base de datos exitosa');
 
           const user = await prisma.user.findUnique({
             where: { email },
@@ -36,21 +33,24 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!user) {
-
+            console.log('❌ Usuario no encontrado:', email);
             throw new Error("Usuario no encontrado");
           }
 
-          if (!user.isActive) {
+          console.log('✅ Usuario encontrado:', user.name, 'Rol:', user.role.name);
 
+          if (!user.isActive) {
+            console.log('❌ Usuario inactivo');
             throw new Error("Usuario inactivo");
           }
 
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
           if (!isPasswordValid) {
-
+            console.log('❌ Contraseña inválida');
             throw new Error("Contraseña inválida");
           }
 
+          console.log('✅ Autenticación exitosa para:', user.name);
           return {
             id: user.id,
             email: user.email,
@@ -58,8 +58,7 @@ export const authOptions: NextAuthOptions = {
             role: user.role.name,
           };
         } catch (error) {
-
-          // Re-lanzar el error para que NextAuth lo maneje correctamente
+          console.error('❌ Error en autenticación:', error instanceof Error ? error.message : String(error));
           throw error;
         }
       },
@@ -73,18 +72,20 @@ export const authOptions: NextAuthOptions = {
     maxAge: 24 * 60 * 60, // 24 horas
   },
   callbacks: {
-    async jwt({ token, user }: { token: any; user: any }) {
+    async jwt({ token, user }) {
+      // Si es la primera vez que se crea el token (después del login)
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        token.role = user.role || '';
         token.sub = user.id;
       }
       return token;
     },
-    async session({ session, token }: { session: any; token: any }) {
-      if (session?.user && token?.sub && token?.role) {
-        session.user.id = token.sub;
-        session.user.role = token.role;
+    async session({ session, token }) {
+      // Pasar datos del token a la sesión
+      if (token && session.user) {
+        session.user.id = token.sub || '';
+        session.user.role = token.role || '';
       }
       return session;
     },
@@ -92,9 +93,9 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login",
   },
-  debug: process.env.NODE_ENV === "development",
-  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
-  useSecureCookies: process.env.NODE_ENV === "production",
+  debug: process.env.NODE_ENV === 'development',
+  secret: process.env.NEXTAUTH_SECRET || "clave-unica-definitiva-2024-12345",
+  useSecureCookies: process.env.NODE_ENV === 'production',
   cookies: {
     sessionToken: {
       name: `next-auth.session-token`,
@@ -102,7 +103,7 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: false
+        secure: process.env.NODE_ENV === 'production'
       }
     }
   },

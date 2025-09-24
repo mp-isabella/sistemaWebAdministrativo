@@ -99,14 +99,18 @@ export default function LoginPage() {
         }
 
         const role = (session?.user as any)?.role;
+        console.log('🔍 Debug - Session completa:', session);
+        console.log('🔍 Debug - User:', session?.user);
+        console.log('🔍 Debug - Role:', role);
 
         if (role) {
           // Usar la función centralizada para obtener la ruta por defecto
           const redirectPath = getDefaultRoute(role);
+          console.log('🔍 Debug - Redirect path:', redirectPath);
 
           router.push(redirectPath);
         } else {
-
+          console.log('❌ Debug - No role found, session:', session);
           setError("Error al obtener información del usuario. Por favor, intenta nuevamente.");
           setLoading(false);
         }

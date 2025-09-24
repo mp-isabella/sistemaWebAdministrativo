@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Limpieza Definitiva - Amestica</title>
+    <title>Limpieza Forzada - Amestica</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body { 
-            font-family: Arial, sans-serif; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             text-align: center; 
             padding: 50px; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -22,26 +23,58 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
             max-width: 600px; 
             margin: 0 auto;
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .success { color: #28a745; font-weight: bold; font-size: 18px; }
         .warning { color: #ffc107; font-weight: bold; }
-        h1 { color: #333; margin-bottom: 30px; }
+        .info { color: #17a2b8; font-weight: bold; }
         .step { margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+        .progress { width: 100%; height: 20px; background: #e9ecef; border-radius: 10px; overflow: hidden; margin: 20px 0; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #28a745, #20c997); width: 0%; transition: width 0.3s ease; }
+        h1 { color: #333; margin-bottom: 30px; }
+        .logo { font-size: 24px; font-weight: bold; color: #667eea; margin-bottom: 20px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🧹 Limpieza Definitiva de Cookies</h1>
-        <p id="status" class="warning">Iniciando limpieza completa...</p>
+        <div class="logo">🏢 AMESTICA SERVICIOS PROFESIONALES</div>
+        <h1>🧹 Limpieza Forzada de Cookies</h1>
+        <p id="status" class="info">Iniciando limpieza completa...</p>
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
         <div id="steps"></div>
     </div>
     <script>
-        function clearEverything() {
-            const status = document.getElementById('status');
-            const steps = document.getElementById('steps');
+        let progress = 0;
+        const steps = [
+            'Limpiando cookies de sesión...',
+            'Eliminando localStorage...',
+            'Limpiando sessionStorage...',
+            'Eliminando IndexedDB...',
+            'Limpiando caché del navegador...',
+            'Reiniciando configuración...',
+            'Redirigiendo al login...'
+        ];
+        
+        function updateProgress(step, message) {
+            progress = ((step + 1) / steps.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('status').innerHTML = '<span class="info">' + message + '</span>';
             
-            // Paso 1: Limpiar todas las cookies
-            steps.innerHTML += '<div class="step">✅ Limpiando cookies...</div>';
+            const stepsDiv = document.getElementById('steps');
+            stepsDiv.innerHTML += '<div class="step">✅ ' + message + '</div>';
+        }
+        
+        function clearAllData() {
+            let step = 0;
+            
+            // Paso 1: Limpiar cookies
+            updateProgress(step++, steps[0]);
             document.cookie.split(";").forEach(function(c) { 
                 document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
             });
@@ -54,17 +87,17 @@
             
             setTimeout(() => {
                 // Paso 2: Limpiar localStorage
-                steps.innerHTML += '<div class="step">✅ Limpiando localStorage...</div>';
+                updateProgress(step++, steps[1]);
                 localStorage.clear();
                 
                 setTimeout(() => {
                     // Paso 3: Limpiar sessionStorage
-                    steps.innerHTML += '<div class="step">✅ Limpiando sessionStorage...</div>';
+                    updateProgress(step++, steps[2]);
                     sessionStorage.clear();
                     
                     setTimeout(() => {
                         // Paso 4: Limpiar IndexedDB
-                        steps.innerHTML += '<div class="step">✅ Limpiando IndexedDB...</div>';
+                        updateProgress(step++, steps[3]);
                         if ('indexedDB' in window) {
                             indexedDB.databases().then(databases => {
                                 databases.forEach(db => {
@@ -75,7 +108,7 @@
                         
                         setTimeout(() => {
                             // Paso 5: Limpiar caché
-                            steps.innerHTML += '<div class="step">✅ Limpiando caché...</div>';
+                            updateProgress(step++, steps[4]);
                             if ('caches' in window) {
                                 caches.keys().then(names => {
                                     names.forEach(name => {
@@ -85,12 +118,17 @@
                             }
                             
                             setTimeout(() => {
-                                steps.innerHTML += '<div class="step">✅ Limpieza completada</div>';
-                                status.innerHTML = '<span class="success">🎉 ¡Limpieza completada! Redirigiendo...</span>';
+                                // Paso 6: Reiniciar
+                                updateProgress(step++, steps[5]);
                                 
                                 setTimeout(() => {
-                                    window.location.href = '/login';
-                                }, 2000);
+                                    // Paso 7: Redirigir
+                                    updateProgress(step++, steps[6]);
+                                    
+                                    setTimeout(() => {
+                                        window.location.href = '/login';
+                                    }, 1000);
+                                }, 500);
                             }, 500);
                         }, 500);
                     }, 500);
@@ -99,7 +137,7 @@
         }
         
         // Ejecutar limpieza automáticamente
-        clearEverything();
+        clearAllData();
     </script>
 </body>
 </html>

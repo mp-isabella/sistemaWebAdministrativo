@@ -1,5 +1,5 @@
 {
-    "buildCommand": "npm run build:prod",
+    "buildCommand": "npm run vercel-build",
     "devCommand": "npm run dev",
     "installCommand": "npm install",
     "framework": "nextjs",
@@ -15,9 +15,5 @@
         "env": {
             "NODE_ENV": "production"
         }
-    },
-    "regions": [
-        "iad1"
-    ],
-    "outputDirectory": ".next"
+    }
 }

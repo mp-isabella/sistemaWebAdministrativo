@@ -1,4 +1,44 @@
-<!DOCTYPE html>
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+console.log('🔧 SOLUCIÓN DEFINITIVA PARA LOGIN...');
+
+try {
+    // 1. Limpiar completamente todo
+    console.log('🗑️ Limpiando completamente...');
+    if (fs.existsSync('.next')) {
+        fs.rmSync('.next', { recursive: true, force: true });
+    }
+    if (fs.existsSync('node_modules/.cache')) {
+        fs.rmSync('node_modules/.cache', { recursive: true, force: true });
+    }
+
+    // 2. Configurar variables de entorno con clave única
+    const envContent = `DATABASE_URL="file:./dev.db"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="clave-unica-definitiva-2024-12345"
+NEXT_PUBLIC_SUPABASE_URL="https://rwsqkirgxsxrpjepjhtr.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3c3FraXJneHN4cnBqZXBqaHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3NDc3ODIsImV4cCI6MjA3NDMyMzc4Mn0.BTCet2Yk379nwLu48QG8ummaRY3d8aHE0AJROPbUAGY"`;
+
+    fs.writeFileSync('.env', envContent);
+    fs.writeFileSync('.env.local', envContent);
+    console.log('✅ Variables de entorno configuradas');
+
+    // 3. Actualizar auth.ts con la misma clave
+    const authPath = path.join(__dirname, '..', 'lib', 'auth.ts');
+    let authContent = fs.readFileSync(authPath, 'utf8');
+
+    authContent = authContent.replace(
+        /secret: process\.env\.NEXTAUTH_SECRET \|\| "[^"]*"/,
+        'secret: process.env.NEXTAUTH_SECRET || "clave-unica-definitiva-2024-12345"'
+    );
+
+    fs.writeFileSync(authPath, authContent);
+    console.log('✅ Archivo auth.ts actualizado');
+
+    // 4. Crear limpiador de cookies super agresivo
+    const clearCookiesContent = `<!DOCTYPE html>
 <html>
 <head>
     <title>Limpieza Definitiva - Amestica</title>
@@ -102,4 +142,27 @@
         clearEverything();
     </script>
 </body>
-</html>
+</html>`;
+
+    fs.writeFileSync('clear-cookies.html', clearCookiesContent);
+    console.log('✅ Limpiador de cookies creado');
+
+    console.log('');
+    console.log('✅ CONFIGURACIÓN DEFINITIVA COMPLETADA');
+    console.log('');
+    console.log('🚨 INSTRUCCIONES CRÍTICAS:');
+    console.log('1. 🚨 CIERRA COMPLETAMENTE EL NAVEGADOR');
+    console.log('2. 🚨 ABRE UNA NUEVA VENTANA');
+    console.log('3. 🌐 Ve a: http://localhost:3000/clear-cookies.html');
+    console.log('4. ⏳ Espera a que termine la limpieza automática');
+    console.log('5. 🔐 Ve a: http://localhost:3000/login');
+    console.log('6. 📧 Usa: admin@amestica.cl / admin123');
+    console.log('');
+    console.log('🚀 Iniciando servidor...');
+
+    // 5. Iniciar servidor
+    execSync('npm run dev', { stdio: 'inherit' });
+
+} catch (error) {
+    console.error('❌ Error:', error.message);
+}
