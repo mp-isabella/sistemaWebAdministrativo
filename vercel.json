@@ -12,5 +12,10 @@
   },
   "env": {
     "NEXTAUTH_URL": "https://tu-dominio.vercel.app"
+  },
+  "build": {
+    "env": {
+      "DATABASE_URL": "@database_url"
+    }
   }
 }
