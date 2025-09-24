@@ -9,13 +9,5 @@
     "app/api/**/*.ts": {
       "maxDuration": 30
     }
-  },
-  "env": {
-    "NEXTAUTH_URL": "https://tu-dominio.vercel.app"
-  },
-  "build": {
-    "env": {
-      "DATABASE_URL": "@database_url"
-    }
   }
 }
