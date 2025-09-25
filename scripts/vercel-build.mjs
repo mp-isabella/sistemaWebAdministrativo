@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
-const { execSync } = require('child_process');
-const fs = require('fs');
+import { execSync } from 'child_process';
 
 console.log('🚀 Starting Vercel build process...');
 
