@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "prisma generate && prisma db push && next build",
     "vercel-build": "node scripts/vercel-build.js",
+    "deploy:check": "node scripts/deploy-with-db-check.js",
     "build:prod": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
@@ -20,6 +21,10 @@
     "db:generate": "prisma generate",
     "db:deploy": "prisma db push --accept-data-loss",
     "setup:prod": "node scripts/setup-production.js",
+    "setup:db": "node scripts/setup-production-database.js",
+    "verify:db": "node scripts/verify-database-config.js",
+    "verify:login": "node scripts/verify-login-production.js",
+    "test:login": "node scripts/test-login-production.js",
     "test:supabase": "node scripts/test-supabase-connection.js",
     "postinstall": "prisma generate"
   },

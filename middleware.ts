@@ -1,7 +1,6 @@
-import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function middleware() {
   // Middleware simplificado - solo permitir el flujo normal
   return NextResponse.next();
 }
