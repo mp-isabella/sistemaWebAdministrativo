@@ -383,7 +383,13 @@ export default function LiquidationForm({ liquidation, onSubmit, onCancel, loadi
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar técnico" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-lg border shadow-lg max-h-48 z-[9999] bg-white">
+                  <SelectContent
+                    className="rounded-lg border shadow-lg max-h-48 z-50 bg-white"
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                  >
                     {technicians.length > 0 ? (
                       technicians.map((technician) => (
                         <SelectItem key={technician.id} value={technician.id}>
@@ -414,7 +420,13 @@ export default function LiquidationForm({ liquidation, onSubmit, onCancel, loadi
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar empresa" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-lg border shadow-lg max-h-48 z-[9999] bg-white">
+                  <SelectContent
+                    className="rounded-lg border shadow-lg max-h-48 z-50 bg-white"
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                  >
                     {companies.length > 0 ? (
                       companies.map((company) => (
                         <SelectItem key={company.id} value={company.id}>
@@ -555,7 +567,13 @@ export default function LiquidationForm({ liquidation, onSubmit, onCancel, loadi
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="rounded-lg border shadow-lg max-h-48 z-[9999] bg-white" position="popper">
+                          <SelectContent
+                            className="rounded-lg border shadow-lg max-h-48 z-50 bg-white"
+                            position="popper"
+                            side="bottom"
+                            align="start"
+                            sideOffset={4}
+                          >
                             <SelectItem value="EARNINGS">Ganancias</SelectItem>
                             <SelectItem value="DEDUCTION">Deducción</SelectItem>
                             <SelectItem value="MATERIAL">Materiales</SelectItem>

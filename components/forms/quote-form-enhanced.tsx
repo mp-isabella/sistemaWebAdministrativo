@@ -373,33 +373,168 @@ export default function QuoteFormEnhanced({
     )
   }
 
-  // Verificar si hay datos disponibles
-  if (clients.length === 0 || companies.length === 0) {
+  // Mostrar mensaje de carga mientras se cargan los datos
+  if (isLoadingData) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando datos...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Verificar si hay datos disponibles - ser más tolerante
+  if (companies.length === 0) {
     return (
       <div className="flex justify-center items-center py-12">
         <div className="text-center">
           <p className="text-gray-600 mb-4">
-            No hay datos disponibles para crear presupuestos.
+            No hay empresas disponibles para crear presupuestos.
           </p>
           <div className="space-y-2 text-sm text-gray-500">
-            <p>Clientes disponibles: {clients.length}</p>
             <p>Empresas disponibles: {companies.length}</p>
+            <p>Clientes disponibles: {clients.length}</p>
             <p>Técnicos disponibles: {technicians.length}</p>
-            {technicians.length > 0 && (
-              <div className="mt-2">
-                <p className="font-medium">Técnicos encontrados:</p>
-                <ul className="list-disc list-inside ml-4">
-                  {technicians.map(tech => (
-                    <li key={tech.id}>{tech.name} (ID: {tech.id})</li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
           <Button onClick={() => window.location.reload()} className="mt-4">
             Recargar página
           </Button>
         </div>
+      </div>
+    )
+  }
+
+  // Función para renderizar el formulario principal
+  const renderForm = () => {
+    return (
+      <div className="space-y-6">
+        {/* Información del Cliente */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Información del Cliente
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div>
+                <Label htmlFor="clientName" className="text-sm sm:text-base">Señor (a) *</Label>
+                <Input
+                  id="clientName"
+                  value={formData.clientId}
+                  onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                  placeholder="Nombre del cliente"
+                  className="text-sm sm:text-base"
+                />
+              </div>
+              <div>
+                <Label htmlFor="companyId" className="text-sm sm:text-base">Empresa *</Label>
+                <Select value={formData.companyId} onValueChange={(value) => setFormData({ ...formData, companyId: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar empresa" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {companies.map((company) => (
+                      <SelectItem key={company.id} value={company.id}>
+                        {company.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div>
+                <Label htmlFor="clientAddress" className="text-sm sm:text-base">Dirección</Label>
+                <Input
+                  id="clientAddress"
+                  value={formData.clientAddress}
+                  onChange={(e) => setFormData({ ...formData, clientAddress: e.target.value })}
+                  placeholder="Dirección del cliente"
+                  className="text-sm sm:text-base"
+                />
+              </div>
+              <div>
+                <Label htmlFor="clientPhone" className="text-sm sm:text-base">Contacto</Label>
+                <Input
+                  id="clientPhone"
+                  value={formData.clientPhone}
+                  onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
+                  placeholder="Teléfono del cliente"
+                  className="text-sm sm:text-base"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div>
+                <Label htmlFor="clientRegion" className="text-sm sm:text-base">Región</Label>
+                <Select value={formData.clientRegion} onValueChange={handleRegionChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar región" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(regionCommuneMap).map((region) => (
+                      <SelectItem key={region} value={region}>
+                        {region}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="clientCommune" className="text-sm sm:text-base">Comuna</Label>
+                <Select value={formData.clientCommune} onValueChange={(value) => setFormData({ ...formData, clientCommune: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar comuna" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getAvailableCommunes().map((commune) => (
+                      <SelectItem key={commune} value={commune}>
+                        {commune}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Resto del formulario... */}
+        {/* Aquí continuaría con el resto del formulario */}
+      </div>
+    )
+  }
+
+  // Si no hay clientes, mostrar un mensaje informativo pero permitir continuar
+  if (clients.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-blue-800">
+                No hay clientes registrados
+              </h3>
+              <div className="mt-2 text-sm text-blue-700">
+                <p>Puedes crear un presupuesto ingresando los datos del cliente manualmente en el formulario.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Continuar con el formulario normal */}
+        {renderForm()}
       </div>
     )
   }

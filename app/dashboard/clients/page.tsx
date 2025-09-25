@@ -681,14 +681,12 @@ export default function ClientsPage() {
                 </div>
               </div>
               <div className="p-6">
-                {editingClient && (
-                  <ClientForm
-                    client={editingClient}
-                    onSubmit={handleSaveClient}
-                    onCancel={() => setShowClientForm(false)}
-                    loading={isSaving}
-                  />
-                )}
+                <ClientForm
+                  client={editingClient as any}
+                  onSubmit={handleSaveClient}
+                  onCancel={() => setShowClientForm(false)}
+                  loading={isSaving}
+                />
               </div>
             </div>
           </div>

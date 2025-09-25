@@ -18,7 +18,8 @@ import {
   RefreshCw,
   Search,
   TrendingDown,
-  TrendingUp
+  TrendingUp,
+  X
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -862,11 +863,24 @@ export default function CashDashboard() {
       {showTransactionForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
           <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
-            <CashTransactionForm
-              type={transactionType}
-              onSubmit={handleTransactionSubmit}
-              onCancel={handleTransactionCancel}
-            />
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Registrar {transactionType === 'income' ? 'Ingreso' : 'Gasto'}
+                </h2>
+                <button
+                  onClick={handleTransactionCancel}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              <CashTransactionForm
+                type={transactionType}
+                onSubmit={handleTransactionSubmit}
+                onCancel={handleTransactionCancel}
+              />
+            </div>
           </div>
         </div>
       )}

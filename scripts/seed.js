@@ -113,8 +113,10 @@ async function main() {
     ];
 
     for (const companyData of companies) {
-      const company = await prisma.company.create({
-        data: companyData,
+      const company = await prisma.company.upsert({
+        where: { name: companyData.name },
+        update: {},
+        create: companyData,
       });
     }
 
