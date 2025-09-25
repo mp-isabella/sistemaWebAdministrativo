@@ -8,6 +8,20 @@ console.log('🚀 Starting Vercel build process...');
 async function testDatabaseConnection() {
     try {
         console.log('🔍 Testing database connection...');
+
+        // First, try to run the verification script
+        try {
+            execSync('node scripts/vercel-database-test.js', {
+                stdio: 'pipe',
+                timeout: 15000 // 15 seconds timeout
+            });
+            console.log('✅ Database connection verified successfully');
+            return true;
+        } catch (scriptError) {
+            console.log('⚠️  Verification script failed, trying direct connection...');
+        }
+
+        // Fallback to direct connection test
         execSync('npx prisma db pull --schema=prisma/schema.prisma', {
             stdio: 'pipe',
             timeout: 10000 // 10 seconds timeout
@@ -27,6 +41,13 @@ async function testDatabaseConnection() {
         } else if (error.message.includes('FATAL: database') && error.message.includes('does not exist')) {
             console.log('💡 Database does not exist.');
             console.log('   Please check your DATABASE_URL database name.');
+        } else if (error.message.includes('P1001')) {
+            console.log('💡 P1001: Cannot reach database server.');
+            console.log('   This usually means:');
+            console.log('   1. The database server is not accessible');
+            console.log('   2. The connection string is incorrect');
+            console.log('   3. The Supabase project is paused or inactive');
+            console.log('   4. There are connection limits reached');
         }
 
         return false;
