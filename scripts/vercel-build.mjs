@@ -15,6 +15,20 @@ async function testDatabaseConnection() {
         return true;
     } catch (error) {
         console.log('❌ Database connection test failed:', error.message);
+
+        // Check for specific error types
+        if (error.message.includes('FATAL: Tenant or user not found')) {
+            console.log('💡 This is a Supabase authentication error.');
+            console.log('   Please verify your DATABASE_URL in Vercel environment variables.');
+            console.log('   Make sure the password in the connection string is correct.');
+        } else if (error.message.includes('FATAL: password authentication failed')) {
+            console.log('💡 Database password is incorrect.');
+            console.log('   Please check your DATABASE_URL password in Vercel.');
+        } else if (error.message.includes('FATAL: database') && error.message.includes('does not exist')) {
+            console.log('💡 Database does not exist.');
+            console.log('   Please check your DATABASE_URL database name.');
+        }
+
         return false;
     }
 }
