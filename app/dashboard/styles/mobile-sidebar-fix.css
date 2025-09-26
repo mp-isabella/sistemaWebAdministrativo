@@ -1,0 +1,126 @@
+/* ===== FIX ESPECÍFICO PARA SIDEBAR MÓVIL ===== */
+
+/* Estilos globales para todos los dispositivos - máxima especificidad */
+.dashboard-sidebar nav a,
+.dashboard-sidebar nav a:visited,
+.dashboard-sidebar nav a:active,
+.dashboard-sidebar nav a:focus,
+.dashboard-sidebar nav a:hover {
+  background-color: transparent !important;
+  background-image: none !important;
+  color: #cbd5e1 !important;
+}
+
+/* Estilos para botones activos - máxima especificidad */
+.dashboard-sidebar nav a[href="/dashboard/schedule/calendar"],
+.dashboard-sidebar nav a[href="/dashboard/clients"],
+.dashboard-sidebar nav a[href="/dashboard/workers"],
+.dashboard-sidebar nav a[href="/dashboard/cash"],
+.dashboard-sidebar nav a[href="/dashboard/quotes"],
+.dashboard-sidebar nav a[href="/dashboard/liquidations"],
+.dashboard-sidebar nav a[href="/dashboard/reports"],
+.dashboard-sidebar nav a[href="/dashboard/admin"] {
+  background-color: rgba(71, 85, 105, 0.7) !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+/* Forzar estilos para cualquier fondo azul */
+.dashboard-sidebar nav a[class*="bg-gradient-to-r"],
+.dashboard-sidebar nav a[class*="from-blue-600"],
+.dashboard-sidebar nav a[class*="to-blue-500"],
+.dashboard-sidebar nav a[class*="bg-blue-600"],
+.dashboard-sidebar nav a[class*="bg-blue-500"],
+.dashboard-sidebar nav a[class*="bg-slate-700"] {
+  background-color: rgba(71, 85, 105, 0.7) !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+/* Estilos para hover */
+.dashboard-sidebar nav a:hover {
+  background-color: rgba(71, 85, 105, 0.5) !important;
+  color: white !important;
+}
+
+/* Clase específica para forzar fondo gris - máxima especificidad */
+.force-grey-bg,
+.force-grey-bg:visited,
+.force-grey-bg:active,
+.force-grey-bg:focus,
+.force-grey-bg:hover {
+  background-color: rgba(71, 85, 105, 0.7) !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+/* Forzar estilos para elementos activos */
+.dashboard-sidebar nav a.sidebar-active-item,
+.dashboard-sidebar nav a.sidebar-active-item:visited,
+.dashboard-sidebar nav a.sidebar-active-item:active,
+.dashboard-sidebar nav a.sidebar-active-item:focus,
+.dashboard-sidebar nav a.sidebar-active-item:hover {
+  background-color: rgba(71, 85, 105, 0.7) !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+/* Forzar estilos para cualquier elemento con fondo azul */
+.dashboard-sidebar nav a[style*="background-color: rgb(37, 99, 235)"],
+.dashboard-sidebar nav a[style*="background-color: rgb(59, 130, 246)"],
+.dashboard-sidebar nav a[style*="background-color: #2563eb"],
+.dashboard-sidebar nav a[style*="background-color: #3b82f6"] {
+  background-color: rgba(71, 85, 105, 0.7) !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+/* Estilos específicos para móviles */
+@media (max-width: 768px) {
+  .dashboard-sidebar nav a {
+    background-color: transparent !important;
+    background-image: none !important;
+    color: #cbd5e1 !important;
+  }
+  
+  .dashboard-sidebar nav a[href="/dashboard/schedule/calendar"],
+  .dashboard-sidebar nav a[href="/dashboard/clients"],
+  .dashboard-sidebar nav a[href="/dashboard/workers"],
+  .dashboard-sidebar nav a[href="/dashboard/cash"],
+  .dashboard-sidebar nav a[href="/dashboard/quotes"],
+  .dashboard-sidebar nav a[href="/dashboard/liquidations"],
+  .dashboard-sidebar nav a[href="/dashboard/reports"],
+  .dashboard-sidebar nav a[href="/dashboard/admin"] {
+    background-color: rgba(71, 85, 105, 0.7) !important;
+    background-image: none !important;
+    color: white !important;
+  }
+}
+
+/* Estilos para tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .dashboard-sidebar nav a[href="/dashboard/schedule/calendar"] {
+    background-color: rgba(71, 85, 105, 0.7) !important;
+    background-image: none !important;
+    color: white !important;
+  }
+  
+  .dashboard-sidebar nav a:not([href="/dashboard/schedule/calendar"]) {
+    background-color: transparent !important;
+    color: #cbd5e1 !important;
+  }
+}
+
+/* Estilos para desktop */
+@media (min-width: 1025px) {
+  .dashboard-sidebar nav a[href="/dashboard/schedule/calendar"] {
+    background-color: rgba(71, 85, 105, 0.7) !important;
+    background-image: none !important;
+    color: white !important;
+  }
+  
+  .dashboard-sidebar nav a:not([href="/dashboard/schedule/calendar"]) {
+    background-color: transparent !important;
+    color: #cbd5e1 !important;
+  }
+}

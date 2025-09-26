@@ -5,6 +5,7 @@ import {
   CalendarDays,
   CreditCard,
   DollarSign,
+  Droplets,
   FileText,
   Settings,
   UserCheck,
@@ -43,7 +44,7 @@ export function MobileNavigation({ userRole, isOpen, onClose }: MobileNavigation
           { name: "Cotizaciones", href: "/dashboard/quotes", icon: DollarSign, color: "text-orange-500" },
           { name: "Liquidación", href: "/dashboard/liquidations", icon: UserCheck, color: "text-red-500" },
           { name: "Reportes", href: "/dashboard/reports", icon: FileText, color: "text-red-500" },
-          { name: "Administración", href: "/dashboard/admin", icon: Settings, color: "text-gray-300" },
+          { name: "Administración", href: "/dashboard/admin", icon: Settings, color: "text-white" },
         ];
       case "secretaria":
         return [
@@ -176,7 +177,7 @@ export function MobileNavigation({ userRole, isOpen, onClose }: MobileNavigation
         <div className="flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/30">
           <Link href="/dashboard" className="flex items-center space-x-3 group">
             <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300 group-hover:scale-105">
-              <Calendar className="h-6 w-6 text-white" />
+              <Droplets className="h-6 w-6 text-white" />
             </div>
             <div className="text-white">
               <h1 className="text-lg font-bold text-white">Améstica</h1>
@@ -219,7 +220,7 @@ export function MobileNavigation({ userRole, isOpen, onClose }: MobileNavigation
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-2">
+        <nav className="p-4 space-y-1">
           {getNavigationItems().map((item) => (
             <button
               key={item.name}
@@ -233,9 +234,9 @@ export function MobileNavigation({ userRole, isOpen, onClose }: MobileNavigation
                 e.stopPropagation();
                 handleNavigation(item.href);
               }}
-              className={`w-full group flex items-center space-x-3 px-3 py-3 text-slate-300 rounded-xl transition-all duration-200 hover:bg-slate-700/50 hover:text-white hover:scale-[1.02] hover:shadow-lg text-sm font-medium relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-slate-800 ${pathname === item.href
-                  ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white'
-                  : ''
+              className={`w-full group flex items-center space-x-4 px-4 py-4 text-slate-300 rounded-xl transition-all duration-200 hover:bg-slate-700/50 hover:text-white hover:scale-[1.02] hover:shadow-lg text-sm font-medium relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-slate-800 ${pathname === item.href
+                ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white'
+                : ''
                 }`}
               style={{
                 touchAction: 'manipulation',
@@ -243,19 +244,19 @@ export function MobileNavigation({ userRole, isOpen, onClose }: MobileNavigation
                 WebkitTouchCallout: 'none',
                 WebkitUserSelect: 'none',
                 userSelect: 'none',
-                minHeight: '48px',
+                minHeight: '56px',
                 display: 'flex',
                 alignItems: 'center'
               }}
             >
               <div className={`relative z-10 p-2 rounded-lg transition-all duration-200 ${pathname === item.href
-                  ? 'bg-white/20'
-                  : 'group-hover:bg-slate-600/30'
+                ? 'bg-white/20'
+                : 'group-hover:bg-slate-600/30'
                 }`}>
-                <item.icon className={`h-5 w-5 ${item.color} transition-all duration-200 ${pathname === item.href ? 'text-white' : 'group-hover:text-white'
+                <item.icon className={`h-6 w-6 ${item.color} transition-all duration-200 ${pathname === item.href ? 'text-white' : 'group-hover:text-white'
                   }`} />
               </div>
-              <span className="relative z-10 truncate font-medium text-base">{item.name}</span>
+              <span className="relative z-10 truncate font-medium text-lg">{item.name}</span>
             </button>
           ))}
         </nav>

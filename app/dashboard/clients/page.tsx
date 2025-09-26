@@ -1,5 +1,6 @@
 "use client";
 
+import "@/app/dashboard/clients/clients-dropdown-fix.css";
 import ClientForm, { ClientData } from "@/components/forms/client-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from "@/components/ui/input";
+import { ModalPortal } from "@/components/ui/modal-portal";
 import {
   Select,
   SelectContent,
@@ -66,6 +68,7 @@ const ClientCard = React.memo(({
   onEdit: (client: Client) => void;
   onDelete: (id: string) => void;
 }) => {
+
   const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case "active":
@@ -93,11 +96,11 @@ const ClientCard = React.memo(({
   }, []);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1" style={{ position: 'relative', overflow: 'visible', zIndex: 1 }}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3 sm:space-x-4">
           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <User className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+            <User className="h-6 w-6 sm:h-8 sm:w-8 text-white flex-shrink-0" />
           </div>
           <div>
             <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">{client.name}</h3>
@@ -114,23 +117,83 @@ const ClientCard = React.memo(({
           </div>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit(client)}>
-              <Edit className="h-4 w-4 mr-2" />
-              Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onDelete(client.id)} className="text-red-600">
-              <Trash2 className="h-4 w-4 mr-2" />
-              Eliminar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Botones de acción - Desktop */}
+        <div className="hidden sm:flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onEdit(client)}
+            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Editar
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onDelete(client.id)}
+            className="text-red-600 border-red-200 hover:bg-red-50"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Eliminar
+          </Button>
+        </div>
+
+        {/* Menú de tres puntos - Solo móvil */}
+        <div className="sm:hidden">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-100"
+                style={{ position: 'relative', zIndex: 1 }}
+              >
+                <MoreVertical className="h-4 w-4 flex-shrink-0" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              side="bottom"
+              sideOffset={4}
+              className="bg-white border border-gray-200 shadow-lg"
+              avoidCollisions={true}
+              collisionPadding={8}
+              style={{
+                position: 'absolute',
+                zIndex: 1000,
+                minWidth: '8rem',
+                maxWidth: '12rem',
+                width: 'auto',
+                marginTop: '4px',
+                transform: 'none'
+              }}
+            >
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onEdit(client);
+                }}
+                className="hover:bg-gray-50 cursor-pointer"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Editar
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete(client.id);
+                }}
+                className="text-red-600 hover:bg-red-50 cursor-pointer"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Eliminar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -141,21 +204,21 @@ const ClientCard = React.memo(({
           </div>
         )}
         <div className="flex items-center text-gray-600">
-          <Phone className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0" />
+          <Phone className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0 flex items-center justify-center" />
           <span className="text-sm font-medium">{client.phone}</span>
         </div>
         {client.email && (
           <div className="flex items-center text-gray-600">
-            <Mail className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0" />
+            <Mail className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0 flex items-center justify-center" />
             <span className="text-sm font-medium truncate">{client.email}</span>
           </div>
         )}
         <div className="flex items-center text-gray-600">
-          <MapPin className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0" />
+          <MapPin className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0 flex items-center justify-center" />
           <span className="text-sm font-medium">{client.address}</span>
         </div>
         <div className="flex items-center text-gray-600">
-          <Building className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0" />
+          <Building className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0 flex items-center justify-center" />
           <span className="text-sm font-medium">{client.commune} - {client.region}</span>
         </div>
       </div>
@@ -167,6 +230,64 @@ const ClientCard = React.memo(({
 ClientCard.displayName = 'ClientCard';
 
 export default function ClientsPage() {
+  // Aplicar estilos CSS globales para el menú de tres puntos
+  useEffect(() => {
+    // Función para aplicar estilos
+    const applyStyles = () => {
+      // Verificar si ya existe el estilo
+      let existingStyle = document.getElementById('clients-dropdown-fix');
+
+      if (!existingStyle) {
+        const style = document.createElement('style');
+        style.id = 'clients-dropdown-fix';
+        style.textContent = `
+          .clients-page [data-radix-dropdown-menu-content] {
+            position: absolute !important;
+            z-index: 1000 !important;
+            background: white !important;
+            border: 1px solid #e5e7eb !important;
+            border-radius: 0.5rem !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+            min-width: 8rem !important;
+            max-width: 12rem !important;
+            width: auto !important;
+            margin-top: 4px !important;
+            transform: none !important;
+          }
+          .clients-page .bg-white {
+            position: relative !important;
+            overflow: visible !important;
+          }
+          .clients-page .space-y-6 {
+            overflow: visible !important;
+          }
+          .clients-page .grid {
+            overflow: visible !important;
+          }
+          .clients-page [data-radix-dropdown-menu-trigger] {
+            position: relative !important;
+            z-index: 1 !important;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+    };
+
+    // Aplicar estilos inmediatamente
+    applyStyles();
+
+    // Aplicar estilos después de un pequeño delay para asegurar que el DOM esté listo
+    const timeoutId = setTimeout(applyStyles, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      const style = document.getElementById('clients-dropdown-fix');
+      if (style && document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
+    };
+  }, []);
+
   const [clients, setClients] = useState<Client[]>(initialClients);
   const [filteredClients, setFilteredClients] = useState<Client[]>(initialClients);
   const [loading, setLoading] = useState(false);
@@ -263,8 +384,8 @@ export default function ClientsPage() {
       return true;
     });
 
-    // Ordenar por nombre
-    filtered.sort((a, b) => a.name.localeCompare(b.name));
+    // Ordenar por fecha de creación (más reciente primero)
+    filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     setFilteredClients(filtered);
   }, [clients, searchTerm, statusFilter, regionFilter, companyFilter]);
@@ -510,7 +631,7 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+    <div className={`clients-page min-h-screen bg-white p-6 ${showClientForm ? 'modal-open' : ''}`}>
       <div className="w-full space-y-8">
         {/* Header Unificado */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
@@ -523,16 +644,16 @@ export default function ClientsPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button onClick={handleNewClient} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
-                <Plus className="h-5 w-5 mr-2" />
+              <Button onClick={handleNewClient} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 flex items-center">
+                <Plus className="h-5 w-5 mr-2 flex-shrink-0" />
                 Nuevo Cliente
               </Button>
               <Button
                 variant="outline"
                 onClick={handleExport}
-                className="border-2 border-green-200 text-green-700 hover:bg-green-50 px-8 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200"
+                className="border-2 border-green-200 text-green-700 hover:bg-green-50 px-8 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center"
               >
-                <Download className="h-5 w-5 mr-2" />
+                <Download className="h-5 w-5 mr-2 flex-shrink-0" />
                 Exportar Excel
               </Button>
             </div>
@@ -569,8 +690,8 @@ export default function ClientsPage() {
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-6">
             <div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-1">
-                <Filter className="h-5 w-5 text-blue-600 inline mr-2" />
+              <h3 className="text-xl font-semibold text-gray-800 mb-1 flex items-center">
+                <Filter className="h-5 w-5 text-blue-600 mr-2 flex-shrink-0" />
                 Filtros y Búsqueda
               </h3>
               <p className="text-gray-600 text-sm">Personaliza la vista de clientes según tus necesidades</p>
@@ -578,16 +699,17 @@ export default function ClientsPage() {
             <Button
               variant="outline"
               onClick={clearFilters}
-              className="border-2 border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-xl font-medium shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200"
+              className="border-2 border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-xl font-medium shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center"
             >
-              <X className="mr-2 h-4 w-4" />
+              <X className="mr-2 h-4 w-4 flex-shrink-0" />
               Limpiar
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="relative hidden lg:block">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          {/* Campo de búsqueda - siempre visible */}
+          <div className="mb-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10 pointer-events-none" />
               <Input
                 type="text"
                 placeholder="Buscar clientes por nombre, email, teléfono o empresa..."
@@ -596,7 +718,10 @@ export default function ClientsPage() {
                 className="pl-10 h-11 border-2 border-gray-200 focus:border-blue-500 rounded-xl"
               />
             </div>
+          </div>
 
+          {/* Selectores en grid responsive */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="h-11 border-2 border-gray-200 focus:border-blue-500 rounded-xl">
                 <SelectValue placeholder="Todos los estados" />
@@ -640,15 +765,15 @@ export default function ClientsPage() {
         <div className="space-y-6">
           {filteredClients.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
-              <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <Users className="h-16 w-16 text-gray-400 mx-auto mb-4 flex items-center justify-center" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No se encontraron clientes</h3>
               <p className="text-gray-600 mb-6">
                 {searchTerm || statusFilter !== "all" || regionFilter !== "all" || companyFilter !== "all"
                   ? "Intenta ajustar los filtros de búsqueda"
                   : "Comienza agregando tu primer cliente"}
               </p>
-              <Button onClick={handleNewClient} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white">
-                <Plus className="h-4 w-4 mr-2" />
+              <Button onClick={handleNewClient} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white flex items-center">
+                <Plus className="h-4 w-4 mr-2 flex-shrink-0" />
                 Agregar Cliente
               </Button>
             </div>
@@ -667,57 +792,78 @@ export default function ClientsPage() {
         </div>
 
         {/* Modal para el formulario de cliente */}
-        {showClientForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center justify-end">
-                  <button
-                    onClick={() => setShowClientForm(false)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-              <div className="p-6">
-                <ClientForm
-                  client={editingClient as any}
-                  onSubmit={handleSaveClient}
-                  onCancel={() => setShowClientForm(false)}
-                  loading={isSaving}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        <ModalPortal isOpen={showClientForm}>
+          <ClientForm
+            client={editingClient as any}
+            onSubmit={handleSaveClient}
+            onCancel={() => setShowClientForm(false)}
+            loading={isSaving}
+          />
+        </ModalPortal>
 
-        {/* Modal de confirmación de eliminación */}
+        {/* Modal de confirmación de eliminación mejorado */}
         {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-red-500" />
-                  <h2 className="text-xl font-semibold text-gray-800">Confirmar Eliminación</h2>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-red-100">
+              {/* Header con gradiente y icono mejorado */}
+              <div className="bg-gradient-to-r from-red-50 to-pink-50 p-6 rounded-t-2xl border-b border-red-100">
+                <div className="flex flex-col items-center text-center space-y-3">
+                  {/* Icono de advertencia mejorado */}
+                  <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg">
+                    <AlertCircle className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-1">Confirmar Eliminación</h2>
+                    <p className="text-gray-600 text-sm">
+                      Esta acción es irreversible
+                    </p>
+                  </div>
                 </div>
               </div>
+
+              {/* Contenido principal */}
               <div className="p-6">
-                <p className="text-gray-600">
-                  ¿Estás seguro de que quieres eliminar este cliente? Esta acción no se puede deshacer.
-                </p>
+                <div className="text-center">
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                    <p className="text-gray-700 font-medium leading-relaxed">
+                      ¿Estás seguro de que quieres eliminar este cliente?
+                    </p>
+                    <p className="text-gray-600 text-sm mt-2">
+                      Todos los datos asociados se perderán permanentemente y no podrán ser recuperados.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="p-6 border-t border-gray-200 flex gap-3 justify-end">
-                <Button variant="outline" onClick={cancelDelete} className="border-2 border-gray-200 text-gray-700 hover:bg-gray-50 px-6 py-3 rounded-xl font-medium shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200">
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={deleteClient}
-                  disabled={isDeleting}
-                  className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isDeleting ? "Eliminando..." : "Eliminar"}
-                </Button>
+
+              {/* Botones de acción mejorados */}
+              <div className="p-6 bg-gray-50 rounded-b-2xl">
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={cancelDelete}
+                    className="flex-1 border-2 border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400 px-4 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={deleteClient}
+                    disabled={isDeleting}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {isDeleting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Eliminando...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Eliminar
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { ModalPortal } from '@/components/ui/modal-portal';
 import {
   // Calendar,
   ChevronLeft,
@@ -18,8 +19,7 @@ import {
   RefreshCw,
   Search,
   TrendingDown,
-  TrendingUp,
-  X
+  TrendingUp
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -28,6 +28,8 @@ export default function CashDashboard() {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCompany, setSelectedCompany] = useState<string>('all');
+  const [companies, setCompanies] = useState<any[]>([]);
   // Obtener mes y año actual
   const getCurrentMonthYear = () => {
     const now = new Date();
@@ -64,6 +66,19 @@ export default function CashDashboard() {
     balance: 0
   });
 
+  // Función para cargar empresas
+  const loadCompanies = async () => {
+    try {
+      const response = await fetch('/api/companies');
+      if (response.ok) {
+        const companiesData = await response.json();
+        setCompanies(companiesData);
+      }
+    } catch (error) {
+      console.error('Error cargando empresas:', error);
+    }
+  };
+
   // Función para cargar transacciones reales
   const loadTransactions = async () => {
     setLoading(true);
@@ -81,7 +96,7 @@ export default function CashDashboard() {
           return acc;
         }, []) || [];
 
-        // Para transacciones de INCOME, obtener el estado del trabajo
+        // Para transacciones de INCOME, obtener el estado del trabajo y la empresa
         const transactionsWithJobStatus = await Promise.all(
           uniqueTransactions.map(async (transaction: any) => {
             if (transaction.type === 'INCOME' && transaction.reference?.includes('Trabajo #')) {
@@ -95,7 +110,9 @@ export default function CashDashboard() {
                   return {
                     ...transaction,
                     jobStatus: job.status,
-                    jobTitle: job.title
+                    jobTitle: job.title,
+                    companyId: job.companyId,
+                    companyName: job.company?.name || 'Sin empresa'
                   };
                 } else {
                   // Error obteniendo trabajo
@@ -126,8 +143,9 @@ export default function CashDashboard() {
     }
   };
 
-  // Cargar transacciones al montar el componente
+  // Cargar transacciones y empresas al montar el componente
   useEffect(() => {
+    loadCompanies();
     loadTransactions();
   }, []);
 
@@ -465,38 +483,33 @@ export default function CashDashboard() {
     });
   };
 
-  // Función para obtener estadísticas del mes
-  const getMonthStats = (month: string) => {
-    const monthTransactions = getTransactionsForMonth(month);
-    const totalIncome = monthTransactions
-      .filter(t => t.type === 'INCOME')
-      .reduce((sum, t) => sum + t.amount, 0);
-    const totalExpenses = monthTransactions
-      .filter(t => t.type === 'EXPENSE')
-      .reduce((sum, t) => sum + t.amount, 0);
-    const balance = totalIncome - totalExpenses;
-    const transactionCount = monthTransactions.length;
-
-    return {
-      totalIncome,
-      totalExpenses,
-      balance,
-      transactionCount
-    };
-  };
-
   // Transacciones del mes actual
   const currentMonthTransactions = getTransactionsForMonth(selectedMonth);
 
-  // Estadísticas del mes
-  const monthStats = getMonthStats(selectedMonth);
+  // Filter transactions based on search term and company
+  const filteredTransactions = currentMonthTransactions.filter(transaction => {
+    const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (transaction.reference && transaction.reference.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
 
-  // Filter transactions based on search term
-  const filteredTransactions = currentMonthTransactions.filter(transaction =>
-    transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (transaction.reference && transaction.reference.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    transaction.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    const matchesCompany = selectedCompany === 'all' ||
+      (transaction.companyId && transaction.companyId === selectedCompany);
+
+    return matchesSearch && matchesCompany;
+  });
+
+  // Estadísticas del mes (usando transacciones filtradas)
+  const monthStats = {
+    totalIncome: filteredTransactions
+      .filter(t => t.type === 'INCOME')
+      .reduce((sum, t) => sum + t.amount, 0),
+    totalExpenses: filteredTransactions
+      .filter(t => t.type === 'EXPENSE')
+      .reduce((sum, t) => sum + t.amount, 0),
+    balance: 0,
+    transactionCount: filteredTransactions.length
+  };
+  monthStats.balance = monthStats.totalIncome - monthStats.totalExpenses;
 
   // Obtener meses disponibles ordenados por fecha
   const availableMonths = Array.from(new Set(transactions.map(t => {
@@ -594,26 +607,27 @@ export default function CashDashboard() {
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <Button
-            className="bg-[#002D71] hover:bg-[#1e40af] text-white transition-colors"
+            className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 flex items-center"
             onClick={() => handleNewTransaction('expense')}
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-2 flex-shrink-0" />
             Registrar Gasto
           </Button>
           <Button
             variant="outline"
             onClick={loadTransactions}
             disabled={loading}
-            className="border-orange-300 text-orange-700 hover:bg-orange-50"
+            className="border-orange-300 text-orange-700 hover:bg-orange-50 flex items-center"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 mr-2 flex-shrink-0 ${loading ? 'animate-spin' : ''}`} />
             {loading ? 'Cargando...' : 'Recargar'}
           </Button>
           <Button
             variant="outline"
             onClick={handleExportData}
+            className="flex items-center"
           >
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="h-4 w-4 mr-2 flex-shrink-0" />
             Exportar
           </Button>
         </div>
@@ -630,9 +644,9 @@ export default function CashDashboard() {
                 size="sm"
                 onClick={() => navigateMonth('prev')}
                 disabled={availableMonths.indexOf(selectedMonth) === 0}
-                className="hover:bg-gray-50"
+                className="hover:bg-gray-50 flex items-center justify-center"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-4 w-4 flex-shrink-0" />
               </Button>
               <div className="text-center min-w-[200px]">
                 <h2 className="text-xl font-semibold text-gray-900">
@@ -640,6 +654,11 @@ export default function CashDashboard() {
                 </h2>
                 <p className="text-sm text-gray-600">
                   {filteredTransactions.length} transacciones
+                  {selectedCompany !== 'all' && (
+                    <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                      {companies.find(c => c.id === selectedCompany)?.displayName || companies.find(c => c.id === selectedCompany)?.name || 'Empresa'}
+                    </span>
+                  )}
                 </p>
               </div>
               <Button
@@ -647,14 +666,43 @@ export default function CashDashboard() {
                 size="sm"
                 onClick={() => navigateMonth('next')}
                 disabled={availableMonths.indexOf(selectedMonth) === availableMonths.length - 1}
-                className="hover:bg-gray-50"
+                className="hover:bg-gray-50 flex items-center justify-center"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4 flex-shrink-0" />
               </Button>
             </div>
 
             {/* Selectores rápidos */}
             <div className="flex flex-col sm:flex-row gap-3">
+              {/* Selector de Empresa */}
+              <div className="flex flex-col">
+                <label className="text-xs font-medium text-gray-600 mb-1">Empresa</label>
+                <div className="flex gap-2">
+                  <select
+                    value={selectedCompany}
+                    onChange={(e) => setSelectedCompany(e.target.value)}
+                    className="p-2 border border-gray-300 rounded-md text-sm focus:border-[#002D71] focus:ring-1 focus:ring-[#002D71] min-w-[150px]"
+                  >
+                    <option value="all">Todas las empresas</option>
+                    {companies.map(company => (
+                      <option key={company.id} value={company.id}>
+                        {company.displayName || company.name}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedCompany !== 'all' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedCompany('all')}
+                      className="px-3 text-xs"
+                    >
+                      Limpiar
+                    </Button>
+                  )}
+                </div>
+              </div>
+
               {/* Selector de Año */}
               <div className="flex flex-col">
                 <label className="text-xs font-medium text-gray-600 mb-1">Año</label>
@@ -755,7 +803,7 @@ export default function CashDashboard() {
       <Card className="border-0 shadow-soft hidden lg:block">
         <CardContent className="p-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 flex items-center justify-center" />
             <Input
               placeholder="Buscar transacciones..."
               className="pl-10 border-gray-200 focus:border-[#002D71] focus:ring-[#002D71]"
@@ -770,7 +818,7 @@ export default function CashDashboard() {
       <Card className="border-0 shadow-soft">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Receipt className="h-5 w-5 text-[#002D71]" />
+            <Receipt className="h-5 w-5 text-[#002D71] flex-shrink-0" />
             Transacciones de {getMonthName(selectedMonth)}
           </CardTitle>
           <CardDescription>
@@ -860,30 +908,13 @@ export default function CashDashboard() {
       </Card>
 
       {/* Modal para Nueva Transacción */}
-      {showTransactionForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
-          <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Registrar {transactionType === 'income' ? 'Ingreso' : 'Gasto'}
-                </h2>
-                <button
-                  onClick={handleTransactionCancel}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-              <CashTransactionForm
-                type={transactionType}
-                onSubmit={handleTransactionSubmit}
-                onCancel={handleTransactionCancel}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <ModalPortal isOpen={showTransactionForm}>
+        <CashTransactionForm
+          type={transactionType}
+          onSubmit={handleTransactionSubmit}
+          onCancel={handleTransactionCancel}
+        />
+      </ModalPortal>
     </div>
   );
 }

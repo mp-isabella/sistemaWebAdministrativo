@@ -1,15 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AutocompleteSelect } from "@/components/ui/autocomplete-select"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Switch } from "@/components/ui/switch"
-import { Wrench, DollarSign, Clock, Tag, FileText } from 'lucide-react'
+import { Textarea } from "@/components/ui/textarea"
+import { Clock, DollarSign, FileText, Tag, Wrench } from 'lucide-react'
+import { useState } from "react"
 
 interface ServiceFormProps {
   service?: any
@@ -19,6 +19,7 @@ interface ServiceFormProps {
 }
 
 export default function ServiceForm({ service, onSubmit, onCancel, loading = false }: ServiceFormProps) {
+
   const [formData, setFormData] = useState({
     name: service?.name || "",
     description: service?.description || "",
@@ -56,7 +57,7 @@ export default function ServiceForm({ service, onSubmit, onCancel, loading = fal
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
@@ -113,16 +114,18 @@ export default function ServiceForm({ service, onSubmit, onCancel, loading = fal
               <Label htmlFor="category">Categoría *</Label>
               <div className="relative">
                 <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
-                <Select value={formData.category} onValueChange={(value) => handleChange("category", value)}>
-                  <SelectTrigger className={`pl-10 ${errors.category ? "border-red-500" : ""}`}>
-                    <SelectValue placeholder="Seleccionar categoría" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="deteccion_fugas">Detección de Fugas de Agua</SelectItem>
-                    <SelectItem value="destape_alcantarillado">Destape de Alcantarillado</SelectItem>
-                    <SelectItem value="videointrospeccion">Videoinspección de Ductos</SelectItem>
-                  </SelectContent>
-                </Select>
+                <AutocompleteSelect
+                  value={formData.category}
+                  onValueChange={(value) => handleChange("category", value)}
+                  placeholder="Seleccionar categoría"
+                  options={[
+                    { value: "deteccion_fugas", label: "Detección de Fugas de Agua" },
+                    { value: "destape_alcantarillado", label: "Destape de Alcantarillado" },
+                    { value: "videointrospeccion", label: "Videoinspección de Ductos" }
+                  ]}
+                  className={`pl-10 ${errors.category ? "border-red-500" : ""}`}
+                  emptyMessage="No se encontraron categorías."
+                />
               </div>
               {errors.category && (
                 <Alert variant="destructive">
@@ -226,7 +229,7 @@ export default function ServiceForm({ service, onSubmit, onCancel, loading = fal
             <Button
               type="submit"
               disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="service-form-submit-button rounded-xl transition-all duration-200 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Guardando..." : service ? "Actualizar" : "Crear"}
             </Button>

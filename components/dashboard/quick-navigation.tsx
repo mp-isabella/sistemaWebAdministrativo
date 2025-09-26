@@ -11,6 +11,7 @@ import {
   ExternalLink,
   FileText,
   MapPin,
+  TestTube,
   UserCheck,
   Users,
   Wrench
@@ -109,6 +110,16 @@ export function QuickNavigation() {
       textColor: "text-blue-700",
       borderColor: "border-blue-200",
       isExternal: true
+    },
+    {
+      title: "Trabajos de Prueba",
+      description: "Crear trabajos de prueba para verificar el sistema",
+      icon: <TestTube className="h-6 w-6" />,
+      href: "/test-jobs",
+      color: "from-purple-500 to-purple-600",
+      bgColor: "bg-purple-50",
+      textColor: "text-purple-700",
+      borderColor: "border-purple-200"
     },
     {
       title: "App Geolocalización",

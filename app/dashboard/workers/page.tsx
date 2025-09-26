@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from "@/components/ui/input";
+import { ModalPortal } from "@/components/ui/modal-portal";
 import {
   Select,
   SelectContent,
@@ -123,7 +124,7 @@ const WorkerCard = ({
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3 sm:space-x-4">
           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <UserCog className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+            <UserCog className="h-6 w-6 sm:h-8 sm:w-8 text-white flex-shrink-0" />
           </div>
           <div>
             <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">{worker.name}</h3>
@@ -138,41 +139,66 @@ const WorkerCard = ({
           </div>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit(worker)}>
-              <Edit className="h-4 w-4 mr-2" />
-              Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onDelete(worker.id)} className="text-red-600">
-              <Trash2 className="h-4 w-4 mr-2" />
-              Eliminar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Botones de acción - Desktop */}
+        <div className="hidden sm:flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onEdit(worker)}
+            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Editar
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onDelete(worker.id)}
+            className="text-red-600 border-red-200 hover:bg-red-50"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Eliminar
+          </Button>
+        </div>
+
+        {/* Menú de tres puntos - Solo móvil */}
+        <div className="sm:hidden">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex items-center justify-center">
+                <MoreVertical className="h-4 w-4 flex-shrink-0" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-white border border-gray-200 shadow-lg">
+              <DropdownMenuItem onClick={() => onEdit(worker)} className="hover:bg-gray-50 flex items-center">
+                <Edit className="h-4 w-4 mr-2 flex-shrink-0" />
+                Editar
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onDelete(worker.id)} className="text-red-600 hover:bg-red-50 flex items-center">
+                <Trash2 className="h-4 w-4 mr-2 flex-shrink-0" />
+                Eliminar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="space-y-3">
         <div className="flex items-center text-gray-600">
-          <Mail className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0" />
+          <Mail className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0 flex items-center justify-center" />
           <span className="text-sm font-medium truncate">{worker.email}</span>
         </div>
         <div className="flex items-center text-gray-600">
-          <Phone className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0" />
+          <Phone className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0 flex items-center justify-center" />
           <span className="text-sm font-medium">{worker.phone}</span>
         </div>
         <div className="flex items-center text-gray-600">
-          <Building className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0" />
+          <Building className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0 flex items-center justify-center" />
           <span className="text-sm font-medium">{worker.company || 'Améstica Ltda'}</span>
         </div>
         {worker.joinDate && (
           <div className="flex items-center text-gray-600">
-            <Calendar className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0" />
+            <Calendar className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0 flex items-center justify-center" />
             <span className="text-sm font-medium">
               Ingreso: {new Date(worker.joinDate).toLocaleDateString('es-CL')}
             </span>
@@ -215,9 +241,25 @@ export default function WorkersPage() {
       }
 
       const data = await response.json();
-      setWorkers(data);
-    } catch (error) {
 
+      // Transformar los datos para que sean compatibles con la interfaz Worker
+      const transformedWorkers = data.map((worker: any) => ({
+        id: worker.id,
+        name: worker.name,
+        email: worker.email,
+        phone: worker.phone,
+        role: worker.role?.name || 'Técnico',
+        status: worker.isActive ? 'activo' : 'inactivo',
+        company: 'Améstica Ltda', // Valor por defecto
+        joinDate: worker.createdAt,
+        createdAt: worker.createdAt,
+        updatedAt: worker.updatedAt,
+        isActive: worker.isActive
+      }));
+
+      setWorkers(transformedWorkers);
+    } catch (error) {
+      console.error('Error fetching workers:', error);
       setError(error instanceof Error ? error.message : "Error al cargar los trabajadores");
     } finally {
       setLoading(false);
@@ -332,6 +374,8 @@ export default function WorkersPage() {
   // Función para manejar envío del formulario
   const handleFormSubmit = useCallback(async (formData: any) => {
     try {
+      console.log('🔄 Enviando datos del formulario:', formData);
+      console.log('👤 Trabajador siendo editado:', editingWorker);
 
       setLoading(true);
       setError("");
@@ -342,35 +386,60 @@ export default function WorkersPage() {
 
       const method = editingWorker ? 'PUT' : 'POST';
 
+      console.log('🌐 URL:', url);
+      console.log('📡 Método:', method);
+
+      const requestBody = {
+        ...formData,
+        isActive: formData.status === 'active'
+      };
+
+      console.log('📤 Datos enviados a la API:', requestBody);
+
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          isActive: formData.status === 'active'
-        }),
+        body: JSON.stringify(requestBody),
       });
+
+      console.log('📥 Respuesta de la API:', response.status, response.statusText);
 
       if (!response.ok) {
         const errorData = await response.json();
-        
+        console.error('❌ Error de la API:', errorData);
         throw new Error(errorData.error || 'Error al guardar el trabajador');
       }
 
       const result = await response.json();
+      console.log('✅ Resultado de la API:', result);
+
+      // Transformar el resultado para que sea compatible con la interfaz Worker
+      const transformedResult = {
+        id: result.id,
+        name: result.name,
+        email: result.email,
+        phone: result.phone,
+        role: result.role?.name || result.role || 'Técnico',
+        status: result.isActive ? 'activo' : 'inactivo',
+        company: formData.company || 'Améstica Ltda', // Usar la empresa del formulario
+        joinDate: result.createdAt,
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+        isActive: result.isActive
+      };
 
       if (editingWorker) {
         // Actualizar trabajador existente
         setWorkers(prev => prev.map(worker =>
           worker.id === editingWorker.id
-            ? { ...worker, ...result }
+            ? { ...worker, ...transformedResult }
             : worker
         ));
       } else {
         // Agregar nuevo trabajador al principio de la lista
-        setWorkers(prev => [result, ...prev]);
+        setWorkers(prev => [transformedResult, ...prev]);
       }
 
       setShowWorkerForm(false);
@@ -412,7 +481,7 @@ export default function WorkersPage() {
 
   return (
     <RoleGuard requiredPermission="canAccessWorkers">
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-3 sm:p-4 lg:p-6">
+      <div className="workers-page min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-3 sm:p-4 lg:p-6">
         <div className="w-full space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Header Unificado */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 lg:p-8">
@@ -425,17 +494,17 @@ export default function WorkersPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <Button onClick={handleNewWorker} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 text-sm sm:text-base">
-                  <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                <Button onClick={handleNewWorker} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 text-sm sm:text-base flex items-center">
+                  <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
                   <span className="hidden sm:inline">Nuevo Trabajador</span>
                   <span className="sm:hidden">Nuevo</span>
                 </Button>
                 <Button
                   variant="outline"
                   onClick={handleExport}
-                  className="border-2 border-green-200 text-green-700 hover:bg-green-50 px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 text-sm sm:text-base"
+                  className="border-2 border-green-200 text-green-700 hover:bg-green-50 px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 text-sm sm:text-base flex items-center"
                 >
-                  <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
                   <span className="hidden sm:inline">Exportar Excel</span>
                   <span className="sm:hidden">Exportar</span>
                 </Button>
@@ -447,7 +516,7 @@ export default function WorkersPage() {
           {error && (
             <div className="bg-white rounded-2xl shadow-lg border border-red-200 bg-red-50 p-6">
               <div className="flex items-center">
-                <AlertCircle className="h-5 w-5 text-red-500 mr-3" />
+                <AlertCircle className="h-5 w-5 text-red-500 mr-3 flex-shrink-0" />
                 <div>
                   <h3 className="text-sm font-medium text-red-800">Error</h3>
                   <p className="text-sm text-red-700 mt-1">{error}</p>
@@ -456,9 +525,9 @@ export default function WorkersPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setError("")}
-                  className="ml-auto text-red-500 hover:text-red-700"
+                  className="ml-auto text-red-500 hover:text-red-700 flex items-center justify-center"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4 flex-shrink-0" />
                 </Button>
               </div>
             </div>
@@ -469,7 +538,7 @@ export default function WorkersPage() {
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex-1 hidden lg:block">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10 pointer-events-none" />
                   <Input
                     placeholder="Buscar trabajadores por nombre, email, teléfono o empresa..."
                     value={searchTerm}
@@ -547,29 +616,67 @@ export default function WorkersPage() {
           </div>
         </div>
 
-        {/* Modal de confirmación de eliminación */}
+        {/* Modal de confirmación de eliminación mejorado */}
         {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-8 max-w-md mx-4">
-              <div className="text-center">
-                <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">¿Eliminar trabajador?</h3>
-                <p className="text-gray-600 mb-6">
-                  Esta acción no se puede deshacer. Se eliminará permanentemente toda la información del trabajador.
-                </p>
-                <div className="flex gap-4">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-red-100">
+              {/* Header con gradiente y icono mejorado */}
+              <div className="bg-gradient-to-r from-red-50 to-pink-50 p-6 rounded-t-2xl border-b border-red-100">
+                <div className="flex flex-col items-center text-center space-y-3">
+                  {/* Icono de advertencia mejorado */}
+                  <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg">
+                    <AlertCircle className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-1">Confirmar Eliminación</h2>
+                    <p className="text-gray-600 text-sm">
+                      Esta acción es irreversible
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contenido principal */}
+              <div className="p-6">
+                <div className="text-center">
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                    <p className="text-gray-700 font-medium leading-relaxed">
+                      ¿Estás seguro de que quieres eliminar este trabajador?
+                    </p>
+                    <p className="text-gray-600 text-sm mt-2">
+                      Todos los datos asociados se perderán permanentemente y no podrán ser recuperados.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botones de acción mejorados */}
+              <div className="p-6 bg-gray-50 rounded-b-2xl">
+                <div className="flex gap-3">
                   <Button
                     variant="outline"
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="flex-1"
+                    className="flex-1 border-2 border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400 px-4 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center"
                   >
+                    <X className="h-4 w-4 mr-2" />
                     Cancelar
                   </Button>
                   <Button
                     onClick={confirmDelete}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                    disabled={loading}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    Eliminar
+                    {loading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Eliminando...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Eliminar
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
@@ -578,28 +685,14 @@ export default function WorkersPage() {
         )}
 
         {/* Modal del formulario de trabajador */}
-        {showWorkerForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl w-full max-w-4xl h-[90vh] overflow-hidden shadow-2xl relative">
-              {/* Botón de cerrar */}
-              <button
-                onClick={handleFormCancel}
-                className="absolute top-6 right-6 z-10 w-12 h-12 bg-white hover:bg-slate-50 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl border border-slate-200"
-                aria-label="Cerrar modal"
-              >
-                <X className="h-6 w-6 text-slate-600 hover:text-slate-800" />
-              </button>
-              <div className="h-full pt-4">
-                <WorkerForm
-                  worker={editingWorker}
-                  onSubmit={handleFormSubmit}
-                  onCancel={handleFormCancel}
-                  loading={loading}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        <ModalPortal isOpen={showWorkerForm}>
+          <WorkerForm
+            worker={editingWorker}
+            onSubmit={handleFormSubmit}
+            onCancel={handleFormCancel}
+            loading={loading}
+          />
+        </ModalPortal>
       </div>
     </RoleGuard>
   );

@@ -1,4 +1,4 @@
-﻿
+
 "use client"
 
 import { Badge } from "@/components/ui/badge"
@@ -9,7 +9,7 @@ import { Building, Calendar, CheckCircle, ChevronLeft, ChevronRight, Clock, Edit
 import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import "../../styles/calendar-mobile-optimizations.css"
+// CSS optimizations handled by dashboard layout
 
 // Simple debounce function
 const debounce = (func: Function, delay: number) => {
@@ -56,7 +56,7 @@ interface Technician {
   name: string
   email: string
   phone: string
-  role: string
+  role: string | { name: string }
   company: string
   fechaIngreso: string
   ultimaActividad: string
@@ -78,18 +78,62 @@ export default function CalendarPage() {
     return ['administrador', 'secretaria'].includes(userRole)
   }
 
-  const canEditJobs = () => {
-    return ['administrador', 'secretaria'].includes(userRole)
+  const canEditJobs = (jobId?: string) => {
+    // Administradores y secretarias pueden editar todos los trabajos
+    if (['administrador', 'secretaria'].includes(userRole)) {
+      return true
+    }
+
+    // Técnicos solo pueden editar sus propios trabajos asignados
+    if (userRole === 'tecnico') {
+      if (jobId) {
+        const job = jobs.find(j => j.id === jobId)
+        return job?.technician?.id === currentUser?.id
+      }
+      return true // Para botones generales, permitir si es técnico
+    }
+
+    return false
   }
 
   // Función helper para filtrar trabajadores activos
   const getActiveTechnicians = () => {
-    let filteredTechnicians = technicians.filter(tech =>
-      (tech.role === 'Trabajador' || tech.role === 'TRABAJADOR' || tech.role === 'Técnico' || tech.role === 'TECNICO') &&
-      tech.isActive &&
-      tech.name &&
-      tech.name.trim() !== ''
-    )
+    let filteredTechnicians = technicians.filter(tech => {
+      // Manejar tanto estructura plana como anidada del rol
+      const roleName = typeof tech.role === 'string' ? tech.role : tech.role?.name || ''
+      // Filtrar SOLO técnicos, excluyendo administradores y secretarias
+      const isTechnician = (
+        roleName === 'TECNICO' ||
+        roleName === 'Técnico' ||
+        roleName === 'Trabajador' ||
+        roleName === 'TRABAJADOR'
+      )
+
+      const isNotAdminOrSecretary = (
+        roleName !== 'ADMINISTRADOR' &&
+        roleName !== 'Administrador' &&
+        roleName !== 'SECRETARIA' &&
+        roleName !== 'Secretaria'
+      )
+
+      // Filtrar también por nombre para excluir usuarios con nombres de secretarias/administradores
+      const name = tech.name?.toLowerCase() || ''
+      const isNotAdminOrSecretaryByName = (
+        !name.includes('administrador') &&
+        !name.includes('admin') &&
+        !name.includes('secretaria') &&
+        !name.includes('secretary')
+      )
+
+      return (
+        isTechnician &&
+        isNotAdminOrSecretary &&
+        isNotAdminOrSecretaryByName &&
+        tech.isActive &&
+        tech.name &&
+        tech.name.trim() !== ''
+      )
+    })
 
     // Si el usuario es técnico, solo mostrar su propia columna
     if (userRole === 'tecnico') {
@@ -353,8 +397,7 @@ export default function CalendarPage() {
       // Log detallado de trabajos para depuración
       if (result.data && result.data.length > 0) {
 
-        result.data.forEach((job: any) => {
-          console.log('Job loaded:', job.id);
+        result.data.forEach((_job: any) => {
         })
       }
 
@@ -362,7 +405,7 @@ export default function CalendarPage() {
         // Mapear los datos del calendario al formato esperado
         const mappedJobs = result.data.map((job: any) => ({
           id: job.id,
-          title: job.type || job.service?.name || 'Sin título',
+          title: job.title || job.service?.name || 'Sin título',
           description: job.description || '',
           status: job.status || 'PENDING',
           priority: job.priority || 'MEDIUM',
@@ -385,7 +428,7 @@ export default function CalendarPage() {
             name: job.service.name || 'Sin servicio',
             price: job.service.price || 0
           } : {
-            name: job.type || 'Sin servicio',
+            name: job.title || 'Sin servicio',
             price: 0
           },
           company: job.company ? {
@@ -435,15 +478,7 @@ export default function CalendarPage() {
           setJobs(uniqueJobs)
         }
 
-        console.log('Jobs with technician:', mappedJobs.filter((job: Job) => job.technician).length)
-        console.log('Jobs without technician:', mappedJobs.filter((job: Job) => !job.technician).length)
-
-        if (mappedJobs.length !== uniqueJobs.length) {
-          console.log('Duplicate jobs detected')
-        }
-
         // Solo usar datos reales de la base de datos
-        console.log('Using real database data')
       } else {
 
         setError(result.error || 'Error al cargar los trabajos')
@@ -475,29 +510,35 @@ export default function CalendarPage() {
       }
     }
 
+    const handleNewJobCreated = () => {
+      // Solo recargar si no estamos ya cargando
+      if (!isFetchingRef.current) {
+        fetchJobs()
+      }
+    }
+
     window.addEventListener('calendarRefresh', handleCalendarRefresh as EventListener)
     window.addEventListener('paymentStatusUpdated', handlePaymentStatusUpdated as EventListener)
+    window.addEventListener('newJobCreated', handleNewJobCreated as EventListener)
     return () => {
       window.removeEventListener('calendarRefresh', handleCalendarRefresh as EventListener)
       window.removeEventListener('paymentStatusUpdated', handlePaymentStatusUpdated as EventListener)
+      window.removeEventListener('newJobCreated', handleNewJobCreated as EventListener)
     }
   }, [fetchJobs])
 
   // Función para cargar trabajadores desde la API
   const fetchTechnicians = useCallback(async () => {
     try {
-
       const response = await fetch("/api/workers/technicians")
       if (response.ok) {
         const data = await response.json()
-
         setTechnicians(data)
-
-        // Solo usar datos reales de la base de datos
-
+      } else {
+        console.error('Error loading technicians:', response.status, response.statusText)
       }
     } catch (error) {
-
+      console.error('Error fetching technicians:', error)
     }
   }, [])
 
@@ -595,7 +636,6 @@ export default function CalendarPage() {
   // Log específico para trabajos sin asignar
   const unassignedJobs = uniqueFilteredJobs.filter(job => !job.technician)
   if (unassignedJobs.length > 0) {
-    console.log('Unassigned jobs:', unassignedJobs.length)
   } else {
     // Log removido para mejorar rendimiento
   }
@@ -657,13 +697,13 @@ export default function CalendarPage() {
     return 0
   }
 
-  // Función para calcular la altura de un trabajo basada en su duración
+  // Función para calcular la altura de un trabajo basada en su duración completa
   const getJobHeight = (jobStartTime: string, jobEndTime: string, slotTime: string) => {
     const slotMinutes = timeToMinutes(slotTime)
     const jobStartMinutes = timeToMinutes(jobStartTime)
     const jobEndMinutes = timeToMinutes(jobEndTime)
 
-    // Calcular cuántos minutos del trabajo están en este slot
+    // Calcular cuántos minutos del trabajo están en este slot específico
     const slotStart = Math.max(slotMinutes, jobStartMinutes)
     const slotEnd = Math.min(slotMinutes + 60, jobEndMinutes)
     const minutesInSlot = Math.max(0, slotEnd - slotStart)
@@ -672,7 +712,7 @@ export default function CalendarPage() {
     const heightPercentage = (minutesInSlot / 60) * 100
 
     // Asegurar que la altura mínima sea proporcional a la duración real
-    const minHeight = Math.max(15, (minutesInSlot / 60) * 100) // Mínimo 15% o proporcional a la duración
+    const minHeight = Math.max(15, (minutesInSlot / 60) * 100)
 
     // Si el trabajo comienza en este slot
     if (jobStartMinutes >= slotMinutes && jobStartMinutes < slotMinutes + 60) {
@@ -701,6 +741,120 @@ export default function CalendarPage() {
 
     return Math.max(minHeight, Math.min(100, heightPercentage))
   }
+
+  // Nueva función para calcular la altura total que debe abarcar un trabajo
+  const getJobSpanHeight = (jobStartTime: string, jobEndTime: string, slotTime: string) => {
+    const slotMinutes = timeToMinutes(slotTime)
+    const jobStartMinutes = timeToMinutes(jobStartTime)
+    const jobEndMinutes = timeToMinutes(jobEndTime)
+
+    // Si el trabajo comienza en este slot, calcular cuántos slots debe abarcar
+    if (jobStartMinutes >= slotMinutes && jobStartMinutes < slotMinutes + 60) {
+      const totalDuration = jobEndMinutes - jobStartMinutes
+      const slotsToSpan = Math.ceil(totalDuration / 60)
+
+      // Calcular la altura total en píxeles (cada slot tiene 80px de altura)
+      const totalHeightPx = slotsToSpan * 80
+
+      return {
+        height: totalHeightPx,
+        slotsToSpan: slotsToSpan,
+        isStartingSlot: true
+      }
+    }
+
+    // Si el trabajo está en progreso, no mostrar en este slot
+    if (jobStartMinutes < slotMinutes && jobEndMinutes > slotMinutes) {
+      return {
+        height: 0,
+        slotsToSpan: 0,
+        isStartingSlot: false
+      }
+    }
+
+    return {
+      height: 0,
+      slotsToSpan: 0,
+      isStartingSlot: false
+    }
+  }
+
+  // Función para detectar si un trabajo es parcial (no abarca todo el slot)
+  const isPartialJob = (jobStartTime: string, jobEndTime: string, slotTime: string) => {
+    const slotMinutes = timeToMinutes(slotTime)
+    const jobStartMinutes = timeToMinutes(jobStartTime)
+    const jobEndMinutes = timeToMinutes(jobEndTime)
+
+    // Si el trabajo comienza en este slot
+    if (jobStartMinutes >= slotMinutes && jobStartMinutes < slotMinutes + 60) {
+      // Si el trabajo termina en este mismo slot, verificar si abarca todo el slot
+      if (jobEndMinutes <= slotMinutes + 60) {
+        const jobDuration = jobEndMinutes - jobStartMinutes
+        const slotDuration = 60
+        // Es parcial si no abarca al menos el 80% del slot
+        return (jobDuration / slotDuration) < 0.8
+      }
+    }
+
+    // Si el trabajo está en progreso (comenzó antes de este slot)
+    if (jobStartMinutes < slotMinutes && jobEndMinutes > slotMinutes) {
+      // Si el trabajo termina en este slot, verificar si abarca todo el slot
+      if (jobEndMinutes <= slotMinutes + 60) {
+        const jobDuration = jobEndMinutes - slotMinutes
+        const slotDuration = 60
+        // Es parcial si no abarca al menos el 80% del slot
+        return (jobDuration / slotDuration) < 0.8
+      }
+    }
+
+    return false
+  }
+
+  // Función para calcular la posición de columna para múltiples trabajos
+  const getJobColumnPosition = (jobs: Job[], currentJob: Job, time: string) => {
+    // Filtrar trabajos que se solapan con este slot de tiempo
+    const overlappingJobs = jobs.filter(job => {
+      const jobStartMinutes = timeToMinutes(job.startTime)
+      const jobEndMinutes = timeToMinutes(job.endTime)
+      const slotMinutes = timeToMinutes(time)
+
+      return jobStartMinutes < slotMinutes + 60 && jobEndMinutes > slotMinutes
+    })
+
+    // Separar trabajos completos y parciales
+    const fullJobs = overlappingJobs.filter(job => !isPartialJob(job.startTime, job.endTime, time))
+    const partialJobs = overlappingJobs.filter(job => isPartialJob(job.startTime, job.endTime, time))
+
+    // Ordenar trabajos completos por hora de inicio
+    const sortedFullJobs = fullJobs.sort((a, b) => {
+      const timeA = timeToMinutes(a.startTime)
+      const timeB = timeToMinutes(b.startTime)
+      return timeA - timeB
+    })
+
+    // Ordenar trabajos parciales por hora de inicio (más recientes primero)
+    const sortedPartialJobs = partialJobs.sort((a, b) => {
+      const timeA = timeToMinutes(a.startTime)
+      const timeB = timeToMinutes(b.startTime)
+      return timeB - timeA // Orden descendente para mostrar los más recientes primero
+    })
+
+    // Combinar: trabajos parciales primero, luego trabajos completos
+    const allSortedJobs = [...sortedPartialJobs, ...sortedFullJobs]
+
+    // Encontrar el índice del trabajo actual
+    const currentJobIndex = allSortedJobs.findIndex(job => job.id === currentJob.id)
+
+    if (currentJobIndex === -1) return { column: 0, totalColumns: 1, isPartial: false }
+
+    // Calcular la columna (máximo 8 columnas)
+    const column = currentJobIndex % 8
+    const totalColumns = Math.min(allSortedJobs.length, 8)
+    const isPartial = isPartialJob(currentJob.startTime, currentJob.endTime, time)
+
+    return { column, totalColumns, isPartial }
+  }
+
 
   // Función para determinar si una tarjeta es muy pequeña
   const isJobCardSmall = (jobStartTime: string, jobEndTime: string, slotTime: string) => {
@@ -1052,14 +1206,19 @@ export default function CalendarPage() {
 
         // Fallback: cargar solo técnicos si la API falla
         try {
-
           const fallbackResponse = await fetch('/api/workers/technicians')
           if (fallbackResponse.ok) {
             const fallbackData = await fallbackResponse.json()
-            // Filtrar solo técnicos (no administradores ni secretarias)
+            // Filtrar solo técnicos reales (no opciones genéricas)
             const techniciansOnly = fallbackData.filter((tech: any) => {
               const role = tech.role?.toLowerCase() || tech.role?.name?.toLowerCase() || ''
-              return role === 'tecnico' || role === 'técnico' || role === 'trabajador'
+              const name = tech.name?.toLowerCase() || ''
+              // Excluir opciones genéricas y solo incluir técnicos reales
+              return (role === 'tecnico' || role === 'técnico') &&
+                name !== 'técnico' &&
+                name !== 'secretaria' &&
+                name !== 'administrador' &&
+                tech.id !== 'tecnico-generico'
             })
             const allTechs = techniciansOnly.map((tech: any) => ({
               ...tech,
@@ -1070,7 +1229,7 @@ export default function CalendarPage() {
 
           }
         } catch (fallbackError) {
-
+          console.error('🔧 Fallback error:', fallbackError)
         }
       }
     } catch (error) {
@@ -1086,7 +1245,7 @@ export default function CalendarPage() {
 
   // Función para abrir el modal de reasignación de técnico
   const openTechnicianModal = () => {
-    if (!canEditJobs()) {
+    if (!canEditJobs(selectedJob?.id)) {
       _setStatusUpdateMessage({
         type: 'error',
         message: 'No tienes permisos para asignar técnicos'
@@ -1190,15 +1349,32 @@ export default function CalendarPage() {
       try {
         const date = new Date(jobDate)
         if (!isNaN(date.getTime()) && date.getFullYear() > 1970) {
-          setEditDate(date.toISOString().split('T')[0] || '')
+          // Usar la zona horaria de Chile para evitar problemas de fecha
+          const chileDate = new Date(date.toLocaleString("en-US", { timeZone: "America/Santiago" }))
+          const year = chileDate.getFullYear()
+          const month = String(chileDate.getMonth() + 1).padStart(2, '0')
+          const day = String(chileDate.getDate()).padStart(2, '0')
+          setEditDate(`${year}-${month}-${day}`)
         } else {
-          setEditDate(new Date().toISOString().split('T')[0] || '')
+          const today = new Date()
+          const year = today.getFullYear()
+          const month = String(today.getMonth() + 1).padStart(2, '0')
+          const day = String(today.getDate()).padStart(2, '0')
+          setEditDate(`${year}-${month}-${day}`)
         }
       } catch (error) {
-        setEditDate(new Date().toISOString().split('T')[0] ?? '')
+        const today = new Date()
+        const year = today.getFullYear()
+        const month = String(today.getMonth() + 1).padStart(2, '0')
+        const day = String(today.getDate()).padStart(2, '0')
+        setEditDate(`${year}-${month}-${day}`)
       }
     } else {
-      setEditDate(new Date().toISOString().split('T')[0] ?? '')
+      const today = new Date()
+      const year = today.getFullYear()
+      const month = String(today.getMonth() + 1).padStart(2, '0')
+      const day = String(today.getDate()).padStart(2, '0')
+      setEditDate(`${year}-${month}-${day}`)
     }
     setEditStartTime(selectedJob.startTime ?? "")
     setEditEndTime(selectedJob.endTime ?? "")
@@ -1241,6 +1417,8 @@ export default function CalendarPage() {
 
     setIsSavingDateTime(true)
     try {
+      // Asegurar que la fecha esté en formato ISO para el servidor
+      const isoDate = new Date(editDate + 'T00:00:00').toISOString()
 
       const response = await fetch(`/api/jobs/${selectedJob.id}`, {
         method: "PATCH",
@@ -1248,7 +1426,7 @@ export default function CalendarPage() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          scheduledAt: editDate,
+          scheduledAt: isoDate,
           startTime: editStartTime,
           endTime: editEndTime
         })
@@ -1263,7 +1441,7 @@ export default function CalendarPage() {
             job.id === selectedJob.id
               ? {
                 ...job,
-                scheduledAt: editDate,
+                scheduledAt: isoDate,
                 startTime: editStartTime,
                 endTime: editEndTime
               }
@@ -1274,7 +1452,7 @@ export default function CalendarPage() {
         // Actualizar el trabajo seleccionado
         setSelectedJob({
           ...selectedJob,
-          scheduledAt: editDate,
+          scheduledAt: isoDate,
           startTime: editStartTime,
           endTime: editEndTime
         })
@@ -1285,6 +1463,11 @@ export default function CalendarPage() {
         })
 
         setIsEditingDateTime(false)
+
+        // Forzar recarga del calendario
+        setTimeout(() => {
+          fetchJobs()
+        }, 500)
 
         // Disparar evento para refrescar el calendario
         if (typeof window !== 'undefined') {
@@ -1423,9 +1606,9 @@ export default function CalendarPage() {
         />
       )}
 
-      {/* Botón para abrir menú móvil */}
+      {/* Botón para abrir menú móvil - Solo en móviles */}
       <button
-        className="calendar-mobile-menu-toggle md:hidden"
+        className="calendar-mobile-menu-toggle md:hidden fixed top-4 left-4 z-50 bg-blue-500 hover:bg-blue-600 text-white rounded-lg p-3 shadow-lg transition-colors duration-200"
         onClick={toggleMobileMenu}
         aria-label="Abrir menú del calendario"
         title="Filtros y navegación"
@@ -1433,8 +1616,8 @@ export default function CalendarPage() {
         <Menu className="h-5 w-5" />
       </button>
 
-      {/* Sidebar - Lado izquierdo */}
-      <div className={`calendar-mobile-sidebar ${isMobileMenuOpen ? 'open' : ''} md:block md:static md:w-72 lg:w-80 bg-white border-r border-slate-200 p-4 lg:p-6 overflow-y-auto max-h-screen sticky top-0 flex-shrink-0`} style={{ backgroundColor: 'white', color: 'black' }}>
+      {/* Sidebar - Lado izquierdo - Visible en desktop o cuando el menú móvil está abierto */}
+      <div className={`calendar-mobile-sidebar ${isMobileMenuOpen ? 'open' : ''} md:block md:static md:w-72 lg:w-80 bg-white border-r border-slate-200 p-4 lg:p-6 overflow-y-auto max-h-screen sticky top-0 flex-shrink-0`}>
         {/* Debug logs removidos para evitar bucle infinito */}
         {/* Header del sidebar móvil */}
         <div className="calendar-mobile-sidebar-header md:hidden">
@@ -1510,16 +1693,13 @@ export default function CalendarPage() {
                   <SelectItem value="todos" className="hover:bg-blue-50 focus:bg-blue-50">
                     <span className="font-medium text-blue-600">👥 Todos los trabajadores</span>
                   </SelectItem>
-                  {technicians.filter(tech =>
-                    tech.isActive &&
-                    (tech.role === 'Trabajador' || tech.role === 'TRABAJADOR' || tech.role === 'Técnico' || tech.role === 'TECNICO')
-                  ).map(tech => (
+                  {getActiveTechnicians().map(tech => (
                     <SelectItem key={tech.id} value={tech.id} className="hover:bg-slate-50 focus:bg-slate-50">
                       <span className="flex items-center gap-2">
                         <User className="h-4 w-4 text-blue-500" />
                         <div className="flex flex-col">
                           <span className="font-medium">{tech.name}</span>
-                          <span className="text-xs text-gray-500 capitalize">{tech.role.toLowerCase()}</span>
+                          <span className="text-xs text-gray-500 capitalize">{typeof tech.role === 'string' ? tech.role.toLowerCase() : tech.role.name.toLowerCase()}</span>
                         </div>
                       </span>
                     </SelectItem>
@@ -1847,16 +2027,16 @@ export default function CalendarPage() {
       </div>
 
       {/* Contenido Principal - Lado derecho */}
-      <div className="calendar-mobile-main flex-1 p-2 md:p-4 lg:p-6 overflow-y-auto flex flex-col" style={{ maxHeight: 'none', height: 'auto', minHeight: '100vh' }}>
-        {/* Header del Calendario */}
+      <div className="calendar-mobile-main flex-1 p-2 md:p-4 lg:p-6 overflow-y-auto flex flex-col">
+        {/* Header del Calendario - Optimizado para móviles */}
         <div className="calendar-mobile-header bg-white p-3 md:p-4 lg:p-6 rounded-xl mb-3 md:mb-4 lg:mb-6 shadow-sm border border-slate-200">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3 md:gap-4">
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <h1 className="calendar-mobile-header-title text-xl md:text-2xl lg:text-3xl font-bold text-slate-800 mb-2 flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
+                <h1 className="calendar-mobile-header-title text-lg md:text-2xl lg:text-3xl font-bold text-slate-800 mb-2 flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 text-blue-600" />
-                    <span>{userRole === 'tecnico' ? 'Mi Agenda Personal' : 'Calendario de Servicios'}</span>
+                    <span className="text-base md:text-xl lg:text-2xl">{userRole === 'tecnico' ? 'Mi Agenda' : 'Calendario'}</span>
                   </div>
                   <span className="text-sm font-normal text-slate-500">
                     {selectedDate.toLocaleDateString('es-ES', {
@@ -1867,12 +2047,12 @@ export default function CalendarPage() {
                     })}
                   </span>
                 </h1>
-                <p className="text-sm md:text-base text-slate-600">
+                <p className="text-xs md:text-base text-slate-600 hidden md:block">
                   {userRole === 'tecnico' ? 'Visualiza tus trabajos asignados' : 'Visualiza servicios y gestiona trabajadores'}
                 </p>
-                {/* Información de filtros activos */}
+                {/* Información de filtros activos - Solo en desktop */}
                 {(selectedTechnicianFilter !== "todos" || selectedStatus !== "todos") && (
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="mt-2 flex flex-wrap gap-2 hidden md:flex">
                     {selectedTechnicianFilter !== "todos" && (
                       <Badge variant="secondary" className="bg-blue-100 text-blue-700">
                         <User className="h-3 w-3 mr-1" />
@@ -1890,13 +2070,14 @@ export default function CalendarPage() {
               </div>
             </div>
 
+            {/* Botones de acción - Optimizados para móviles */}
             <div className="flex gap-2 lg:gap-3">
               {canEditJobs() && (
                 <Link href="/dashboard/schedule">
-                  <Button className="calendar-mobile-new-job-btn bg-blue-500 hover:bg-blue-600 text-white">
-                    <Plus className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Nuevo Trabajo</span>
-                    <span className="sm:hidden">Nuevo</span>
+                  <Button className="calendar-mobile-new-job-btn bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-2">
+                    <Plus className="h-4 w-4 mr-1" />
+                    <span className="hidden sm:inline">Nuevo</span>
+                    <span className="sm:hidden">+</span>
                   </Button>
                 </Link>
               )}
@@ -1910,20 +2091,19 @@ export default function CalendarPage() {
                   }, 1000)()
                   fetchTechnicians()
                 }}
-                className="border-slate-300 hover:bg-slate-50"
+                className="border-slate-300 hover:bg-slate-50 text-sm px-3 py-2"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Actualizar</span>
-                <span className="sm:hidden">Actualizar</span>
+                <RefreshCw className="h-4 w-4" />
+                <span className="hidden sm:inline ml-1">Actualizar</span>
               </Button>
 
             </div>
           </div>
         </div>
 
-        {/* Navegación de días */}
-        <div className="calendar-mobile-main-calendar bg-white p-3 md:p-4 rounded-xl mb-3 md:mb-4 shadow-sm border border-slate-200">
-          <div className="calendar-mobile-main-calendar-header flex items-center justify-center gap-3 md:gap-4">
+        {/* Navegación de días - Optimizada para móviles */}
+        <div className="calendar-mobile-main-calendar bg-white p-2 md:p-4 rounded-xl mb-2 md:mb-4 shadow-sm border border-slate-200">
+          <div className="calendar-mobile-main-calendar-header flex items-center justify-center gap-2 md:gap-4">
             <Button
               variant="outline"
               size="sm"
@@ -1932,14 +2112,14 @@ export default function CalendarPage() {
                 newDate.setDate(selectedDate.getDate() - 1)
                 setSelectedDate(newDate)
               }}
-              className="h-10 w-10 p-0 hover:bg-blue-50 border-blue-200 transition-colors touch-manipulation"
+              className="h-8 w-8 md:h-10 md:w-10 p-0 hover:bg-blue-50 border-blue-200 transition-colors touch-manipulation"
               aria-label="Día anterior"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
             </Button>
 
             <div className="text-center flex-1 min-w-0">
-              <p className="text-base md:text-lg font-semibold text-slate-800 truncate">
+              <p className="text-sm md:text-lg font-semibold text-slate-800 truncate">
                 {selectedDate.toLocaleDateString('es-ES', {
                   weekday: 'long',
                   year: 'numeric',
@@ -1947,7 +2127,7 @@ export default function CalendarPage() {
                   day: 'numeric'
                 })}
               </p>
-              <p className="text-sm text-slate-500">
+              <p className="text-xs md:text-sm text-slate-500">
                 {selectedDate.toLocaleDateString('es-ES', {
                   day: '2-digit',
                   month: '2-digit',
@@ -1964,26 +2144,25 @@ export default function CalendarPage() {
                 newDate.setDate(selectedDate.getDate() + 1)
                 setSelectedDate(newDate)
               }}
-              className="h-10 w-10 p-0 hover:bg-blue-50 border-blue-200 transition-colors touch-manipulation"
+              className="h-8 w-8 md:h-10 md:w-10 p-0 hover:bg-blue-50 border-blue-200 transition-colors touch-manipulation"
               aria-label="Día siguiente"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
             </Button>
           </div>
         </div>
 
-        {/* Calendario por horas - Ocupa todo el ancho disponible */}
-        <div className="calendar-mobile-timeline bg-white rounded-xl shadow-sm border border-slate-200 overflow-visible relative" style={{ maxHeight: 'none', height: 'auto', minHeight: 'auto' }}>
-          {/* Debug boxes removed to save space on mobile */}
-          <div className="calendar-mobile-timeline-content overflow-x-auto h-auto max-h-none overflow-y-visible min-w-0" style={{ maxHeight: 'none', height: 'auto', minHeight: 'auto' }}>
+        {/* Calendario por horas - Optimizado para móviles */}
+        <div className="calendar-mobile-timeline bg-white rounded-xl shadow-sm border border-slate-200 overflow-visible relative">
+          <div className="calendar-mobile-timeline-content overflow-x-auto h-auto max-h-none overflow-y-visible min-w-0">
             <table className="w-full relative h-auto max-h-none min-w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th className="w-12 p-1 text-center text-sm font-semibold text-slate-700 border-r border-slate-200">
+                  <th className="w-10 md:w-12 p-1 text-center text-xs md:text-sm font-semibold text-slate-700 border-r border-slate-200">
                     Hora
                   </th>
                   {canViewAllJobs() && (
-                    <th className="p-3 text-center text-sm font-semibold text-slate-700 border-r border-slate-200 bg-orange-50">
+                    <th className="p-2 md:p-3 text-center text-xs md:text-sm font-semibold text-slate-700 border-r border-slate-200 bg-orange-50 min-w-20">
                       {/* Vista desktop */}
                       <div className="hidden md:block">
                         Sin Asignar
@@ -2007,7 +2186,7 @@ export default function CalendarPage() {
                     const mobileName = `${firstName} ${lastNameInitial}`.trim()
 
                     return (
-                      <th key={tech.id} className={`p-3 text-center text-sm font-semibold text-slate-700 border-r border-slate-200 ${userRole === 'tecnico' ? 'w-full' : ''
+                      <th key={tech.id} className={`p-2 md:p-3 text-center text-xs md:text-sm font-semibold text-slate-700 border-r border-slate-200 min-w-20 ${userRole === 'tecnico' ? 'w-full' : ''
                         }`}>
                         <div className="flex flex-col items-center">
                           {/* Vista desktop - mostrar nombre completo */}
@@ -2029,17 +2208,17 @@ export default function CalendarPage() {
                   })}
                 </tr>
               </thead>
-              <tbody className="h-auto max-h-none" style={{ maxHeight: 'none', height: 'auto', minHeight: 'auto' }}>
+              <tbody className="h-auto max-h-none">
                 {timeSlots.map((time, _index) => {
                   // Debug logs removed to prevent infinite loop
                   return (
-                    <tr key={time} className="calendar-mobile-time-slot border-b border-slate-100 hover:bg-slate-50 h-auto max-h-none table-row" style={{ height: 'auto', maxHeight: 'none' }}>
-                      <td className="calendar-mobile-time-label w-12 p-1 text-sm font-medium text-slate-600 border-r border-slate-200 bg-slate-50 relative h-auto max-h-none table-cell" style={{ height: 'auto', maxHeight: 'none' }}>
+                    <tr key={time} className="calendar-mobile-time-slot border-b border-slate-100 hover:bg-slate-50 h-auto max-h-none table-row">
+                      <td className="calendar-mobile-time-label w-10 md:w-12 p-1 text-xs md:text-sm font-medium text-slate-600 border-r border-slate-200 bg-slate-50 relative h-auto max-h-none table-cell">
                         {time}
                       </td>
                       {canViewAllJobs() && (
-                        <td className="p-0 border-r border-slate-200 bg-orange-50/30 relative h-auto max-h-none table-cell min-w-40 w-40" style={{ height: 'auto', maxHeight: 'none' }}>
-                          <div className="relative h-20 overflow-visible" style={{ height: '80px', minHeight: '80px' }}>
+                        <td className="p-0 border-r border-slate-200 bg-orange-50/30 relative h-auto max-h-none table-cell min-w-20 w-20 md:min-w-40 md:w-40">
+                          <div className="relative h-16 md:h-20 overflow-visible">
                             {(() => {
                               const unassignedJobs = getJobsForTimeAndTechnician(time, 'unassigned')
                               // Debug logs removed to prevent infinite loop
@@ -2049,6 +2228,24 @@ export default function CalendarPage() {
                                 const position = getJobPosition(job.startTime, time)
                                 const height = getJobHeight(job.startTime, job.endTime, time)
                                 const isSmall = isJobCardSmall(job.startTime, job.endTime, time)
+                                const spanInfo = getJobSpanHeight(job.startTime, job.endTime, time)
+                                const columnInfo = getJobColumnPosition(unassignedJobs, job, time)
+
+                                // Solo renderizar si es el slot de inicio o si el trabajo abarca este slot
+                                if (!spanInfo.isStartingSlot && spanInfo.height === 0) {
+                                  return null
+                                }
+
+                                // Calcular el ancho y posición de la columna
+                                const columnWidth = 100 / columnInfo.totalColumns
+                                const leftPosition = (columnInfo.column * columnWidth)
+
+                                // Estilos especiales para trabajos parciales
+                                const partialJobStyles = columnInfo.isPartial ? {
+                                  border: '2px solid #fbbf24', // Borde dorado para trabajos parciales
+                                  boxShadow: '0 2px 4px rgba(251, 191, 36, 0.3)',
+                                  zIndex: 20 + index // Mayor z-index para aparecer por encima
+                                } : {}
 
                                 return (
                                   <div
@@ -2065,13 +2262,16 @@ export default function CalendarPage() {
 
                                       openJobModal(job)
                                     }}
-                                    className={`absolute left-0 right-0 rounded cursor-pointer transition-all duration-200 hover:shadow-sm ${getJobColor(job.status)} text-white text-xs border border-white/20 flex flex-col justify-center px-2 py-1`}
+                                    className={`absolute rounded cursor-pointer transition-all duration-200 hover:shadow-sm ${getJobColor(job.status)} text-white text-xs border border-white/20 flex flex-col justify-center px-1 md:px-2 py-1 ${columnInfo.isPartial ? 'ring-2 ring-yellow-400' : ''}`}
                                     style={{
                                       top: `${position}%`,
-                                      height: `${height}%`,
-                                      zIndex: 10 + index
+                                      left: `${leftPosition}%`,
+                                      width: `${columnWidth}%`,
+                                      height: spanInfo.isStartingSlot ? `${spanInfo.height}px` : `${height}%`,
+                                      zIndex: columnInfo.isPartial ? 20 + index : 10 + index,
+                                      ...partialJobStyles
                                     }}
-                                    title={`${job.title} - ${job.client.name} (${job.startTime} - ${job.endTime})`}
+                                    title={`${job.title} - ${job.client.name} (${job.startTime} - ${job.endTime})${columnInfo.isPartial ? ' - Trabajo parcial' : ''}`}
                                     data-job-id={job.id}
                                     data-job-index={index}
                                     data-job-time={time}
@@ -2081,8 +2281,8 @@ export default function CalendarPage() {
                                     ) : (
                                       <>
                                         <div className="font-medium truncate text-xs leading-tight">{job.title}</div>
-                                        <div className="text-xs opacity-90 truncate leading-tight">{job.client.name}</div>
-                                        <div className="text-xs opacity-75 font-mono leading-tight">{job.startTime}-{job.endTime}</div>
+                                        <div className="text-xs opacity-90 truncate leading-tight hidden md:block">{job.client.name}</div>
+                                        <div className="text-xs opacity-75 font-mono leading-tight hidden md:block">{job.startTime}-{job.endTime}</div>
                                       </>
                                     )}
                                   </div>
@@ -2093,9 +2293,9 @@ export default function CalendarPage() {
                         </td>
                       )}
                       {getActiveTechnicians().map((tech) => (
-                        <td key={tech.id} className={`p-0 border-r border-slate-200 relative h-auto max-h-none table-cell min-w-40 w-40 ${userRole === 'tecnico' ? 'w-full' : ''
-                          }`} style={{ height: 'auto', maxHeight: 'none' }}>
-                          <div className="relative h-20 overflow-visible" style={{ height: '80px', minHeight: '80px' }}>
+                        <td key={tech.id} className={`p-0 border-r border-slate-200 relative h-auto max-h-none table-cell min-w-20 w-20 md:min-w-40 md:w-40 ${userRole === 'tecnico' ? 'w-full' : ''
+                          }`}>
+                          <div className="relative h-16 md:h-20 overflow-visible">
                             {/* Línea roja para la hora actual en columnas de técnicos */}
                             {isCurrentTimeInSlot(time) && (
                               <div
@@ -2118,6 +2318,24 @@ export default function CalendarPage() {
                                 const position = getJobPosition(job.startTime, time)
                                 const height = getJobHeight(job.startTime, job.endTime, time)
                                 const isSmall = isJobCardSmall(job.startTime, job.endTime, time)
+                                const spanInfo = getJobSpanHeight(job.startTime, job.endTime, time)
+                                const columnInfo = getJobColumnPosition(techJobs, job, time)
+
+                                // Solo renderizar si es el slot de inicio o si el trabajo abarca este slot
+                                if (!spanInfo.isStartingSlot && spanInfo.height === 0) {
+                                  return null
+                                }
+
+                                // Calcular el ancho y posición de la columna
+                                const columnWidth = 100 / columnInfo.totalColumns
+                                const leftPosition = (columnInfo.column * columnWidth)
+
+                                // Estilos especiales para trabajos parciales
+                                const partialJobStyles = columnInfo.isPartial ? {
+                                  border: '2px solid #fbbf24', // Borde dorado para trabajos parciales
+                                  boxShadow: '0 2px 4px rgba(251, 191, 36, 0.3)',
+                                  zIndex: 20 + index // Mayor z-index para aparecer por encima
+                                } : {}
 
                                 return (
                                   <div
@@ -2134,13 +2352,16 @@ export default function CalendarPage() {
 
                                       openJobModal(job)
                                     }}
-                                    className={`absolute left-0 right-0 rounded cursor-pointer transition-all duration-200 hover:shadow-sm ${getJobColor(job.status)} text-white text-xs border border-white/20 flex flex-col justify-center px-2 py-1`}
+                                    className={`absolute rounded cursor-pointer transition-all duration-200 hover:shadow-sm ${getJobColor(job.status)} text-white text-xs border border-white/20 flex flex-col justify-center px-1 md:px-2 py-1 ${columnInfo.isPartial ? 'ring-2 ring-yellow-400' : ''}`}
                                     style={{
                                       top: `${position}%`,
-                                      height: `${height}%`,
-                                      zIndex: 10 + index
+                                      left: `${leftPosition}%`,
+                                      width: `${columnWidth}%`,
+                                      height: spanInfo.isStartingSlot ? `${spanInfo.height}px` : `${height}%`,
+                                      zIndex: columnInfo.isPartial ? 20 + index : 10 + index,
+                                      ...partialJobStyles
                                     }}
-                                    title={`${job.title} - ${job.client.name} (${job.startTime} - ${job.endTime})`}
+                                    title={`${job.title} - ${job.client.name} (${job.startTime} - ${job.endTime})${columnInfo.isPartial ? ' - Trabajo parcial' : ''}`}
                                     data-job-id={job.id}
                                     data-tech-id={tech.id}
                                     data-job-index={index}
@@ -2151,8 +2372,8 @@ export default function CalendarPage() {
                                     ) : (
                                       <>
                                         <div className="font-medium truncate text-xs leading-tight">{job.title}</div>
-                                        <div className="text-xs opacity-90 truncate leading-tight">{job.client.name}</div>
-                                        <div className="text-xs opacity-75 font-mono leading-tight">{job.startTime}-{job.endTime}</div>
+                                        <div className="text-xs opacity-90 truncate leading-tight hidden md:block">{job.client.name}</div>
+                                        <div className="text-xs opacity-75 font-mono leading-tight hidden md:block">{job.startTime}-{job.endTime}</div>
                                       </>
                                     )}
                                   </div>
@@ -2285,7 +2506,7 @@ export default function CalendarPage() {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-semibold text-slate-700 text-sm sm:text-base">Horario</h3>
-                        {canEditJobs() && (
+                        {canEditJobs(selectedJob?.id) && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -2383,7 +2604,7 @@ export default function CalendarPage() {
                               <Wrench className="h-4 w-4 text-blue-500" />
                               <span className="font-medium">{selectedJob.technician.name}</span>
                             </div>
-                            {canEditJobs() && (
+                            {canEditJobs(selectedJob?.id) && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -2399,7 +2620,7 @@ export default function CalendarPage() {
                         ) : (
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-500">Sin asignar</span>
-                            {canEditJobs() && (
+                            {canEditJobs(selectedJob?.id) && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -2532,7 +2753,7 @@ export default function CalendarPage() {
                             }>
                               {jobPayment?.isPaid ? 'Pagado' : 'Pendiente'}
                             </Badge>
-                            {canEditJobs() && (
+                            {canEditJobs(selectedJob?.id) && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -2605,7 +2826,7 @@ export default function CalendarPage() {
                   >
                     {isMobile ? '✕ Cerrar' : 'Cerrar'}
                   </Button>
-                  {canEditJobs() && (
+                  {canEditJobs(selectedJob?.id) && (
                     <Button
                       className={`flex-1 bg-blue-500 hover:bg-blue-600 text-white ${isMobile ? 'order-1 h-12 text-base' : 'order-1 sm:order-2'}`}
                       onClick={() => {
@@ -2628,7 +2849,7 @@ export default function CalendarPage() {
           <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
             <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden">
               {/* Header */}
-              <div className="relative p-6 border-b border-gray-200 bg-blue-50">
+              <div className="relative p-6 border-b border-gray-200 bg-gray-50">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -2668,10 +2889,10 @@ export default function CalendarPage() {
                           <p className="text-sm text-gray-400 mt-2">
                             Esto puede deberse a que todos los técnicos están ocupados en este horario
                           </p>
-                          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                            <p className="text-sm text-blue-700">
+                          <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                            <p className="text-sm text-gray-700">
                               <strong>Información del trabajo:</strong><br />
-                              Fecha: {selectedJob?.scheduledAt ? new Date(selectedJob.scheduledAt).toLocaleDateString() : 'N/A'}<br />
+                              Fecha: {selectedJob?.scheduledAt ? new Date(selectedJob.scheduledAt).toLocaleDateString('es-CL', { timeZone: 'America/Santiago' }) : 'N/A'}<br />
                               Horario: {selectedJob?.startTime} - {selectedJob?.endTime}
                             </p>
                           </div>
@@ -2685,7 +2906,7 @@ export default function CalendarPage() {
                             <div
                               key={technician.id}
                               className={`p-3 rounded-lg border cursor-pointer transition-colors ${isSelected
-                                ? "border-blue-500 bg-blue-50"
+                                ? "border-gray-500 bg-gray-100"
                                 : isBusy
                                   ? "border-orange-200 bg-orange-50"
                                   : "border-gray-200 hover:border-gray-300"
@@ -2695,7 +2916,7 @@ export default function CalendarPage() {
                               }}
                             >
                               <div className="flex items-center gap-3">
-                                <div className={`w-3 h-3 rounded-full ${isSelected ? "bg-blue-500" :
+                                <div className={`w-3 h-3 rounded-full ${isSelected ? "bg-gray-500" :
                                   isBusy ? "bg-orange-500" :
                                     "border-2 border-gray-300"
                                   }`}></div>
@@ -2713,7 +2934,7 @@ export default function CalendarPage() {
                                   )}
                                 </div>
                                 {isSelected && (
-                                  <CheckCircle className="h-4 w-4 text-blue-500" />
+                                  <CheckCircle className="h-4 w-4 text-gray-500" />
                                 )}
                               </div>
                             </div>
@@ -2740,7 +2961,7 @@ export default function CalendarPage() {
                   disabled={!selectedTechnicianId || isAssigningTechnician}
                   className={`flex-1 ${!selectedTechnicianId || isAssigningTechnician
                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                    : "bg-gray-600 hover:bg-gray-700 text-white"
                     }`}
                 >
                   {isAssigningTechnician ? (
@@ -2864,6 +3085,106 @@ export default function CalendarPage() {
           </div>
         )}
       </div>
+
+      {/* Estilos CSS específicos para móviles */}
+      <style jsx>{`
+        .calendar-mobile-container {
+          position: relative;
+        }
+        
+        .calendar-mobile-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          z-index: 40;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .calendar-mobile-overlay.open {
+          opacity: 1;
+          visibility: visible;
+        }
+        
+        .calendar-mobile-sidebar {
+          position: fixed;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          max-width: 320px;
+          height: 100vh;
+          z-index: 50;
+          transition: left 0.3s ease;
+          overflow-y: auto;
+          display: block;
+        }
+        
+        .calendar-mobile-sidebar.open {
+          left: 0;
+        }
+        
+        @media (min-width: 768px) {
+          .calendar-mobile-sidebar {
+            position: static;
+            left: auto;
+            width: auto;
+            height: auto;
+            max-width: none;
+            z-index: auto;
+            transition: none;
+          }
+        }
+        
+        .calendar-mobile-timeline-content {
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+        
+        .calendar-mobile-timeline-content::-webkit-scrollbar {
+          height: 6px;
+        }
+        
+        .calendar-mobile-timeline-content::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 3px;
+        }
+        
+        .calendar-mobile-timeline-content::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 3px;
+        }
+        
+        .calendar-mobile-timeline-content::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+        
+        /* Optimizaciones para touch en móviles */
+        @media (max-width: 767px) {
+          .calendar-mobile-time-slot {
+            min-height: 64px;
+          }
+          
+          .calendar-mobile-time-label {
+            font-size: 0.75rem;
+            padding: 0.25rem;
+          }
+          
+          /* Mejorar la experiencia táctil */
+          .calendar-mobile-timeline-content table {
+            touch-action: pan-x;
+          }
+          
+          /* Asegurar que los elementos sean tocables */
+          .calendar-mobile-timeline-content [data-job-id] {
+            min-height: 32px;
+            min-width: 40px;
+          }
+        }
+      `}</style>
     </div>
   )
 }

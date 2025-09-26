@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useMobileMenu } from "@/hooks/use-mobile-menu";
 import useNotifications from "@/hooks/use-notifications";
 import { useSignOut } from "@/hooks/use-signout";
+import { ROLE_COLORS, ROLE_LABELS } from "@/lib/roles";
 import {
   Bell,
   Building2,
@@ -24,41 +25,52 @@ import {
   UserCog,
   Users,
   Wrench,
-  // Menu,
-  X,
+  X
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Suspense } from "react";
-// import { TailwindClasses } from "@/lib/design-system";
-import { ROLE_COLORS, ROLE_LABELS } from "@/lib/roles";
+import { Suspense, useEffect, useState } from "react";
+import "./styles/force-sidebar-styles.css";
+import "./styles/mobile-sidebar-fix.css";
 
 import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 // Importar estilos optimizados del dashboard
-import './styles/calendar-mobile-optimizations.css';
+import './styles/agenda-fix.css';
 import './styles/dashboard-optimized.css';
-import './styles/force-no-blur.css';
-import './styles/mobile-menu-optimizations.css';
+import './styles/dropdown-positioning-fix.css';
 import './styles/mobile-optimizations.css';
+import './styles/react-big-calendar.css';
 import './styles/responsive-optimizations.css';
+import './styles/schedule-mobile-optimizations.css';
+import './styles/user-dropdown-fix.css';
 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const pathname = usePathname();
   const { handleSignOut } = useSignOut();
   const { isOpen: sidebarOpen, toggleMenu, closeMenu } = useMobileMenu();
+
+  // Cerrar menú del usuario cuando se hace clic fuera
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (userMenuOpen) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    if (userMenuOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [userMenuOpen]);
 
 
   const isCalendar = pathname === "/dashboard/schedule/calendar";
@@ -105,7 +117,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           { name: "Cotizaciones", href: "/dashboard/quotes", icon: DollarSign, color: "text-orange-500" },
           { name: "Liquidación", href: "/dashboard/liquidations", icon: UserCheck, color: "text-red-500" },
           { name: "Reportes", href: "/dashboard/reports", icon: FileText, color: "text-red-500" },
-          { name: "Administración", href: "/dashboard/admin", icon: Settings, color: "text-gray-300" },
+          { name: "Administración", href: "/dashboard/admin", icon: Settings, color: "text-white" },
         ];
       case "secretaria":
         return [
@@ -193,15 +205,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 
           {/* Navigation */}
-          <nav className="p-3 sm:p-4 lg:p-5 space-y-2">
+          <nav className="p-3 sm:p-4 lg:p-5 space-y-1">
             {getNavigationItems().map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`group flex items-center space-x-3 px-3 py-3 text-slate-300 rounded-xl transition-all duration-200 hover:bg-slate-700/50 hover:text-white hover:scale-[1.02] hover:shadow-lg text-sm font-medium relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-slate-800 ${pathname === item.href
-                  ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white'
-                  : ''
+                className={`group flex items-center space-x-4 px-4 py-4 text-slate-300 rounded-xl transition-all duration-200 hover:bg-slate-700/50 hover:text-white hover:scale-[1.02] hover:shadow-lg text-sm font-medium relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-slate-800 ${pathname === item.href
+                  ? 'sidebar-active-item force-grey-bg'
+                  : 'sidebar-inactive-item'
                   }`}
+                style={{
+                  backgroundColor: pathname === item.href ? 'rgba(71, 85, 105, 0.7) !important' : 'transparent !important',
+                  backgroundImage: 'none !important',
+                  color: pathname === item.href ? 'white !important' : '#cbd5e1 !important'
+                }}
                 onClick={(e) => {
                   // Cerrar el menú al hacer clic en cualquier elemento
                   e.preventDefault();
@@ -216,17 +233,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   ? 'bg-white/20'
                   : 'group-hover:bg-slate-600/30'
                   }`}>
-                  <item.icon className={`h-5 w-5 ${item.color} transition-all duration-200 ${pathname === item.href ? 'text-white' : 'group-hover:text-white'
+                  <item.icon className={`h-6 w-6 ${item.color} transition-all duration-200 ${pathname === item.href ? 'text-white' : 'group-hover:text-white'
                     }`} />
                 </div>
-                <span className="relative z-10 truncate font-medium text-base">{item.name}</span>
+                <span className="relative z-10 truncate font-medium text-lg">{item.name}</span>
               </Link>
             ))}
           </nav>
 
           {/* Footer */}
           {(userRole === "admin" || userRole === "administrador") && (
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700/50 bg-slate-800/30 backdrop-blur-sm">
+            <div className="absolute bottom-0 left-0 right-0 p-4 ">
               <div className="flex items-center space-x-2 text-slate-400 text-xs">
                 <div className="p-1.5 bg-slate-700/50 rounded-lg">
                   <Building2 className="h-3 w-3 flex-shrink-0" />
@@ -292,47 +309,51 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {/* User Profile */}
                 <Suspense fallback={<div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-300 rounded-full animate-pulse" />}>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="p-0 text-gray-600 hover:bg-gray-100/80 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-md">
-                        <Avatar className="h-6 w-6 sm:h-8 sm:w-8 ring-2 ring-gray-200 hover:ring-blue-300 transition-all duration-200">
-                          <AvatarImage
-                            src={session?.user?.image || "/avatar-demo.png"}
-                            alt={session?.user?.name || "User"}
-                            className="object-cover"
-                          />
-                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs sm:text-sm font-semibold">
-                            {session?.user?.name?.charAt(0) || "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="hidden lg:block ml-2 sm:ml-3 text-left">
-                          <p className="text-xs sm:text-sm font-semibold text-gray-800">{session?.user?.name || "Usuario Demo"}</p>
-                          <p className="text-xs text-gray-500">{session?.user?.email || "usuario@demo.com"}</p>
-                        </div>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56 bg-white/95 border border-gray-200/50 rounded-xl shadow-xl" align="end">
-                      <div className="flex flex-col gap-1 p-4 bg-gradient-to-r from-gray-50 to-blue-50/50 rounded-t-xl">
-                        <p className="font-semibold text-sm text-gray-800">{session?.user?.name || "Usuario Demo"}</p>
-                        <p className="truncate text-xs text-gray-500">{session?.user?.email || "usuario@demo.com"}</p>
+                  <div className="relative">
+                    <Button
+                      variant="ghost"
+                      className="p-1 text-gray-600 hover:bg-gray-100/80 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-md"
+                      onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    >
+                      <Avatar className="h-6 w-6 sm:h-8 sm:w-8 ring-2 ring-gray-200 hover:ring-blue-300 transition-all duration-200">
+                        <AvatarImage
+                          src={session?.user?.image || "/avatar-demo.png"}
+                          alt={session?.user?.name || "User"}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs sm:text-sm font-semibold">
+                          {session?.user?.name?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="hidden lg:block ml-2 sm:ml-3 text-left">
+                        <p className="text-xs sm:text-sm font-semibold text-gray-800">{session?.user?.name || "Usuario Demo"}</p>
+                        <p className="text-xs text-gray-500">{session?.user?.email || "usuario@demo.com"}</p>
                       </div>
-                      <DropdownMenuSeparator className="bg-gray-200/50" />
-                      <DropdownMenuItem asChild className="hover:bg-gray-50/80 transition-colors duration-150">
-                        <Link href="/dashboard/profile" className="flex items-center px-4 py-2">
+                    </Button>
+
+                    {userMenuOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-[9999]">
+                        <div className="flex flex-col gap-1 p-4 bg-gradient-to-r from-gray-50 to-blue-50/50 rounded-t-xl">
+                          <p className="font-semibold text-sm text-gray-800">{session?.user?.name || "Usuario Demo"}</p>
+                          <p className="truncate text-xs text-gray-500">{session?.user?.email || "usuario@demo.com"}</p>
+                        </div>
+                        <div className="border-t border-gray-200/50"></div>
+                        <Link href="/dashboard/profile" className="flex items-center px-4 py-2 hover:bg-gray-50/80 transition-colors duration-150">
                           <User className="mr-3 h-4 w-4 text-gray-600" /> Mi Perfil
                         </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="hover:bg-gray-50/80 transition-colors duration-150">
-                        <Link href="/dashboard/settings" className="flex items-center px-4 py-2">
+                        <Link href="/dashboard/settings" className="flex items-center px-4 py-2 hover:bg-gray-50/80 transition-colors duration-150">
                           <Settings className="mr-3 h-4 w-4 text-gray-600" /> Configuración
                         </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator className="bg-gray-200/50" />
-                      <DropdownMenuItem onClick={handleSignOut} className="text-red-600 hover:bg-red-50/80 transition-colors duration-150 px-4 py-2">
-                        <LogOut className="mr-3 h-4 w-4" /> Cerrar Sesión
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <div className="border-t border-gray-200/50"></div>
+                        <button
+                          onClick={handleSignOut}
+                          className="flex items-center px-4 py-2 text-red-600 hover:bg-red-50/80 transition-colors duration-150 w-full text-left"
+                        >
+                          <LogOut className="mr-3 h-4 w-4" /> Cerrar Sesión
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </Suspense>
               </div>
             </div>
@@ -358,6 +379,161 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </main>
         </div>
       </div>
+
+      {/* Estilos CSS específicos para corregir el sidebar */}
+      <style jsx global>{`
+        /* Forzar estilos del sidebar para todas las vistas responsivas */
+        .dashboard-sidebar nav a {
+          background-color: transparent !important;
+          color: #cbd5e1 !important;
+          transition: all 0.2s ease-in-out !important;
+        }
+        
+        .dashboard-sidebar nav a:hover {
+          background-color: rgba(71, 85, 105, 0.5) !important;
+          color: white !important;
+          transform: scale(1.02) !important;
+        }
+        
+        /* Estilos específicos para botones inactivos */
+        .sidebar-inactive-item {
+          background-color: transparent !important;
+          color: #cbd5e1 !important;
+        }
+        
+        /* Estilos específicos para botones activos */
+        .sidebar-active-item {
+          background-color: rgba(71, 85, 105, 0.7) !important;
+          background-image: none !important;
+          color: white !important;
+        }
+        
+        /* Forzar estilos para botones activos - más específico */
+        .dashboard-sidebar nav a[class*="bg-slate-700"],
+        .dashboard-sidebar nav a[class*="bg-gradient-to-r"],
+        .dashboard-sidebar nav a[class*="from-blue-600"],
+        .dashboard-sidebar nav a[class*="to-blue-500"] {
+          background-color: rgba(71, 85, 105, 0.7) !important;
+          background-image: none !important;
+          color: white !important;
+        }
+        
+        /* Forzar estilos para cualquier fondo azul */
+        .dashboard-sidebar nav a[style*="background"] {
+          background-color: rgba(71, 85, 105, 0.7) !important;
+          background-image: none !important;
+        }
+        
+        /* Asegurar que los iconos mantengan sus colores */
+        .dashboard-sidebar nav a .text-yellow-500 {
+          color: #eab308 !important;
+        }
+        
+        .dashboard-sidebar nav a .text-purple-500 {
+          color: #a855f7 !important;
+        }
+        
+        .dashboard-sidebar nav a .text-green-500 {
+          color: #22c55e !important;
+        }
+        
+        .dashboard-sidebar nav a .text-indigo-500 {
+          color: #6366f1 !important;
+        }
+        
+        .dashboard-sidebar nav a .text-orange-500 {
+          color: #f97316 !important;
+        }
+        
+        .dashboard-sidebar nav a .text-red-500 {
+          color: #ef4444 !important;
+        }
+        
+        .dashboard-sidebar nav a .text-white {
+          color: white !important;
+        }
+        
+        /* Estilos específicos para móviles */
+        @media (max-width: 768px) {
+          .dashboard-sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+          }
+          
+          .dashboard-sidebar.open {
+            transform: translateX(0);
+          }
+          
+          /* Forzar estilos en móviles - máxima especificidad */
+          .dashboard-sidebar nav a.sidebar-active-item {
+            background-color: rgba(71, 85, 105, 0.7) !important;
+            background-image: none !important;
+            color: white !important;
+          }
+          
+          .dashboard-sidebar nav a.sidebar-inactive-item {
+            background-color: transparent !important;
+            color: #cbd5e1 !important;
+          }
+          
+          /* Forzar estilos para cualquier fondo azul en móviles */
+          .dashboard-sidebar nav a[class*="bg-gradient-to-r"],
+          .dashboard-sidebar nav a[class*="from-blue-600"],
+          .dashboard-sidebar nav a[class*="to-blue-500"],
+          .dashboard-sidebar nav a[style*="background"] {
+            background-color: rgba(71, 85, 105, 0.7) !important;
+            background-image: none !important;
+            color: white !important;
+          }
+        }
+        
+        @media (min-width: 769px) {
+          .dashboard-sidebar {
+            transform: translateX(0);
+            position: static;
+          }
+          
+          /* Forzar estilos en desktop */
+          .dashboard-sidebar nav a.sidebar-active-item {
+            background-color: rgba(71, 85, 105, 0.7) !important;
+            background-image: none !important;
+            color: white !important;
+          }
+          
+          .dashboard-sidebar nav a.sidebar-inactive-item {
+            background-color: transparent !important;
+            color: #cbd5e1 !important;
+          }
+        }
+        
+        /* Estilos adicionales con máxima especificidad para móviles */
+        @media (max-width: 768px) {
+          .dashboard-sidebar nav a[href="/dashboard/schedule/calendar"] {
+            background-color: rgba(71, 85, 105, 0.7) !important;
+            background-image: none !important;
+            color: white !important;
+          }
+          
+          .dashboard-sidebar nav a:not([href="/dashboard/schedule/calendar"]) {
+            background-color: transparent !important;
+            color: #cbd5e1 !important;
+          }
+        }
+        
+        /* Estilos adicionales con máxima especificidad para desktop */
+        @media (min-width: 769px) {
+          .dashboard-sidebar nav a[href="/dashboard/schedule/calendar"] {
+            background-color: rgba(71, 85, 105, 0.7) !important;
+            background-image: none !important;
+            color: white !important;
+          }
+          
+          .dashboard-sidebar nav a:not([href="/dashboard/schedule/calendar"]) {
+            background-color: transparent !important;
+            color: #cbd5e1 !important;
+          }
+        }
+      `}</style>
     </SessionGuard>
   );
 }

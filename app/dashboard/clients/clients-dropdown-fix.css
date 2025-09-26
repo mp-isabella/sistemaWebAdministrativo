@@ -1,0 +1,51 @@
+/* Fix específico para dropdowns de clientes */
+.clients-page [data-radix-select-content] {
+  position: absolute !important;
+  z-index: 9999 !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  max-height: 200px !important;
+  overflow-y: auto !important;
+  margin-top: 0.25rem !important;
+  transform: none !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+}
+
+.clients-page [data-radix-select-trigger] {
+  position: relative !important;
+  z-index: 1 !important;
+  background: white !important;
+}
+
+.clients-page [data-radix-dropdown-menu-content] {
+  position: absolute !important;
+  z-index: 9999 !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  min-width: 8rem !important;
+}
+
+.clients-page [data-radix-dropdown-menu-item] {
+  background: white !important;
+  color: #374151 !important;
+  padding: 0.5rem 0.75rem !important;
+  cursor: pointer !important;
+  border-radius: 0.375rem !important;
+  margin: 0.125rem !important;
+}
+
+.clients-page [data-radix-dropdown-menu-item]:hover {
+  background-color: #f3f4f6 !important;
+}
+
+.clients-page [data-radix-dropdown-menu-item][data-highlighted] {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}

@@ -1,12 +1,10 @@
 'use client'
-
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Download, Eye, Printer } from 'lucide-react'
 import Image from 'next/image'
-
 interface QuoteItem {
   id: string
   description: string
@@ -16,7 +14,6 @@ interface QuoteItem {
   materials?: string
   exposedArea?: string
 }
-
 interface Quote {
   id: string
   quoteNumber: string
@@ -58,13 +55,11 @@ interface Quote {
     email: string
   }
 }
-
 interface QuoteTemplateProps {
   quote: Quote
   onEdit?: () => void
   onView?: () => void
 }
-
 // Helper functions
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('es-CL', {
@@ -72,7 +67,6 @@ const formatCurrency = (amount: number) => {
     currency: 'CLP'
   }).format(amount)
 }
-
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('es-CL', {
     year: 'numeric',
@@ -80,11 +74,8 @@ const formatDate = (dateString: string) => {
     day: '2-digit'
   })
 }
-
 // This will be defined inside the component
-
 // Function moved to component
-
 const getStatusBadge = (status: string) => {
   const statusConfig = {
     DRAFT: { label: 'Borrador', variant: 'secondary' as const },
@@ -93,11 +84,9 @@ const getStatusBadge = (status: string) => {
     REJECTED: { label: 'Rechazado', variant: 'destructive' as const },
     EXPIRED: { label: 'Expirado', variant: 'outline' as const }
   }
-
   const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.DRAFT
   return <Badge variant={config.variant}>{config.label}</Badge>
 }
-
 const getServiceTypeLabel = (type: string) => {
   const types = {
     deteccion_fugas: 'Detección de Fugas de Agua',
@@ -106,19 +95,13 @@ const getServiceTypeLabel = (type: string) => {
   }
   return types[type as keyof typeof types] || type
 }
-
 const _handleExportPDF = async () => {
-
   // PDF export logic would go here
 }
-
 const _handlePrint = () => {
-
   // Print logic would go here
 }
-
 export default function QuoteTemplate({ quote }: QuoteTemplateProps) {
-
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Header con logo y información de la empresa */}
@@ -162,7 +145,6 @@ export default function QuoteTemplate({ quote }: QuoteTemplateProps) {
           </div>
         </CardContent>
       </Card>
-
       {/* Información del cliente y detalles */}
       <Card>
         <CardContent className="p-6">
@@ -204,7 +186,6 @@ export default function QuoteTemplate({ quote }: QuoteTemplateProps) {
           </div>
         </CardContent>
       </Card>
-
       {/* Diagnóstico */}
       {quote.diagnosis && (
         <Card>
@@ -214,7 +195,6 @@ export default function QuoteTemplate({ quote }: QuoteTemplateProps) {
           </CardContent>
         </Card>
       )}
-
       {/* Tabla de servicios simplificada */}
       <Card>
         <CardContent className="p-6">
@@ -243,7 +223,6 @@ export default function QuoteTemplate({ quote }: QuoteTemplateProps) {
           </div>
         </CardContent>
       </Card>
-
       {/* Totales */}
       <Card>
         <CardContent className="p-6">
@@ -266,7 +245,6 @@ export default function QuoteTemplate({ quote }: QuoteTemplateProps) {
           </div>
         </CardContent>
       </Card>
-
       {/* Observaciones */}
       {quote.notes && (
         <Card>
@@ -276,7 +254,6 @@ export default function QuoteTemplate({ quote }: QuoteTemplateProps) {
           </CardContent>
         </Card>
       )}
-
       {/* Condiciones generales según empresa */}
       <Card>
         <CardContent className="p-6">
@@ -313,14 +290,13 @@ export default function QuoteTemplate({ quote }: QuoteTemplateProps) {
           </div>
         </CardContent>
       </Card>
-
       {/* Botones de acción */}
       <div className="flex justify-end gap-4 print:hidden">
-        <Button variant="outline" onClick={() => console.log('View details')}>
+        <Button variant="outline" onClick={() => { }}>
           <Eye className="mr-2 h-4 w-4" />
           Ver Detalles
         </Button>
-        <Button variant="outline" onClick={() => console.log('Edit quote')}>
+        <Button variant="outline" onClick={() => { }}>
           Editar
         </Button>
         <Button variant="outline" onClick={_handlePrint}>

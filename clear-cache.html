@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Limpiar Caché</title>
+</head>
+
+<body>
+    <h1>Limpiando caché del navegador...</h1>
+    <script>
+        // Limpiar localStorage
+        localStorage.clear();
+
+        // Limpiar sessionStorage
+        sessionStorage.clear();
+
+        // Limpiar cookies
+        document.cookie.split(";").forEach(function (c) {
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+
+        // Forzar recarga sin caché
+        setTimeout(() => {
+            window.location.href = 'http://localhost:3000/dashboard/schedule?t=' + Date.now();
+        }, 1000);
+    </script>
+</body>
+
+</html>

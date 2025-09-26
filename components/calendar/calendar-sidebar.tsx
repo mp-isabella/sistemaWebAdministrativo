@@ -1,5 +1,4 @@
 "use client"
-
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -8,7 +7,6 @@ import { eachDayOfInterval, endOfMonth, format, isSameDay, startOfMonth } from "
 import { es } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, Filter, X } from "lucide-react"
 import { useEffect, useState } from "react"
-
 interface CalendarSidebarProps {
   selectedDate: Date
   onDateChange: (date: Date) => void
@@ -21,7 +19,6 @@ interface CalendarSidebarProps {
   technicians: Array<{ id: string; name: string }>
   onClose?: () => void
 }
-
 export function CalendarSidebar({
   selectedDate,
   onDateChange,
@@ -36,30 +33,20 @@ export function CalendarSidebar({
 }: CalendarSidebarProps) {
   // Debug: verificar fecha actual
   const today = new Date()
-  console.log('Today:', today)
-
   // Función personalizada para detectar el día de hoy usando zona horaria de Chile
   const isTodayCustom = (date: Date) => {
     // Obtener la fecha actual en Chile
     const now = new Date()
     const chileTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Santiago" }))
-
     // Crear fechas de comparación sin horas
     const todayDate = new Date(chileTime.getFullYear(), chileTime.getMonth(), chileTime.getDate())
     const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-
     const result = todayDate.getTime() === compareDate.getTime()
-
     // Debug: mostrar comparación
-    console.log(`Comparando ${compareDate.toDateString()} con hoy en Chile: ${todayDate.toDateString()} = ${result}`)
-
     if (result) {
-      console.log('Es hoy!')
     }
-
     return result
   }
-
   // Estado separado para cada mes
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(selectedDate))
   const [nextMonth, setNextMonth] = useState(() => {
@@ -67,70 +54,52 @@ export function CalendarSidebar({
     next.setMonth(next.getMonth() + 1)
     return startOfMonth(next)
   })
-
   // Navegación independiente para el mes actual
   const goToPreviousMonth = () => {
-
     const newMonth = new Date(currentMonth)
     newMonth.setMonth(currentMonth.getMonth() - 1)
     setCurrentMonth(newMonth)
-
     // Actualizar también el próximo mes para mantener la secuencia
     const newNextMonth = new Date(newMonth)
     newNextMonth.setMonth(newMonth.getMonth() + 1)
     setNextMonth(newNextMonth)
   }
-
   const goToNextMonth = () => {
-
     const newMonth = new Date(currentMonth)
     newMonth.setMonth(currentMonth.getMonth() + 1)
     setCurrentMonth(newMonth)
-
     // Actualizar también el próximo mes para mantener la secuencia
     const newNextMonth = new Date(newMonth)
     newNextMonth.setMonth(newMonth.getMonth() + 1)
     setNextMonth(newNextMonth)
   }
-
   // Navegación independiente para el próximo mes
   const goToPreviousNextMonth = () => {
-
     const newNextMonth = new Date(nextMonth)
     newNextMonth.setMonth(nextMonth.getMonth() - 1)
     setNextMonth(newNextMonth)
   }
-
   const goToNextNextMonth = () => {
-
     const newNextMonth = new Date(nextMonth)
     newNextMonth.setMonth(nextMonth.getMonth() + 1)
     setNextMonth(newNextMonth)
   }
-
   const handleDateSelect = (date: Date) => {
     onDateChange(date)
   }
-
   // Actualizar los meses cuando cambie la fecha seleccionada
   useEffect(() => {
     const newCurrentMonth = startOfMonth(selectedDate)
     const newNextMonth = new Date(newCurrentMonth)
     newNextMonth.setMonth(newCurrentMonth.getMonth() + 1)
-
     setCurrentMonth(newCurrentMonth)
     setNextMonth(newNextMonth)
   }, [selectedDate])
-
   // Función para renderizar un mini calendario
   const renderMiniCalendar = (month: Date, title: string, onPrev: () => void, onNext: () => void) => {
-    console.log(`Rendering mini calendar for ${month.toDateString()}`)
-
     const monthStart = startOfMonth(month)
     const monthEnd = endOfMonth(month)
     const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
-
-
     return (
       <div>
         <div className="calendar-mini-calendar-header">
@@ -146,7 +115,6 @@ export function CalendarSidebar({
             </Button>
           </div>
         </div>
-
         {/* Grid del calendario */}
         <div className="calendar-mini-calendar-grid">
           {/* Días de la semana */}
@@ -155,7 +123,6 @@ export function CalendarSidebar({
               {day}
             </div>
           ))}
-
           {/* Celdas vacías para alineación */}
           {(() => {
             const firstDayOfMonth = monthStart.getDay()
@@ -164,17 +131,14 @@ export function CalendarSidebar({
               <div key={`empty-start-${index}`} className="h-7" />
             ))
           })()}
-
           {/* Días del mes */}
           {days.map((day) => {
             const isTodayDate = isTodayCustom(day)
             const isSelectedDate = isSameDay(day, selectedDate)
-
             // Debug: mostrar información del día actual
             if (isTodayDate) {
-              console.log('Day:', day.toDateString(), 'isToday:', isTodayDate)
+              , 'isToday:', isTodayDate)
             }
-
             return (
               <Button
                 key={day.toISOString()}
@@ -203,7 +167,6 @@ export function CalendarSidebar({
       </div>
     )
   }
-
   return (
     <aside className="calendar-sidebar">
       {/* Header mejorado */}
@@ -220,7 +183,6 @@ export function CalendarSidebar({
           )}
         </div>
       </div>
-
       {/* Filtros mejorados */}
       <div className="calendar-sidebar-content">
         <div className="calendar-filters-section">
@@ -238,7 +200,6 @@ export function CalendarSidebar({
               </SelectContent>
             </Select>
           </div>
-
           {/* Técnico */}
           <div className="calendar-filter-group">
             <Label className="calendar-filter-label">Técnico</Label>
@@ -256,7 +217,6 @@ export function CalendarSidebar({
               </SelectContent>
             </Select>
           </div>
-
           {/* Estado */}
           <div className="calendar-filter-group">
             <Label className="calendar-filter-label">Estado</Label>
@@ -274,7 +234,6 @@ export function CalendarSidebar({
             </Select>
           </div>
         </div>
-
         {/* Calendario actual - con navegación independiente */}
         <div className="calendar-mini-calendars">
           <div className="calendar-mini-calendar">
@@ -285,7 +244,6 @@ export function CalendarSidebar({
               goToNextMonth
             )}
           </div>
-
           {/* Calendario del próximo mes - con navegación independiente */}
           <div className="calendar-mini-calendar">
             {renderMiniCalendar(

@@ -108,15 +108,12 @@ export default function CalendarPage() {
       setLoading(true)
       setError("")
       
-      console.log('🔄 Cargando trabajos para el calendario...')
       const response = await fetch('/api/jobs')
       if (!response.ok) {
         throw new Error(`Error al cargar los trabajos: ${response.status}`)
       }
       
       const data = await response.json()
-      console.log('✅ Trabajos cargados:', data.length)
-      console.log('📋 Primer trabajo:', data[0])
       setJobs(data)
     } catch (error) {
       console.error("Error fetching jobs:", error)
@@ -129,12 +126,9 @@ export default function CalendarPage() {
   // Función para cargar técnicos desde la API
   const fetchTechnicians = useCallback(async () => {
     try {
-      console.log('🔄 Cargando técnicos para el calendario...')
       const response = await fetch("/api/workers/technicians")
       if (response.ok) {
         const data = await response.json()
-        console.log('✅ Técnicos cargados:', data.length)
-        console.log('👨‍🔧 Primer técnico:', data[0])
         setTechnicians(data)
       }
     } catch (error) {
@@ -151,7 +145,6 @@ export default function CalendarPage() {
   // Escuchar eventos de sincronización del calendario
   useEffect(() => {
     const handleNewJobCreated = (event: CustomEvent) => {
-      console.log('🔄 Nuevo trabajo creado, refrescando calendario...', event.detail)
       // Pequeño delay para asegurar que la base de datos se actualice
       setTimeout(() => {
         fetchJobs()
@@ -159,10 +152,8 @@ export default function CalendarPage() {
     }
 
     const handleJobUpdated = (event: CustomEvent) => {
-      console.log('🔄 Trabajo actualizado, refrescando calendario...', event.detail)
       // Si es una asignación de técnico, refrescar el calendario completo
       if (event.detail?.action === 'technicianAssigned') {
-        console.log('👨‍🔧 Técnico asignado, refrescando calendario completo...')
         setTimeout(() => {
           fetchJobs()
         }, 500)
@@ -174,12 +165,10 @@ export default function CalendarPage() {
     }
 
     const handleJobDeleted = (event: CustomEvent) => {
-      console.log('🔄 Trabajo eliminado, refrescando calendario...', event.detail)
       fetchJobs()
     }
 
     const handleJobStatusUpdated = (event: CustomEvent) => {
-      console.log('🔄 Estado de trabajo actualizado, refrescando calendario...', event.detail)
       fetchJobs()
     }
 
@@ -256,11 +245,6 @@ export default function CalendarPage() {
     })
   }
 
-  // Log para depuración
-  useEffect(() => {
-    console.log('🔍 Trabajos filtrados:', filteredJobs.length)
-    console.log('📊 Filtros aplicados:', { selectedTechnician, selectedStatus })
-  }, [filteredJobs, selectedTechnician, selectedStatus])
 
   // Generar días del mes
   const getDaysInMonth = (date: Date) => {
@@ -323,17 +307,12 @@ export default function CalendarPage() {
         modal.scrollIntoView({ behavior: 'smooth', block: 'center' })
       }
     }, 100)
-    
-    // Log para depuración
-    console.log('🔍 Abriendo modal para trabajo:', job.id)
-    console.log('📋 Detalles del trabajo:', job)
   }
 
   // Función para cerrar el modal
   const closeJobModal = () => {
     setShowJobModal(false)
     setSelectedJob(null)
-    console.log('🔒 Modal cerrado')
   }
 
   // Función para manejar teclas de acceso rápido
@@ -403,7 +382,6 @@ export default function CalendarPage() {
     setReassigningJob(job)
     setSelectedNewTechnician("")
     setShowReassignModal(true)
-    console.log('🔄 Abriendo modal de reasignación para trabajo:', job.id)
   }
 
   // Función para cerrar el modal de reasignación
@@ -412,7 +390,6 @@ export default function CalendarPage() {
     setReassigningJob(null)
     setSelectedNewTechnician("")
     setIsReassigning(false)
-    console.log('🔒 Modal de reasignación cerrado')
   }
 
   // Función para reasignar un trabajo a otro técnico
@@ -424,7 +401,6 @@ export default function CalendarPage() {
 
     try {
       setIsReassigning(true)
-      console.log('🔄 Reasignando trabajo:', reassigningJob.id, 'a técnico:', selectedNewTechnician)
 
       // Llamada a la API para reasignar el trabajo
       const response = await fetch(`/api/jobs/${reassigningJob.id}/reassign`, {
@@ -442,7 +418,6 @@ export default function CalendarPage() {
       }
 
       const updatedJob = await response.json()
-      console.log('✅ Trabajo reasignado exitosamente:', updatedJob)
 
       // Actualizar el trabajo en el estado local
       setJobs(prevJobs => 
@@ -1264,7 +1239,6 @@ export default function CalendarPage() {
                   className="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors font-medium"
                   onClick={() => {
                     // Aquí puedes agregar la lógica para ver el pago
-                    console.log('Ver pago del trabajo:', selectedJob.id)
                   }}
                 >
                   <DollarSign className="h-4 w-4" />
@@ -1274,7 +1248,6 @@ export default function CalendarPage() {
                   className="flex-1 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors font-medium"
                   onClick={() => {
                     // Aquí puedes agregar la lógica para ver la ficha
-                    console.log('Ver ficha del trabajo:', selectedJob.id)
                   }}
                 >
                   <FileText className="h-4 w-4" />

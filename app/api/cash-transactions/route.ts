@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     const where: any = {}
-    
+
     if (type) where.type = type
     if (category) where.category = category
     if (dateFrom || dateTo) {
@@ -81,14 +81,14 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    
+
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession()
+    const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
@@ -98,8 +98,8 @@ export async function POST(request: NextRequest) {
 
     // Validation
     if (!amount || !description || !category || !paymentMethod || !type) {
-      return NextResponse.json({ 
-        error: 'Campos requeridos: amount, description, category, paymentMethod, type' 
+      return NextResponse.json({
+        error: 'Campos requeridos: amount, description, category, paymentMethod, type'
       }, { status: 400 })
     }
 
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ transaction }, { status: 201 })
 
   } catch (error) {
-    
+
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

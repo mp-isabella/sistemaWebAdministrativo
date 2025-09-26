@@ -150,7 +150,7 @@ export async function PUT(
     return NextResponse.json(updatedClient)
 
   } catch (error) {
-
+    console.error('Error updating client:', error)
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }
@@ -196,7 +196,7 @@ export async function PATCH(
     return NextResponse.json(updatedClient)
 
   } catch (error) {
-
+    console.error('Error updating client:', error)
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }
@@ -249,7 +249,7 @@ export async function DELETE(
     return NextResponse.json({ message: 'Cliente eliminado correctamente' })
 
   } catch (error) {
-
+    console.error('Error deleting client:', error)
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }

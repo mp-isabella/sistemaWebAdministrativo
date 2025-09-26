@@ -1,5 +1,4 @@
 'use client'
-
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import CompanyLogo from '@/components/ui/company-logo'
@@ -7,7 +6,6 @@ import { Separator } from '@/components/ui/separator'
 import { useToast } from '@/hooks/use-toast'
 import { Check, Download, Edit, Printer, X } from 'lucide-react'
 import { useRef, useState } from 'react'
-
 interface QuoteItem {
   description: string
   quantity: number
@@ -16,7 +14,6 @@ interface QuoteItem {
   materials?: string
   exposedArea?: string
 }
-
 interface QuotePreviewProps {
   data: {
     clientName: string
@@ -62,25 +59,20 @@ interface QuotePreviewProps {
   onCancel: () => void
   onEdit: () => void
 }
-
 export default function QuotePreview({ data, client, company, onConfirm, onCancel, onEdit }: QuotePreviewProps) {
   const { toast } = useToast()
   const [isGenerating, setIsGenerating] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
-
   // Debug logging
-
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CL', {
       style: 'currency',
       currency: 'CLP'
     }).format(amount)
   }
-
   const formatDate = (dateString: string) => {
     if (!dateString) return 'No especificada'
-
     try {
       // Handle both ISO date strings and local date strings
       // If it's in YYYY-MM-DD format, parse it as local date to avoid timezone issues
@@ -88,7 +80,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
         const [year, month, day] = dateString.split('-').map(Number)
         if (!year || !month || !day) return dateString
         const date = new Date(year, month - 1, day) // month is 0-indexed
-
         return date.toLocaleDateString('es-CL', {
           year: 'numeric',
           month: '2-digit',
@@ -96,13 +87,10 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
         })
       } else {
         const date = new Date(dateString)
-
         // Check if the date is valid
         if (isNaN(date.getTime())) {
-
           return 'Fecha inválida'
         }
-
         return date.toLocaleDateString('es-CL', {
           year: 'numeric',
           month: '2-digit',
@@ -110,20 +98,12 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
         })
       }
     } catch (error) {
-
       return 'Fecha inválida'
     }
   }
-
-  // Debug logging for date
-  console.log('Valid until date:', new Date(data.validUntil).toISOString().split('T')[0])
-  console.log('Valid until timestamp:', new Date(data.validUntil).getTime())
-
   const getCompanyConfig = (company: any) => {
-
     // Si tenemos una empresa válida, usar sus datos directamente
     if (company && company.name) {
-
       // Función para obtener el logo correcto basado en el nombre de la empresa
       const getCorrectLogo = (companyName: string) => {
         const name = companyName.toUpperCase()
@@ -133,7 +113,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
         if (name.includes('SERVIFUGAS')) return `${baseUrl}/servifugas.png`
         return `${baseUrl}/amestica.png` // fallback
       }
-
       return {
         name: company.name,
         displayName: company.displayName || company.name,
@@ -150,9 +129,7 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
         }
       }
     }
-
     // Fallback solo si no hay empresa
-
     return {
       name: 'AMESTICA LIMITADA',
       displayName: 'AMESTICA LIMITADA',
@@ -169,14 +146,10 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
       }
     }
   }
-
   const companyConfig = getCompanyConfig(company)
-
   // Obtener el logo correcto
   const correctLogo = companyConfig.logo
-
   // Debug: Log para verificar la configuración de la empresa
-
   // Calcular totales
   const subtotal = data.items.reduce((sum, item) => {
     const quantity = item.quantity || 0
@@ -187,7 +160,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
   const subtotalAfterDiscount = subtotal - discount
   const tax = subtotalAfterDiscount * (data.taxRate / 100)
   const total = subtotalAfterDiscount + tax
-
   const handlePrint = () => {
     // Crear una nueva ventana para imprimir
     const printWindow = window.open('', '_blank')
@@ -195,20 +167,17 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
       const htmlContent = generatePrintHTML()
       printWindow.document.write(htmlContent)
       printWindow.document.close()
-
       // Esperar un momento para que se cargue el contenido
       setTimeout(() => {
         printWindow.print()
       }, 500)
     }
   }
-
   const handleDownloadPDF = async () => {
     setIsGenerating(true)
     try {
       // Usar el nuevo generador de PDF mejorado
       const { downloadQuotePDF } = await import('@/components/pdf-generator')
-
       // Preparar datos para el PDF
       const quoteData = {
         quoteNumber: `COT-${Date.now()}`,
@@ -222,16 +191,13 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
         items: data.items,
         validUntil: data.validUntil
       }
-
       // Generar y descargar PDF
       downloadQuotePDF(quoteData, companyConfig)
-
       toast({
         title: "Éxito",
         description: "PDF descargado correctamente.",
       })
     } catch (error) {
-
       toast({
         title: "Error",
         description: "Error al generar el PDF. Intenta nuevamente.",
@@ -241,19 +207,16 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
       setIsGenerating(false)
     }
   }
-
   const handleCreateQuote = async () => {
     setIsCreating(true)
     try {
       // Llamar a la función onConfirm que viene del componente padre
       await onConfirm()
-
       toast({
         title: "Éxito",
         description: "Presupuesto creado correctamente.",
       })
     } catch (error) {
-
       toast({
         title: "Error",
         description: "Error al crear el presupuesto. Intenta nuevamente.",
@@ -263,9 +226,7 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
       setIsCreating(false)
     }
   }
-
   const generatePrintHTML = () => {
-
     return `
 <!DOCTYPE html>
 <html lang="es">
@@ -279,8 +240,8 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
                      margin: 0.5in;
                      size: A4;
                  }
-                 body { 
-                     margin: 0; 
+                 body {
+                     margin: 0;
                      padding: 12px;
                      font-size: 16px;
                      line-height: 1.5;
@@ -301,31 +262,30 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
                  .info-row { font-size: 14px; margin-bottom: 6px; }
                  .info-label { min-width: 80px; }
                  .services-table th,
-                 .services-table td { 
-                     padding: 8px 10px; 
+                 .services-table td {
+                     padding: 8px 10px;
                      font-size: 13px;
                  }
                  .totals { margin-top: 16px; }
                  .totals-content { width: 220px; }
-                 .total-row { 
-                     font-size: 14px; 
-                     margin-bottom: 8px; 
+                 .total-row {
+                     font-size: 14px;
+                     margin-bottom: 8px;
                  }
                  .total-final { font-size: 16px; }
                  .notes-section,
-                 .conditions-section { 
-                     padding: 16px; 
+                 .conditions-section {
+                     padding: 16px;
                      font-size: 13px;
                  }
                  .notes-title,
-                 .conditions-title { 
-                     font-size: 15px; 
-                     margin-bottom: 8px; 
+                 .conditions-title {
+                     font-size: 15px;
+                     margin-bottom: 8px;
                  }
                  .conditions-list { font-size: 13px; }
                  .conditions-list li { margin-bottom: 6px; }
              }
-             
              /* Estilos específicos para PDF */
              body {
                font-family: Arial, sans-serif;
@@ -347,7 +307,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
                -webkit-print-color-adjust: exact;
                color-adjust: exact;
              }
-            
                          body {
                font-family: Arial, sans-serif;
                line-height: 1.5;
@@ -568,11 +527,9 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
                  </div>
              </div>
          </div>
-        
                  <div class="quote-title">COTIZACIÓN</div>
          <div class="separator"></div>
     </div>
-
     <div class="section">
         <div class="section-content">
             <div class="client-info">
@@ -605,7 +562,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
             </div>
         </div>
     </div>
-
     <div class="section">
         <div class="section-content">
             <table class="services-table">
@@ -631,7 +587,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
     }).join('')}
                 </tbody>
             </table>
-            
             <div class="totals">
                 <div class="totals-content">
                     <div class="total-row">
@@ -657,7 +612,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
             </div>
         </div>
     </div>
-
     ${data.notes ? `
     <div class="section">
         <div class="section-content">
@@ -668,7 +622,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
         </div>
     </div>
     ` : ''}
-
     ${data.warranty && data.warranty.trim() !== '' ? `
     <div class="section">
         <div class="section-content">
@@ -686,7 +639,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
 </html>
     `
   }
-
   return (
     <div ref={contentRef} className="max-w-5xl mx-auto p-4 space-y-4">
       {/* Header con logo y información de la empresa */}
@@ -700,7 +652,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
               size="xxl"
               className="flex-shrink-0"
             />
-
             {/* Información de la empresa a la derecha */}
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-blue-600">
@@ -715,19 +666,16 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
               </div>
             </div>
           </div>
-
           {/* Título COTIZACIÓN */}
           <div className="mt-4">
             <h2 className="text-2xl font-bold text-blue-600">
               COTIZACIÓN
             </h2>
           </div>
-
           {/* Línea separadora debajo del título */}
           <div className="mt-2 border-b-2 border-blue-600"></div>
         </CardContent>
       </Card>
-
       {/* Información del cliente */}
       <Card className="shadow-sm">
         <CardContent className="p-4">
@@ -761,7 +709,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
           </div>
         </CardContent>
       </Card>
-
       {/* Servicios */}
       <Card className="shadow-sm">
         <CardContent className="p-4">
@@ -790,7 +737,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
               </tbody>
             </table>
           </div>
-
           <div className="mt-4 flex justify-end">
             <div className="w-72 space-y-2">
               <div className="flex justify-between text-base">
@@ -816,7 +762,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
           </div>
         </CardContent>
       </Card>
-
       {/* Observaciones */}
       {data.notes && (
         <Card className="shadow-sm">
@@ -828,7 +773,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
           </CardContent>
         </Card>
       )}
-
       {/* Garantía y Condiciones - Mostrar si hay contenido en el campo de garantía */}
       {data.warranty && data.warranty.trim() !== '' && (
         <Card className="shadow-sm">
@@ -844,7 +788,6 @@ export default function QuotePreview({ data, client, company, onConfirm, onCance
           </CardContent>
         </Card>
       )}
-
       {/* Botones de acción */}
       <div className="flex flex-wrap justify-center gap-3 pt-4 border-t">
         <Button variant="outline" onClick={onEdit} size="sm">

@@ -73,12 +73,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Solo administrador puede crear trabajadores
-    const userRole = (session.user as any).role;
-    if (userRole !== "ADMINISTRADOR" && userRole !== "administrador" && userRole !== "admin") {
-      return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
+    const userRole = (session.user as any).role?.toLowerCase();
+    if (!['admin', 'administrador'].includes(userRole)) {
+      return NextResponse.json({ error: "Solo administradores pueden crear trabajadores" }, { status: 403 })
     }
 
     const { name, email, phone, password, role, status } = await request.json()
+
+    // Validar datos requeridos
+    if (!name || !email || !password || !role) {
+      return NextResponse.json({ error: "Datos requeridos: name, email, password, role" }, { status: 400 })
+    }
+
+    // Validar formato de email
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      return NextResponse.json({ error: "Formato de email inválido" }, { status: 400 })
+    }
 
     // Verificar que el email no exista
     const existingUser = await prisma.user.findUnique({
@@ -131,12 +141,22 @@ export async function PUT(request: NextRequest) {
     }
 
     // Solo admin puede actualizar trabajadores
-    const userRole = (session.user as any).role;
-    if (userRole !== "ADMINISTRADOR" && userRole !== "administrador" && userRole !== "admin") {
-      return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
+    const userRole = (session.user as any).role?.toLowerCase();
+    if (!['admin', 'administrador'].includes(userRole)) {
+      return NextResponse.json({ error: "Solo administradores pueden actualizar trabajadores" }, { status: 403 })
     }
 
     const { id, name, email, phone, password, role, status } = await request.json()
+
+    // Validar datos requeridos
+    if (!id || !name || !email || !role) {
+      return NextResponse.json({ error: "Datos requeridos: id, name, email, role" }, { status: 400 })
+    }
+
+    // Validar formato de email
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      return NextResponse.json({ error: "Formato de email inválido" }, { status: 400 })
+    }
 
     // Verificar que el trabajador existe
     const existingUser = await prisma.user.findUnique({

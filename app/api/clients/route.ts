@@ -1,9 +1,11 @@
-import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import { getServerSession } from "next-auth/next"
-import { NextRequest, NextResponse } from "next/server"
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { canUserPerformAction } from '@/lib/role-utils'
+import { validateClientData } from '@/lib/validation'
+import { getServerSession } from 'next-auth/next'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -11,40 +13,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url)
-    const search = searchParams.get("search")
-    const status = searchParams.get("status")
-
-    const where: any = {}
-
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-        { phone: { contains: search } }
-      ]
-    }
-
-    if (status) {
-      where.status = status
-    }
-
     const clients = await prisma.client.findMany({
-      where,
-      include: {
-        jobs: {
-          include: {
-            service: true
-          }
-        }
+      where: {
+        status: 'active'
       },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: 'desc' }
     })
 
     return NextResponse.json(clients)
   } catch (error) {
-    
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
+    console.error('Error fetching clients:', error)
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    )
   }
 }
 
@@ -56,45 +38,58 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    // Admin y secretaria pueden crear clientes
-    const userRole = (session.user as any).role;
-    if (!["ADMINISTRADOR", "admin", "administrador", "SECRETARIA", "secretaria"].includes(userRole)) {
-      return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
+    // Verificar permisos
+    const userRole = (session.user as any).role
+    if (!canUserPerformAction(userRole, 'create', 'clients')) {
+      return NextResponse.json({ error: "Sin permisos para crear clientes" }, { status: 403 })
     }
 
-    const {
-      name,
-      email,
-      phone,
-      address,
-      company,
-      region,
-      commune,
-      status,
-      rut
-    } = await request.json()
+    const body = await request.json()
 
-    if (!session.user.id) {
-      return NextResponse.json({ error: "ID de usuario no válido" }, { status: 400 })
+    // Validar datos
+    const validation = validateClientData(body)
+    if (!validation.isValid) {
+      console.log('❌ Validación falló:', validation.errors);
+      return NextResponse.json({
+        error: "Datos inválidos",
+        details: validation.errors,
+        message: validation.errors.join(', ')
+      }, { status: 400 })
     }
 
-    const newClient = await prisma.client.create({
+    const { name, email, phone, address, rut, region, commune, company, status } = body
+
+    // Verificar si el email ya existe (si se proporciona)
+    if (email) {
+      const existingClient = await prisma.client.findFirst({
+        where: { email }
+      })
+      if (existingClient) {
+        return NextResponse.json({ error: "Ya existe un cliente con este email" }, { status: 400 })
+      }
+    }
+
+    // Crear cliente
+    const client = await prisma.client.create({
       data: {
         name,
-        email,
+        email: email || null,
         phone,
         address,
-        company,
-        region,
-        commune,
-        status: status || "active",
-        rut
+        rut: rut || null,
+        region: region || null,
+        commune: commune || null,
+        company: company || null,
+        status: status || 'active'
       }
     })
 
-    return NextResponse.json(newClient, { status: 201 })
+    return NextResponse.json(client, { status: 201 })
   } catch (error) {
-    
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
+    console.error('Error creating client:', error)
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    )
   }
 }

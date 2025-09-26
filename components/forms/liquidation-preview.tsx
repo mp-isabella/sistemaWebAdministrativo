@@ -31,7 +31,7 @@ export default function LiquidationPreview({
   onCancel,
   onEdit
 }: LiquidationPreviewProps) {
-  
+
   const { toast } = useToast()
   const [isGenerating, setIsGenerating] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
@@ -66,7 +66,7 @@ export default function LiquidationPreview({
 
         // Check if the date is valid
         if (isNaN(date.getTime())) {
-          
+
           return 'Fecha inválida'
         }
 
@@ -77,7 +77,7 @@ export default function LiquidationPreview({
         })
       }
     } catch (error) {
-      
+
       return 'Fecha inválida'
     }
   }
@@ -252,7 +252,7 @@ export default function LiquidationPreview({
         })
       }
     } catch (error) {
-      
+
       toast({
         title: "Error",
         description: "Error al generar el PDF. Intenta nuevamente.",
@@ -264,15 +264,15 @@ export default function LiquidationPreview({
   }
 
   const handleCreateLiquidation = async () => {
-    
+
     setIsCreating(true)
 
     try {
-      
+
       await onConfirm()
-      
+
     } catch (error) {
-      
+
       toast({
         title: "Error",
         description: "Error al crear la liquidación. Intenta nuevamente.",
@@ -1004,7 +1004,7 @@ export default function LiquidationPreview({
         <Button
           onClick={handleCreateLiquidation}
           disabled={isCreating}
-          className="bg-green-600 hover:bg-green-700 text-white"
+          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
           size="sm"
         >
           <Check className="mr-2 h-4 w-4" />

@@ -33,7 +33,8 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import "../styles/dashboard-optimized.css";
 import "../styles/schedule-mobile-optimizations.css";
 
-import JobForm from "@/components/forms/job-form";
+import JobForm from "@/components/forms/job-form-fixed";
+import TechnicianAssignmentModal from "@/components/modals/technician-assignment-modal";
 import useNotifications from "@/hooks/use-notifications";
 import { useToast } from "@/hooks/use-toast";
 
@@ -132,6 +133,11 @@ export default function AgendaPage() {
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  // Estado para el modal de asignación de técnicos
+  const [showTechnicianModal, setShowTechnicianModal] = useState(false);
+  const [selectedJobForAssignment, setSelectedJobForAssignment] = useState<Job | null>(null);
+  const [isAssigningTechnician, setIsAssigningTechnician] = useState(false);
+
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Referencias para optimización
@@ -169,10 +175,12 @@ export default function AgendaPage() {
 
       // Usar el mismo endpoint que el calendario para consistencia
       const timestamp = Date.now();
-      const response = await fetch(`/api/calendar/jobs?t=${timestamp}`, {
+      const response = await fetch(`/api/calendar/jobs?t=${timestamp}&nocache=${Math.random()}`, {
         cache: 'no-store',
         headers: {
-          'Cache-Control': 'no-cache'
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         }
       });
       if (!response.ok) {
@@ -271,6 +279,15 @@ export default function AgendaPage() {
         const uniqueJobs = mappedJobs.filter((job: any, index: number, self: any[]) =>
           index === self.findIndex((j: any) => j.id === job.id)
         )
+
+        // Debug: Mostrar orden de trabajos cargados
+        // FORZAR LOGS DE DEBUG - MÁS AGRESIVO
+        console.log('🚨🚨🚨 DEBUG FORZADO - TRABAJOS CARGADOS 🚨🚨🚨');
+        console.log('📋 Trabajos cargados desde la API (orden por fecha de creación):');
+        uniqueJobs.forEach((job: any, index: number) => {
+          console.log(`🚨 ${index + 1}. ${job.title} - Creado: ${new Date(job.createdAt).toLocaleString('es-CL', { timeZone: 'America/Santiago' })}`);
+        });
+        console.log('🚨🚨🚨 FIN DEBUG FORZADO 🚨🚨🚨');
         // Mostrar notificación si se detectaron duplicados
         if (mappedJobs.length !== uniqueJobs.length) {
           // Mostrar notificación visual si hay duplicados
@@ -338,10 +355,64 @@ export default function AgendaPage() {
       const response = await fetch("/api/workers/technicians");
       if (response.ok) {
         const data = await response.json();
-        setTechnicians(data);
+
+        // Aplicar filtrado robusto para excluir roles incorrectos
+        const filteredTechnicians = data.filter((tech: any) => {
+          // Verificar que esté activo
+          if (tech.isActive === false) return false;
+
+          // Manejar tanto estructura plana como anidada del rol
+          const roleName = typeof tech.role === 'string' ? tech.role : tech.role?.name || '';
+
+          // Filtrar SOLO técnicos, excluyendo administradores y secretarias
+          const isTechnician = (
+            roleName === 'TECNICO' ||
+            roleName === 'tecnico' ||
+            roleName === 'Técnico' ||
+            roleName === 'Trabajador' ||
+            roleName === 'TRABAJADOR'
+          );
+
+          const isNotAdminOrSecretary = (
+            roleName !== 'ADMINISTRADOR' &&
+            roleName !== 'Administrador' &&
+            roleName !== 'SECRETARIA' &&
+            roleName !== 'Secretaria' &&
+            roleName !== 'ADMIN' &&
+            roleName !== 'Admin'
+          );
+
+          // Filtrar también por nombre para excluir usuarios con nombres de secretarias/administradores
+          const name = tech.name?.toLowerCase() || '';
+          const isNotAdminOrSecretaryByName = (
+            !name.includes('administrador') &&
+            !name.includes('admin') &&
+            !name.includes('secretaria') &&
+            !name.includes('secretary')
+          );
+
+          return (
+            isTechnician &&
+            isNotAdminOrSecretary &&
+            isNotAdminOrSecretaryByName &&
+            tech.name &&
+            tech.name.trim() !== ''
+          );
+        });
+
+        console.log('🔧 Técnicos filtrados para asignación:', filteredTechnicians.map((tech: any) => ({
+          id: tech.id,
+          name: tech.name,
+          role: tech.role?.name || tech.role,
+          isActive: tech.isActive
+        })));
+
+        setTechnicians(filteredTechnicians);
       } else {
+        console.error('Error fetching technicians:', response.statusText);
       }
     } catch (error) {
+      console.error('Error fetching technicians:', error);
     }
   };
 
@@ -378,16 +449,33 @@ export default function AgendaPage() {
       return true;
     });
 
-    // Ordenar por fecha de creación (más recientes primero) - solo por fecha de creación
+    // Ordenar por fecha de creación (más recientes primero) - con fallback a scheduledAt
     filtered.sort((a, b) => {
-      const createdA = new Date(a.createdAt).getTime();
-      const createdB = new Date(b.createdAt).getTime();
+      // Usar createdAt si existe, sino usar scheduledAt como fallback
+      const dateA = a.createdAt ? new Date(a.createdAt) : new Date(a.scheduledAt);
+      const dateB = b.createdAt ? new Date(b.createdAt) : new Date(b.scheduledAt);
 
-      // Ordenar por fecha de creación descendente (más recientes primero)
-      return createdB - createdA;
+      const timeA = dateA.getTime();
+      const timeB = dateB.getTime();
+
+      // Debug: Mostrar orden de trabajos - FORZADO
+      console.log(`🚨🔄 ORDENANDO: ${a.title} (${dateA.toLocaleString()}) vs ${b.title} (${dateB.toLocaleString()})`);
+
+      // Ordenar por fecha descendente (más recientes primero)
+      return timeB - timeA;
     });
 
-    setFilteredJobs(filtered);
+    // Debug: Mostrar orden final - FORZADO
+    console.log('🚨🚨🚨 ORDEN FINAL FORZADO 🚨🚨🚨');
+    console.log('📋 Orden final de trabajos filtrados:');
+    filtered.forEach((job, index) => {
+      const createdDate = new Date(job.createdAt || job.scheduledAt);
+      console.log(`🚨 ${index + 1}. ${job.title} - Creado: ${createdDate.toLocaleString('es-CL', { timeZone: 'America/Santiago' })}`);
+    });
+    console.log('🚨🚨🚨 FIN ORDEN FINAL 🚨🚨🚨');
+
+    // Forzar actualización del estado
+    setFilteredJobs([...filtered]);
   }, [jobs, selectedDate, technicianFilter, companyFilter, searchText, getLocalDateString]);
 
   // Optimización: Debounce para la búsqueda
@@ -528,13 +616,16 @@ export default function AgendaPage() {
     if (!deletingJobId) return;
 
     try {
-      const response = await fetch(`/api/jobs?id=${deletingJobId}`, {
+      const response = await fetch(`/api/jobs/${deletingJobId}`, {
         method: 'DELETE',
       });
 
       if (!response.ok) {
-        throw new Error('Error al eliminar el trabajo');
+        const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }));
+        throw new Error(errorData.error || 'Error al eliminar el trabajo');
       }
+
+      const result = await response.json();
 
       // Cerrar diálogo
       cancelDelete();
@@ -551,15 +642,17 @@ export default function AgendaPage() {
       // Mostrar mensaje de éxito
       setMessageBoxContent({
         title: 'Éxito',
-        message: 'El trabajo ha sido eliminado correctamente.'
+        message: result.message || 'El trabajo ha sido eliminado correctamente.'
       });
       setShowMessageBox(true);
 
     } catch (error) {
+      console.error('Error deleting job:', error);
+
       // Mostrar error
       setMessageBoxContent({
         title: 'Error',
-        message: 'No se pudo eliminar el trabajo. Inténtalo de nuevo.'
+        message: error instanceof Error ? error.message : 'No se pudo eliminar el trabajo. Inténtalo de nuevo.'
       });
       setShowMessageBox(true);
 
@@ -641,6 +734,7 @@ export default function AgendaPage() {
 
   // Nueva función para iniciar la edición de un trabajo
   const handleEditJob = (job: Job) => {
+    console.log('✏️ Iniciando edición del trabajo:', job);
     setJobToEdit(job);
     setIsEditing(true);
     setShowJobForm(true);
@@ -656,6 +750,9 @@ export default function AgendaPage() {
   // Manejador para guardar o actualizar un trabajo
   const handleSaveJob = async (jobData: any) => {
     try {
+      // Log de datos para debugging
+      console.log('📝 Datos del trabajo a guardar:', jobData);
+
       let savedJob;
 
       if (isEditing && jobToEdit) {
@@ -665,12 +762,24 @@ export default function AgendaPage() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(jobData),
+          body: JSON.stringify({
+            ...jobData,
+            id: jobToEdit.id // Asegurar que el ID esté incluido
+          }),
         });
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }))
+          const errorText = await response.text();
+          let errorMessage = 'Error al actualizar el trabajo';
 
-          throw new Error(errorData.error || 'Error al actualizar el trabajo');
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.error || errorData.message || errorMessage;
+          } catch {
+            // Si no se puede parsear como JSON, usar el texto tal como viene
+            errorMessage = errorText || errorMessage;
+          }
+
+          throw new Error(errorMessage);
         }
 
         savedJob = await response.json();
@@ -685,9 +794,18 @@ export default function AgendaPage() {
         });
 
         if (!response.ok) {
-          await response.text()
+          const errorText = await response.text();
+          let errorMessage = 'Error al crear el trabajo';
 
-          throw new Error('Error al crear el trabajo');
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.error || errorData.message || errorMessage;
+          } catch {
+            // Si no se puede parsear como JSON, usar el texto tal como viene
+            errorMessage = errorText || errorMessage;
+          }
+
+          throw new Error(errorMessage);
         }
 
         savedJob = await response.json();
@@ -739,6 +857,8 @@ export default function AgendaPage() {
       }, 100);
 
     } catch (error) {
+      console.error('❌ Error al guardar trabajo:', error);
+
       const errorMessage = error instanceof Error ? error.message : "Error al guardar el trabajo"
       setError(errorMessage);
 
@@ -941,290 +1061,263 @@ export default function AgendaPage() {
     }
   };
 
-  // Función para asignar técnico rápidamente desde la tarjeta
-  const handleQuickAssign = async (jobId: string, technicianId: string) => {
-    // Verificar que el técnico existe
-    const technician = technicians.find(t => t.id === technicianId);
-    if (!technician) {
-      setMessageBoxContent({
-        title: 'Error',
-        message: `Técnico no encontrado. ID: ${technicianId}`
-      });
-      setShowMessageBox(true);
-      return;
-    }
+  // Función para abrir el modal de asignación de técnicos
+  const openTechnicianModal = (job: Job) => {
+    setSelectedJobForAssignment(job);
+    setShowTechnicianModal(true);
+  };
+
+  // Función para asignar técnico desde el modal
+  const handleAssignTechnician = async (technicianId: string, technicianName: string) => {
+    if (!selectedJobForAssignment) return;
+
+    setIsAssigningTechnician(true);
     try {
       // Llamar a la función de sincronización
-      await syncWithCalendar(jobId, technicianId);
+      await syncWithCalendar(selectedJobForAssignment.id, technicianId);
 
-      // Encontrar el trabajo para la notificación
-      const job = jobs.find(j => j.id === jobId);
+      // Agregar notificación de asignación
+      addJobNotification({
+        jobId: selectedJobForAssignment.id,
+        jobTitle: selectedJobForAssignment.title,
+        clientName: selectedJobForAssignment.client.name,
+        technicianId: technicianId,
+        technicianName: technicianName,
+        type: 'assigned'
+      });
 
-      if (job) {
-        // Agregar notificación de asignación
-        addJobNotification({
-          jobId: job.id,
-          jobTitle: job.title,
-          clientName: job.client.name,
-          technicianId: technician.id,
-          technicianName: technician.name,
-          type: 'assigned'
-        });
-        // Disparar evento personalizado para actualizar el calendario
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('calendarRefresh', {
-            detail: { jobId, technicianId, action: 'assigned' }
-          }));
-        }
-
-        // Mostrar notificación de éxito
-        toast({
-          title: "✅ Técnico Asignado",
-          description: `El trabajo "${job.title}" ha sido asignado a ${technician.name}`,
-        });
-      } else {
+      // Disparar evento personalizado para actualizar el calendario
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('calendarRefresh', {
+          detail: { jobId: selectedJobForAssignment.id, technicianId, action: 'assigned' }
+        }));
       }
+
+      // Mostrar notificación de éxito
+      toast({
+        title: "✅ Técnico Asignado",
+        description: `El trabajo "${selectedJobForAssignment.title}" ha sido asignado a ${technicianName}`,
+      });
+
+      // Cerrar el modal
+      setShowTechnicianModal(false);
+      setSelectedJobForAssignment(null);
+
     } catch (error) {
       toast({
         title: "❌ Error",
         description: error instanceof Error ? error.message : "Error al asignar técnico",
         variant: "destructive",
       });
+    } finally {
+      setIsAssigningTechnician(false);
     }
   };
 
-  // Componente de tarjeta de trabajo unificado - Optimizado para móvil
+  // Componente de tarjeta de trabajo completamente responsive
   const JobCard = React.memo(({ job }: { job: Job }) => {
     const statusConfig = getStatusConfig(job.status);
     const StatusIcon = statusConfig.icon;
 
     return (
-      <div className="dashboard-card-mobile-job mobile-optimized mobile-touch">
-        {/* Header de la tarjeta */}
-        <div className="dashboard-card-mobile-job-header">
-          <div className="flex-1 min-w-0">
-            <h3 className="dashboard-card-mobile-job-title">
-              {job.title}
-            </h3>
-          </div>
-          <div className="dashboard-card-mobile-job-status">
-            <Badge className={`status-badge ${job.status === 'COMPLETED' ? 'status-completed' : job.status === 'IN_PROGRESS' ? 'status-progress' : job.status === 'PENDING' ? 'status-pending' : 'status-cancelled'}`}>
-              <StatusIcon className="h-3 w-3 mr-1" />
-              {statusConfig.label}
-            </Badge>
-            {job.technician ? (
-              <Badge className="status-badge status-calendar">
-                <CalendarDays className="h-3 w-3 mr-1" />
-                En Calendario
+      <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300">
+        {/* Header de la tarjeta - Responsive */}
+        <div className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-800 truncate">
+                {job.title}
+              </h3>
+              {job.description && (
+                <p className="text-sm text-slate-600 mt-1 line-clamp-2">
+                  {job.description}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Badge className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${job.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                job.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800' :
+                  job.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                }`}>
+                <StatusIcon className="h-3 w-3 mr-1" />
+                {statusConfig.label}
               </Badge>
-            ) : (
-              <Badge className="status-badge status-pending">
-                <AlertCircle className="h-3 w-3 mr-1" />
-                Sin Asignar
-              </Badge>
-            )}
+              {job.technician ? (
+                <Badge className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <CalendarDays className="h-3 w-3 mr-1" />
+                  En Calendario
+                </Badge>
+              ) : (
+                <Badge className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  Sin Asignar
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Información del trabajo */}
-        <div className="dashboard-card-mobile-job-info">
-          <div className="dashboard-card-mobile-job-info-item">
-            <User className="h-4 w-4 text-blue-500" />
-            <span className="truncate">{job.client.name}</span>
+        {/* Información del trabajo - Responsive */}
+        <div className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
+              <User className="h-5 w-5 text-blue-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-blue-600 font-medium">Cliente</p>
+                <p className="text-sm font-semibold text-slate-800 truncate">{job.client.name}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
+              <Phone className="h-5 w-5 text-green-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-green-600 font-medium">Teléfono</p>
+                <p className="text-sm font-semibold text-slate-800">{job.client.phone}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-xl">
+              <Clock className="h-5 w-5 text-purple-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-purple-600 font-medium">Horario</p>
+                <p className="text-sm font-semibold text-slate-800">
+                  {job.startTime && job.endTime
+                    ? `${job.startTime} - ${job.endTime}`
+                    : new Date(job.scheduledAt).toLocaleString("es-CL", {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false,
+                      timeZone: 'America/Santiago'
+                    })
+                  }
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-xl">
+              <Calendar className="h-5 w-5 text-orange-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-orange-600 font-medium">Fecha</p>
+                <p className="text-sm font-semibold text-slate-800">
+                  {new Date(job.scheduledAt).toLocaleDateString("es-CL", {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    timeZone: 'America/Santiago'
+                  })}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="dashboard-card-mobile-job-info-item">
-            <Phone className="h-4 w-4 text-green-500" />
-            <span className="truncate">{job.client.phone}</span>
-          </div>
-          <div className="dashboard-card-mobile-job-info-item">
-            <Clock className="h-4 w-4 text-purple-500" />
-            <span className="truncate">
-              {job.startTime && job.endTime
-                ? `${job.startTime} - ${job.endTime}`
-                : new Date(job.scheduledAt).toLocaleString("es-CL", {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false,
-                  timeZone: 'America/Santiago'
-                })
-              }
-            </span>
-          </div>
-          <div className="dashboard-card-mobile-job-info-item">
-            <Calendar className="h-4 w-4 text-orange-500" />
-            <span className="truncate">
-              {new Date(job.scheduledAt).toLocaleDateString("es-CL", {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                timeZone: 'America/Santiago'
-              })}
-            </span>
-          </div>
-        </div>
 
-        {/* Descripción */}
-        {job.description && (
-          <div className="dashboard-card-mobile-job-description">
-            {job.description}
-          </div>
-        )}
+          {/* Descripción */}
+          {job.description && (
+            <div className="mb-4 p-3 bg-slate-50 rounded-xl">
+              <p className="text-sm text-slate-700">{job.description}</p>
+            </div>
+          )}
 
-        {/* Información de Pago */}
-        <div className="dashboard-card-mobile-job-payment">
-          <div className="dashboard-card-mobile-job-payment-header">
-            <span className="dashboard-card-mobile-job-payment-status">Estado de Pago:</span>
-            <div className="flex items-center gap-2">
-              <Badge className={
-                job.paymentInfo?.isPaid
-                  ? "bg-green-100 text-green-700"
-                  : "bg-yellow-100 text-yellow-700"
-              }>
-                {job.paymentInfo?.isPaid ? 'Pagado' : 'Pendiente'}
-              </Badge>
+          {/* Información de Pago - Responsive */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-700">Estado de Pago:</span>
+                <Badge className={`px-3 py-1 rounded-full text-xs font-medium ${job.paymentInfo?.isPaid
+                  ? "bg-green-100 text-green-800"
+                  : "bg-yellow-100 text-yellow-800"
+                  }`}>
+                  {job.paymentInfo?.isPaid ? 'Pagado' : 'Pendiente'}
+                </Badge>
+              </div>
               {!job.paymentInfo?.isPaid && (
                 <Button
                   onClick={() => handleMarkAsPaid(job.id)}
                   disabled={isUpdating}
-                  className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 h-6"
+                  className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-2 rounded-lg flex items-center gap-2"
                   size="sm"
                 >
                   {isUpdating ? (
                     <>
-                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                       Procesando...
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="h-3 w-3 mr-1" />
+                      <CheckCircle className="h-3 w-3" />
                       Marcar Pagado
                     </>
                   )}
                 </Button>
               )}
             </div>
-          </div>
-          <div className="dashboard-card-mobile-job-payment-info">
-            <div className="dashboard-card-mobile-job-payment-item">
-              <span className="dashboard-card-mobile-job-payment-item-label">Presupuesto:</span>
-              <span className="dashboard-card-mobile-job-payment-item-value">${job.totalBudget?.toLocaleString() || '0'}</span>
-            </div>
-            <div className="dashboard-card-mobile-job-payment-item">
-              <span className="dashboard-card-mobile-job-payment-item-label">Pagado:</span>
-              <span className="dashboard-card-mobile-job-payment-item-value text-green-600">${job.paymentInfo?.paidAmount?.toLocaleString() || '0'}</span>
-            </div>
-            {job.paymentInfo?.isPaid && (
-              <div className="dashboard-card-mobile-job-payment-item col-span-2">
-                <span className="dashboard-card-mobile-job-payment-item-label">Método:</span>
-                <span className="dashboard-card-mobile-job-payment-item-value">{job.paymentInfo?.paymentMethod || 'Efectivo'}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="text-center p-2 bg-white rounded-lg">
+                <p className="text-xs text-slate-600 font-medium">Presupuesto</p>
+                <p className="text-sm font-bold text-slate-800">${job.totalBudget?.toLocaleString() || '0'}</p>
               </div>
-            )}
+              <div className="text-center p-2 bg-white rounded-lg">
+                <p className="text-xs text-slate-600 font-medium">Pagado</p>
+                <p className="text-sm font-bold text-green-600">${job.paymentInfo?.paidAmount?.toLocaleString() || '0'}</p>
+              </div>
+              {job.paymentInfo?.isPaid && (
+                <div className="text-center p-2 bg-white rounded-lg">
+                  <p className="text-xs text-slate-600 font-medium">Método</p>
+                  <p className="text-sm font-bold text-slate-800">{job.paymentInfo?.paymentMethod || 'Efectivo'}</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Información adicional */}
-        <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1">
-              <Wrench className="h-3 w-3" />
-              {job.service.name}
-            </span>
-            <span className="flex items-center gap-1">
-              <Users className="h-3 w-3" />
-              {job.technician?.name || "Sin asignar"}
-            </span>
+          {/* Información adicional - Responsive */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 p-3 bg-slate-50 rounded-xl">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
+              <div className="flex items-center gap-2">
+                <Wrench className="h-4 w-4 text-slate-500" />
+                <span className="text-sm text-slate-600">{job.service.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-slate-500" />
+                <span className="text-sm text-slate-600">{job.technician?.name || "Sin asignar"}</span>
+              </div>
+            </div>
+            <span className="text-xs text-slate-400">ID: {job.id.slice(-8)}</span>
           </div>
-          <span className="text-gray-400">ID: {job.id.slice(-8)}</span>
-        </div>
 
-        {/* Acciones */}
-        <div className="dashboard-card-mobile-job-actions">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleEditJob(job)}
-            className="dashboard-button dashboard-button-secondary mobile-touch-target"
-            title="Editar trabajo"
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-
-          {!job.technician && technicians.length > 0 && (
+          {/* Acciones - Responsive */}
+          <div className="flex flex-col sm:flex-row gap-3">
             <Button
               variant="outline"
               size="sm"
-              className="dashboard-button dashboard-button-success mobile-touch-target"
-              onClick={() => {
-                // Modal simple para asignar técnico
-                const modal = document.createElement('div');
-                modal.className = 'agenda-modal-overlay';
-                modal.innerHTML = `
-                  <div class="agenda-modal">
-                    <div class="agenda-modal-header">
-                      <h3 class="agenda-modal-title">Asignar Técnico</h3>
-                      <button class="agenda-modal-close" id="close-modal">
-                        <X class="h-5 w-5" />
-                      </button>
-                    </div>
-                    <div class="agenda-modal-content">
-                      <p class="text-gray-600 mb-4">Selecciona un técnico para: <strong>${job.title}</strong></p>
-                      <div class="space-y-2">
-                        ${technicians.map((t) => `
-                          <button 
-                            class="w-full text-left p-3 rounded border hover:bg-gray-50 transition-colors technician-option mobile-touch-target" 
-                            data-technician-id="${t.id}"
-                            data-technician-name="${t.name}"
-                          >
-                            <div class="font-medium">${t.name}</div>
-                          </button>
-                        `).join('')}
-                      </div>
-                    </div>
-                  </div>
-                `;
-
-                document.body.appendChild(modal);
-
-                const closeBtn = modal.querySelector('#close-modal');
-                const technicianOptions = modal.querySelectorAll('.technician-option');
-
-                closeBtn?.addEventListener('click', () => {
-                  document.body.removeChild(modal);
-                });
-
-                technicianOptions.forEach(option => {
-                  option.addEventListener('click', () => {
-                    const technicianId = option.getAttribute('data-technician-id');
-
-                    if (technicianId) {
-                      handleQuickAssign(job.id, technicianId);
-                    }
-
-                    document.body.removeChild(modal);
-                  });
-                });
-
-                modal.addEventListener('click', (e) => {
-                  if (e.target === modal) {
-                    document.body.removeChild(modal);
-                  }
-                });
-              }}
-              title="Asignar técnico"
+              onClick={() => handleEditJob(job)}
+              className="flex-1 sm:flex-none bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 hover:border-blue-300 px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2"
+              title="Editar trabajo"
             >
-              <Users className="h-4 w-4" />
+              <Edit className="h-4 w-4" />
+              <span>Editar</span>
             </Button>
-          )}
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => confirmDelete(job.id)}
-            className="dashboard-button dashboard-button-danger mobile-touch-target"
-            title="Eliminar trabajo"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+            {!job.technician && technicians.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none bg-green-50 hover:bg-green-100 text-green-700 border-green-200 hover:border-green-300 px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2"
+                onClick={() => openTechnicianModal(job)}
+                title="Asignar técnico"
+              >
+                <Users className="h-4 w-4" />
+                <span>Asignar</span>
+              </Button>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => confirmDelete(job.id)}
+              className="flex-1 sm:flex-none bg-red-50 hover:bg-red-100 text-red-700 border-red-200 hover:border-red-300 px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2"
+              title="Eliminar trabajo"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>Eliminar</span>
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -1511,62 +1604,7 @@ export default function AgendaPage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => {
-                                    // Modal simple para asignar técnico
-                                    const modal = document.createElement('div');
-                                    modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4';
-                                    modal.innerHTML = `
-                                <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-                                  <div class="flex items-center justify-between mb-4">
-                                    <h3 class="text-lg font-bold text-slate-800">Asignar Técnico</h3>
-                                    <button class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors" id="close-modal">
-                                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                      </svg>
-                                    </button>
-                                  </div>
-                                  <p class="text-slate-600 mb-4">Selecciona un técnico para: <strong>${job.title}</strong></p>
-                                  <div class="space-y-2">
-                                    ${technicians.map((t) => `
-                                      <button 
-                                        class="w-full text-left p-3 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 technician-option" 
-                                        data-technician-id="${t.id}"
-                                        data-technician-name="${t.name}"
-                                      >
-                                        <div class="font-medium text-slate-800">${t.name}</div>
-                                      </button>
-                                    `).join('')}
-                                  </div>
-                                </div>
-                              `;
-
-                                    document.body.appendChild(modal);
-
-                                    const closeBtn = modal.querySelector('#close-modal');
-                                    const technicianOptions = modal.querySelectorAll('.technician-option');
-
-                                    closeBtn?.addEventListener('click', () => {
-                                      document.body.removeChild(modal);
-                                    });
-
-                                    technicianOptions.forEach(option => {
-                                      option.addEventListener('click', () => {
-                                        const technicianId = option.getAttribute('data-technician-id');
-
-                                        if (technicianId) {
-                                          handleQuickAssign(job.id, technicianId);
-                                        }
-
-                                        document.body.removeChild(modal);
-                                      });
-                                    });
-
-                                    modal.addEventListener('click', (e) => {
-                                      if (e.target === modal) {
-                                        document.body.removeChild(modal);
-                                      }
-                                    });
-                                  }}
+                                  onClick={() => openTechnicianModal(job)}
                                   className="h-8 w-8 p-0 border-green-300 text-green-700 hover:bg-green-50"
                                   title="Asignar técnico"
                                 >
@@ -1598,34 +1636,36 @@ export default function AgendaPage() {
   };
 
   return (
-    <div className="agenda-container mobile-optimized">
-      <div className="agenda-content">
-        {/* Header del Sistema de Gestión de Trabajos - Responsive */}
-        <div className="agenda-header">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4 md:gap-6">
-              <div className="agenda-header-icon">
-                <Wrench className="h-8 w-8 md:h-12 md:w-12 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        {/* Header del Sistema de Gestión de Trabajos - Completamente Responsive */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-xl p-6 md:p-8">
+          <div className="flex flex-col space-y-4">
+            {/* Icono y título principal */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 flex-shrink-0">
+                <Wrench className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-white" />
               </div>
-              <div className="text-center md:text-left">
-                <h1 className="agenda-title">
+              <div className="text-center sm:text-left flex-1">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">
                   Sistema de Gestión de Trabajos
                 </h1>
-                <p className="agenda-subtitle">
+                <p className="text-blue-100 text-sm sm:text-base md:text-lg mb-4">
                   Gestión completa desde la creación hasta la finalización
                 </p>
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-4 mt-2 md:mt-3">
-                  <div className="flex items-center gap-1 md:gap-2 text-blue-100">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5" />
-                    <span className="text-xs md:text-sm">Control Total</span>
+                {/* Características en pila para móviles */}
+                <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4">
+                  <div className="flex items-center justify-center sm:justify-start gap-2 text-blue-100">
+                    <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm">Control Total</span>
                   </div>
-                  <div className="flex items-center gap-1 md:gap-2 text-blue-100">
-                    <Users className="h-4 w-4 md:h-5 md:w-5" />
-                    <span className="text-xs md:text-sm">Equipo Integrado</span>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 text-blue-100">
+                    <Users className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm">Equipo Integrado</span>
                   </div>
-                  <div className="flex items-center gap-1 md:gap-2 text-blue-100">
-                    <TrendingUp className="h-4 w-4 md:h-5 md:w-5" />
-                    <span className="text-xs md:text-sm">Eficiencia Máxima</span>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 text-blue-100">
+                    <TrendingUp className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm">Eficiencia Máxima</span>
                   </div>
                 </div>
               </div>
@@ -1633,16 +1673,14 @@ export default function AgendaPage() {
           </div>
         </div>
 
-        {/* Alerta de error mejorada */}
+        {/* Alerta de error mejorada - Responsive */}
         {error && (
-          <div className="agenda-alert">
-            <div className="agenda-alert-content">
-              <div className="agenda-alert-icon">
-                <AlertCircle className="h-6 w-6 text-red-600" />
-              </div>
-              <div className="agenda-alert-text">
-                <h3>Error en el Sistema</h3>
-                <p>{error}</p>
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-red-800 mb-1">Error en el Sistema</h3>
+                <p className="text-red-700 text-sm">{error}</p>
               </div>
             </div>
           </div>
@@ -1651,92 +1689,76 @@ export default function AgendaPage() {
         {/* Vista condicional según el rol del usuario */}
         {userRole === 'admin' || userRole === 'administrador' || userRole === 'secretaria' ? (
           <>
-            {/* Sistema Completo de Gestión de Trabajos - Responsive */}
-            <div className="dashboard-card">
-              {/* Header del Sistema */}
-              <div className="dashboard-card-header">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                  <div className="text-center lg:text-left">
-                    <h2 className="dashboard-card-title">
-                      Centro de Control de Trabajos
-                    </h2>
-                    <p className="dashboard-card-subtitle">
-                      Gestión integral desde la creación hasta la finalización con seguimiento completo
-                    </p>
-                  </div>
-
-                  {/* Botones de Acción Principales - Responsive */}
-                  <div className="agenda-actions">
+            {/* Sistema Completo de Gestión de Trabajos - Completamente Responsive */}
+            <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+              {/* Header del Sistema - Responsive */}
+              <div className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 p-4 sm:p-6">
+                <div className="flex flex-col space-y-4">
+                  {/* Botones de Acción Principales - Responsive Stack */}
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <Button
                       onClick={handleNewJob}
-                      className="agenda-btn-primary mobile-touch-target"
+                      className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
                     >
-                      <Plus className="h-4 w-4 md:h-5 md:w-5" />
-                      <span className="hidden sm:inline">Crear Trabajo</span>
-                      <span className="sm:hidden">Crear</span>
+                      <Plus className="h-5 w-5" />
+                      <span>Crear Trabajo</span>
                     </Button>
 
                     <Button
                       onClick={handleExport}
-                      className="agenda-btn-primary mobile-touch-target"
+                      className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
                     >
-                      <Download className="h-4 w-4 md:h-5 md:w-5" />
-                      <span className="hidden sm:inline">Exportar Excel</span>
-                      <span className="sm:hidden">Exportar</span>
+                      <Download className="h-5 w-5" />
+                      <span>Exportar Excel</span>
                     </Button>
 
                     <Button
-                      onClick={() => {
-                        fetchJobs();
-                      }}
-                      className="agenda-btn-secondary mobile-touch-target"
+                      onClick={() => fetchJobs()}
+                      className="flex-1 sm:flex-none bg-slate-600 hover:bg-slate-700 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
                     >
-                      <RefreshCw className="h-4 w-4 md:h-5 md:w-5" />
-                      <span className="hidden sm:inline">Recargar Datos</span>
-                      <span className="sm:hidden">Recargar</span>
+                      <RefreshCw className="h-5 w-5" />
+                      <span>Recargar</span>
                     </Button>
                   </div>
                 </div>
               </div>
 
-              {/* Contenido Principal */}
-              <div className="p-6">
+              {/* Contenido Principal - Responsive */}
+              <div className="p-4 sm:p-6">
 
-                {/* Panel de Filtros Mejorado - Responsive */}
-                <div className="agenda-filters">
-                  <div className="agenda-filters-header">
-                    <div className="agenda-filters-icon">
+                {/* Panel de Filtros Completamente Responsive */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-4 sm:p-6 mb-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="bg-blue-600 rounded-lg p-2">
                       <Filter className="h-5 w-5 text-white" />
                     </div>
-                    <h3 className="agenda-filters-title">
-                      Filtros de Búsqueda
-                    </h3>
-                    <p className="agenda-filters-subtitle">
-                      Refina los resultados según tus necesidades
-                    </p>
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-800">Filtros de Búsqueda</h3>
+                      <p className="text-sm text-slate-600">Refina los resultados según tus necesidades</p>
+                    </div>
                   </div>
 
-                  {/* Búsqueda por texto - Hidden on tablet and mobile */}
-                  <div className="agenda-filter-group hidden lg:block">
-                    <label className="agenda-filter-label">Buscar</label>
+                  {/* Búsqueda por texto - Visible en todos los dispositivos */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Buscar</label>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                       <Input
                         type="text"
-                        placeholder="Buscar por título, cliente, servicio, técnico, descripción..."
+                        placeholder="Buscar por título, cliente, servicio, técnico..."
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
-                        className="agenda-filter-input pl-10 w-full mobile-touch-target"
+                        className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                   </div>
 
-                  {/* Filtros en grid responsive */}
-                  <div className="agenda-filters-grid">
-                    <div className="agenda-filter-group">
-                      <label className="agenda-filter-label">Técnico</label>
+                  {/* Filtros en pila vertical para móviles, grid para desktop */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Técnico</label>
                       <Select value={technicianFilter} onValueChange={setTechnicianFilter}>
-                        <SelectTrigger className="agenda-filter-select mobile-touch-target">
+                        <SelectTrigger className="w-full py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                           <SelectValue placeholder="Todos los técnicos" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1750,10 +1772,10 @@ export default function AgendaPage() {
                       </Select>
                     </div>
 
-                    <div className="agenda-filter-group">
-                      <label className="agenda-filter-label">Empresa</label>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Empresa</label>
                       <Select value={companyFilter} onValueChange={setCompanyFilter}>
-                        <SelectTrigger className="agenda-filter-select mobile-touch-target">
+                        <SelectTrigger className="w-full py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                           <SelectValue placeholder="Todas las empresas" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1767,19 +1789,19 @@ export default function AgendaPage() {
                       </Select>
                     </div>
 
-                    <div className="agenda-filter-group">
-                      <label className="agenda-filter-label">Fecha</label>
+                    <div className="sm:col-span-2 lg:col-span-1">
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Fecha</label>
                       <Input
                         type="date"
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
-                        className="agenda-filter-input mobile-touch-target"
+                        className="w-full py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                   </div>
 
                   {/* Botón para limpiar filtros */}
-                  <div className="agenda-filter-clear">
+                  <div className="flex justify-center">
                     <Button
                       variant="outline"
                       onClick={() => {
@@ -1788,48 +1810,66 @@ export default function AgendaPage() {
                         setCompanyFilter("all");
                         setSelectedDate("");
                       }}
-                      className="agenda-btn-clear mobile-touch-target"
+                      className="px-6 py-3 border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2"
                     >
-                      <X className="h-4 w-4 mr-2" />
+                      <X className="h-4 w-4" />
                       Limpiar Filtros
                     </Button>
                   </div>
                 </div>
 
-                {/* Tabla de Gestión de Trabajos - Responsive */}
-                <div className="agenda-table-container">
-                  <div className="agenda-table-header">
-                    <h3 className="agenda-table-title">
-                      Lista de Trabajos - Gestión Completa
-                    </h3>
-                    <p className="agenda-table-subtitle">
-                      Administra todos los aspectos de los trabajos desde esta interfaz centralizada
-                    </p>
-                  </div>
-
-                  {/* Vista de cards para móvil, tabla para desktop */}
-                  <div className="hidden md:block">
-                    <div className="overflow-x-auto mobile-scroll">
-                      <AgendaTable data={filteredJobs} />
+                {/* Lista de Trabajos - Completamente Responsive */}
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                  <div className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div>
+                        <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">
+                          Lista de Trabajos
+                        </h3>
+                        <p className="text-slate-600 text-sm sm:text-base">
+                          Administra todos los aspectos de los trabajos desde esta interfaz centralizada
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                          {filteredJobs.length} trabajo{filteredJobs.length !== 1 ? 's' : ''}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Vista de cards para móvil */}
-                  <div className="md:hidden">
-                    <div className="space-y-3">
-                      {filteredJobs.length === 0 ? (
-                        <div className="text-center py-8">
-                          <div className="w-16 h-16 mx-auto mb-4 text-slate-300">
-                            <Calendar className="h-full w-full" />
+                  <div className="p-4 sm:p-6">
+                    {/* Vista de cards para móvil, tabla para desktop */}
+                    <div className="hidden lg:block">
+                      <div className="overflow-x-auto">
+                        <AgendaTable data={filteredJobs} />
+                      </div>
+                    </div>
+
+                    {/* Vista de cards para móvil y tablet */}
+                    <div className="lg:hidden">
+                      <div className="space-y-4">
+                        {filteredJobs.length === 0 ? (
+                          <div className="text-center py-12">
+                            <div className="w-20 h-20 mx-auto mb-6 text-slate-300">
+                              <Calendar className="h-full w-full" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-slate-700 mb-3">No hay trabajos</h3>
+                            <p className="text-slate-500 mb-6">No se encontraron trabajos para los filtros seleccionados.</p>
+                            <Button
+                              onClick={handleNewJob}
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 mx-auto"
+                            >
+                              <Plus className="h-5 w-5" />
+                              Crear Primer Trabajo
+                            </Button>
                           </div>
-                          <h3 className="text-lg font-medium text-slate-600 mb-2">No hay trabajos</h3>
-                          <p className="text-slate-500">No se encontraron trabajos para los filtros seleccionados.</p>
-                        </div>
-                      ) : (
-                        filteredJobs.map((job) => (
-                          <JobCard key={job.id} job={job} />
-                        ))
-                      )}
+                        ) : (
+                          filteredJobs.map((job) => (
+                            <JobCard key={job.id} job={job} />
+                          ))
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1839,81 +1879,100 @@ export default function AgendaPage() {
           </>
         ) : (
           <>
-            {/* Vista para técnicos - Lista de trabajos - Responsive */}
-            <div className="agenda-technician-view">
-              <div className="agenda-technician-header">
-                <div className="agenda-technician-icon">
-                  <User className="h-6 w-6 text-white" />
+            {/* Vista para técnicos - Completamente Responsive */}
+            <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-4 sm:p-6">
+                <div className="flex items-center gap-4">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+                    <User className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">Mis Trabajos</h2>
+                    <p className="text-blue-100 text-sm sm:text-base">
+                      Bienvenido, {currentUser}. Aquí puedes ver tus trabajos programados.
+                    </p>
+                  </div>
                 </div>
-                <h2 className="agenda-technician-title">Mis Trabajos</h2>
-                <p className="agenda-technician-subtitle">
-                  Bienvenido, {currentUser}. Aquí puedes ver tus trabajos programados.
-                </p>
               </div>
 
-              {/* Filtros para técnicos - Responsive */}
-              <div className="agenda-filters">
-                <div className="agenda-filter-group">
-                  <label className="agenda-filter-label">Filtrar por fecha</label>
+              <div className="p-4 sm:p-6">
+                {/* Filtros para técnicos - Responsive */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-4 mb-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="bg-blue-600 rounded-lg p-2">
+                      <Calendar className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-800">Filtrar por Fecha</h3>
+                      <p className="text-sm text-slate-600">Selecciona una fecha específica para ver tus trabajos</p>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-slate-500" />
+                    <Calendar className="h-5 w-5 text-slate-500" />
                     <Input
                       type="date"
                       value={dateFilter}
                       onChange={(e) => setDateFilter(e.target.value)}
-                      className="agenda-filter-input mobile-touch-target"
+                      className="flex-1 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
-              </div>
 
-              {/* Lista de trabajos del técnico - Responsive */}
-              <div className="space-y-3">
-                {filteredJobs.length === 0 ? (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 mx-auto mb-4 text-slate-300">
-                      <Calendar className="h-full w-full" />
+                {/* Lista de trabajos del técnico - Responsive */}
+                <div className="space-y-4">
+                  {filteredJobs.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-20 h-20 mx-auto mb-6 text-slate-300">
+                        <Calendar className="h-full w-full" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-slate-700 mb-3">No hay trabajos programados</h3>
+                      <p className="text-slate-500 mb-6">No tienes trabajos asignados para los filtros seleccionados.</p>
                     </div>
-                    <h3 className="text-lg font-medium text-slate-600 mb-2">No hay trabajos programados</h3>
-                    <p className="text-slate-500">No tienes trabajos asignados para los filtros seleccionados.</p>
-                  </div>
-                ) : (
-                  filteredJobs.map((job) => (
-                    <JobCard key={job.id} job={job} />
-                  ))
-                )}
+                  ) : (
+                    filteredJobs.map((job) => (
+                      <JobCard key={job.id} job={job} />
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           </>
         )}
 
-        {/* Cuadro de diálogo de confirmación de eliminación - Responsive */}
+        {/* Cuadro de diálogo de confirmación de eliminación - Completamente Responsive */}
         {showDeleteConfirm && (
-          <div className="agenda-modal-overlay">
-            <div className="agenda-modal mobile-optimized">
-              <div className="agenda-modal-header">
-                <h3 className="agenda-modal-title">Confirmar Eliminación</h3>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-800">Confirmar Eliminación</h3>
                 <button
                   onClick={cancelDelete}
-                  className="agenda-modal-close mobile-touch-target"
+                  className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <div className="agenda-modal-content">
-                <p className="mobile-readable">¿Estás seguro de que quieres eliminar el trabajo? Esta acción no se puede deshacer.</p>
-              </div>
-              <div className="agenda-modal-footer">
+              <div className="p-4 sm:p-6">
+                <div className="flex items-start gap-3 mb-6">
+                  <div className="bg-red-100 rounded-full p-2 flex-shrink-0">
+                    <AlertCircle className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div>
+                    <p className="text-slate-700 text-sm sm:text-base leading-relaxed">
+                      ¿Estás seguro de que quieres eliminar este trabajo? Esta acción no se puede deshacer.
+                    </p>
+                  </div>
+                </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={cancelDelete}
-                    className="agenda-btn-secondary flex-1 mobile-touch-target"
+                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-3 rounded-xl font-medium transition-colors"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={deleteJob}
-                    className="agenda-btn-primary flex-1 bg-red-600 hover:bg-red-700 mobile-touch-target"
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-xl font-medium transition-colors"
                   >
                     Eliminar
                   </button>
@@ -1923,26 +1982,35 @@ export default function AgendaPage() {
           </div>
         )}
 
-        {/* Cuadro de diálogo para mensajes del calendario - Responsive */}
+        {/* Cuadro de diálogo para mensajes - Completamente Responsive */}
         {showMessageBox && (
-          <div className="agenda-modal-overlay">
-            <div className="agenda-modal mobile-optimized">
-              <div className="agenda-modal-header">
-                <h3 className="agenda-modal-title">{messageBoxContent.title}</h3>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-800">{messageBoxContent.title}</h3>
                 <button
                   onClick={() => setShowMessageBox(false)}
-                  className="agenda-modal-close mobile-touch-target"
+                  className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <div className="agenda-modal-content mobile-scroll">
-                <pre className="whitespace-pre-wrap font-sans text-gray-600 mobile-readable">{messageBoxContent.message}</pre>
+              <div className="p-4 sm:p-6 overflow-y-auto max-h-96">
+                <div className="flex items-start gap-3">
+                  <div className="bg-blue-100 rounded-full p-2 flex-shrink-0">
+                    <AlertCircle className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
+                      {messageBoxContent.message}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="agenda-modal-footer">
+              <div className="p-4 sm:p-6 border-t border-slate-200">
                 <button
                   onClick={() => setShowMessageBox(false)}
-                  className="agenda-btn-primary w-full mobile-touch-target"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-medium transition-colors"
                 >
                   Cerrar
                 </button>
@@ -1951,41 +2019,31 @@ export default function AgendaPage() {
           </div>
         )}
 
-        {/* Modal para el formulario de nuevo/editar trabajo - Responsive */}
+        {/* Modal para el formulario de nuevo/editar trabajo - Completamente Responsive */}
         {showJobForm && (
-          <div className="agenda-modal-overlay">
-            <div className="agenda-modal notebook-modal mobile-optimized">
-              <div className="agenda-modal-header flex-shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                    <FileText className="h-4 w-4 md:h-5 md:w-5 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="agenda-modal-title">
-                      {isEditing ? 'Editar Trabajo' : 'Programar Nuevo Trabajo'}
-                    </h2>
-                    <p className="text-slate-600 text-xs md:text-sm">
-                      {isEditing ? 'Modifica los detalles del trabajo existente' : 'Completa el formulario para programar un nuevo trabajo'}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowJobForm(false)}
-                  className="agenda-modal-close mobile-touch-target"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="agenda-modal-content flex-1 overflow-y-auto mobile-scroll">
-                <JobForm
-                  job={jobToEdit}
-                  onSubmit={(updatedJob) => handleSaveJob(updatedJob)}
-                  onCancel={() => setShowJobForm(false)}
-                />
-              </div>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-4xl max-h-[95vh] overflow-y-auto">
+              <JobForm
+                job={jobToEdit}
+                onSubmit={(updatedJob: any) => handleSaveJob(updatedJob)}
+                onCancel={() => setShowJobForm(false)}
+              />
             </div>
           </div>
         )}
+
+        {/* Modal para asignación de técnicos */}
+        <TechnicianAssignmentModal
+          isOpen={showTechnicianModal}
+          onClose={() => {
+            setShowTechnicianModal(false);
+            setSelectedJobForAssignment(null);
+          }}
+          jobTitle={selectedJobForAssignment?.title || ''}
+          technicians={technicians}
+          onAssign={handleAssignTechnician}
+          isAssigning={isAssigningTechnician}
+        />
       </div>
     </div>
   );

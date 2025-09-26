@@ -1,9 +1,8 @@
 'use client';
 
-import React from 'react';
-import { QuickNavigation } from './quick-navigation';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
-import { RefreshCw, AlertCircle } from 'lucide-react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import { QuickNavigation } from './quick-navigation';
 
 export default function SimpleDashboard() {
   const { stats, loading, error, retry } = useDashboardStats();

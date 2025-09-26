@@ -1,11 +1,11 @@
 "use client"
 
+import { AutocompleteSelect } from "@/components/ui/autocomplete-select"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Download, FileText, Filter, X } from 'lucide-react'
 import { useState } from "react"
 
@@ -86,7 +86,7 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
     try {
       await onSubmit(formData)
     } catch (error) {
-      
+
     } finally {
       setLoading(false)
     }
@@ -143,8 +143,8 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
                   <Card
                     key={type.value}
                     className={`cursor-pointer transition-all ${formData.type === type.value
-                        ? 'ring-2 ring-purple-500 bg-purple-50'
-                        : 'hover:bg-gray-50'
+                      ? 'ring-2 ring-purple-500 bg-purple-50'
+                      : 'hover:bg-gray-50'
                       }`}
                     onClick={() => handleInputChange('type', type.value)}
                   >
@@ -152,8 +152,8 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 mt-1">
                           <div className={`w-4 h-4 rounded-full border-2 ${formData.type === type.value
-                              ? 'bg-purple-500 border-purple-500'
-                              : 'border-gray-300'
+                            ? 'bg-purple-500 border-purple-500'
+                            : 'border-gray-300'
                             }`} />
                         </div>
                         <div>
@@ -256,18 +256,13 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
 
               <div className="space-y-2">
                 <Label htmlFor="groupBy">Agrupar por</Label>
-                <Select value={formData.groupBy} onValueChange={(value) => handleInputChange('groupBy', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar agrupación" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {groupByOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <AutocompleteSelect
+                  value={formData.groupBy}
+                  onValueChange={(value) => handleInputChange('groupBy', value)}
+                  placeholder="Seleccionar agrupación"
+                  options={groupByOptions}
+                  emptyMessage="No se encontraron opciones de agrupación."
+                />
               </div>
             </div>
 
@@ -312,7 +307,7 @@ export default function ReportGeneratorForm({ onSubmit, onCancel }: ReportGenera
               </Button>
               <Button
                 type="submit"
-                className="flex-1 bg-purple-600 hover:bg-purple-700"
+                className="report-form-submit-button flex-1 rounded-xl transition-all duration-200 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading || !formData.type}
               >
                 <Download className="h-4 w-4 mr-2" />

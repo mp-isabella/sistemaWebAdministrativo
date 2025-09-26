@@ -1,17 +1,14 @@
 "use client"
-
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { AlertCircle, CheckCircle, Shield, User } from 'lucide-react'
+import { AlertCircle, CheckCircle, Shield, User, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from "react"
-
 interface Role {
   id: string;
   name: string;
 }
-
 interface Company {
   id: string;
   name: string;
@@ -19,14 +16,12 @@ interface Company {
   phone?: string;
   address?: string;
 }
-
 interface WorkerFormProps {
   worker?: any
   onSubmit: (data: any) => void
   onCancel: () => void
   loading?: boolean
 }
-
 interface FormData {
   name: string
   email: string
@@ -37,7 +32,6 @@ interface FormData {
   password: string
   confirmPassword: string
 }
-
 export default function WorkerForm({ worker, onSubmit, onCancel, loading = false }: WorkerFormProps) {
   // Estados principales
   const [roles, setRoles] = useState<Role[]>([])
@@ -46,7 +40,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
   const [companiesLoading, setCompaniesLoading] = useState(true)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [initialValuesSet, setInitialValuesSet] = useState(false)
-
   // Estado del formulario
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -58,117 +51,65 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
     password: "",
     confirmPassword: ""
   })
-
   // Cargar roles al montar el componente
   const fetchRoles = useCallback(async () => {
     try {
       setRolesLoading(true)
-
       const response = await fetch('/api/roles')
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
-
       const data = await response.json()
-
       setRoles(data)
-
       // Si es un nuevo trabajador y no hay rol seleccionado, seleccionar el primero
       if (!worker && data.length > 0 && !formData.role) {
         setFormData(prev => ({ ...prev, role: data[0].name }))
-
       }
-
       // En modo edición, no cambiar el rol si ya está establecido
       if (worker && formData.role) {
-
       }
-
     } catch (error) {
-
       setErrors(prev => ({ ...prev, role: "Error al cargar roles" }))
     } finally {
       setRolesLoading(false)
     }
   }, [worker, formData.role])
-
   // Cargar empresas al montar el componente
   const fetchCompanies = useCallback(async () => {
     try {
       setCompaniesLoading(true)
-
-      const response = await fetch('/api/companies')
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`)
-      }
-
-      const data = await response.json()
-
-      // Filtrar empresas duplicadas por nombre
-      const uniqueCompanies = data ? data.filter((company: any, index: number, self: any[]) =>
-        index === self.findIndex((c: any) => c.name === company.name)
-      ) : []
-
-      // console.log('Unique companies:', uniqueCompanies)
-      setCompanies(uniqueCompanies)
-
+      // Empresas fijas según requerimiento
+      const fixedCompanies = [
+        { id: "amestica-ltda", name: "Amestica Ltda" },
+        { id: "multifugas", name: "Multifugas" },
+        { id: "servifugas", name: "Servifugas" }
+      ]
+      setCompanies(fixedCompanies)
       // Si es un nuevo trabajador y no hay empresa seleccionada, seleccionar la primera
-      if (!worker && uniqueCompanies.length > 0 && !formData.company) {
-        setFormData(prev => ({ ...prev, company: uniqueCompanies[0].name }))
-
+      if (!worker && fixedCompanies.length > 0 && !formData.company) {
+        setFormData(prev => ({ ...prev, company: fixedCompanies[0]?.name || "" }))
       }
-
       // En modo edición, no cambiar la empresa si ya está establecida
       if (worker && formData.company) {
-
       }
-
     } catch (error) {
-
       setErrors(prev => ({ ...prev, company: "Error al cargar empresas" }))
     } finally {
       setCompaniesLoading(false)
     }
   }, [worker, formData.company])
-
   // Cargar roles al montar el componente
   useEffect(() => {
     fetchRoles()
   }, [fetchRoles])
-
   // Cargar empresas al montar el componente
   useEffect(() => {
     fetchCompanies()
   }, [fetchCompanies])
-
-  // Asegurar que los datos del trabajador se establezcan cuando las opciones estén cargadas
-  useEffect(() => {
-    if (worker && companies.length > 0 && roles.length > 0 && !initialValuesSet) {
-      // Verificar que los valores del trabajador existan en las opciones disponibles
-      const validCompany = companies.find(c => c.name === worker.company)
-      const validRole = roles.find(r => r.name === worker.role)
-
-      if (validCompany && validRole) {
-        setFormData(prev => ({
-          ...prev,
-          company: worker.company || "",
-          role: worker.role || ""
-        }))
-        setInitialValuesSet(true)
-
-      } else {
-        setFormData(prev => ({
-          ...prev,
-          rolesDisponibles: roles.map(r => r.name)
-        }))
-        setInitialValuesSet(true) // Marcar como establecido para evitar reintentos
-      }
-    }
-  }, [worker, companies, roles, initialValuesSet])
-
   // Actualizar formulario cuando cambie el worker
   useEffect(() => {
     if (worker) {
+      console.log('🔄 Inicializando formulario con datos del trabajador:', worker);
       // Modo edición - asegurar que los datos se carguen correctamente
       const newFormData = {
         name: worker.name || "",
@@ -180,11 +121,11 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
         password: "",
         confirmPassword: ""
       }
-
+      console.log('📝 Datos del formulario establecidos:', newFormData);
       setFormData(newFormData)
       setInitialValuesSet(false) // Resetear para permitir establecer valores iniciales
-
     } else {
+      console.log('🧹 Limpiando formulario para nuevo trabajador');
       // Modo creación - limpiar formulario
       setFormData({
         name: "",
@@ -197,83 +138,76 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
         confirmPassword: ""
       })
       setInitialValuesSet(false)
-
     }
     setErrors({})
   }, [worker])
 
+  // Asegurar que los datos del trabajador se establezcan cuando las opciones estén cargadas
+  useEffect(() => {
+    if (worker && companies.length > 0 && roles.length > 0 && !initialValuesSet) {
+      console.log('🔧 Estableciendo valores iniciales con opciones cargadas');
+      // Establecer la empresa del trabajador directamente
+      setFormData(prev => ({
+        ...prev,
+        company: worker.company || "",
+        role: worker.role || ""
+      }))
+      setInitialValuesSet(true)
+    }
+  }, [worker, companies, roles, initialValuesSet])
   // Manejador de cambios en el formulario
   const handleChange = useCallback((field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-
     // Limpiar error del campo si existe
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }))
     }
   }, [errors])
-
   // Validación del formulario
   const validateForm = useCallback(() => {
     const newErrors: Record<string, string> = {}
-
     // Validar nombre
     if (!formData.name.trim()) {
       newErrors.name = "El nombre es requerido"
     }
-
     // Validar email
     if (!formData.email.trim()) {
       newErrors.email = "El email es requerido"
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Email inválido"
     }
-
     // Validar teléfono
     if (!formData.phone.trim()) {
       newErrors.phone = "El teléfono es requerido"
     }
-
     // Validar rol - solo requerido si no hay rol establecido
     if (!formData.role || formData.role.trim() === "") {
       newErrors.role = "El rol es requerido"
     }
-
     // Validar empresa
     if (!formData.company || formData.company.trim() === "") {
       newErrors.company = "La empresa es requerida"
     }
-
     // Validar contraseña (solo para nuevos trabajadores)
     if (!worker && !formData.password) {
       newErrors.password = "La contraseña es requerida"
     } else if (formData.password && formData.password.length < 6) {
       newErrors.password = "La contraseña debe tener al menos 6 caracteres"
     }
-
     // Validar confirmación de contraseña (solo para nuevos trabajadores)
     if (!worker && formData.password && formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Las contraseñas no coinciden"
     }
-
-    // Log detallado de errores
-    if (Object.keys(newErrors).length > 0) {
-      Object.entries(newErrors).forEach(([field, error]) => {
-        console.log(`Error en campo ${field}: ${error}`)
-      })
-    } else {
-      console.log("Formulario válido")
-    }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }, [formData, worker])
-
   // Manejador de envío del formulario
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
+    console.log('📋 Validando formulario con datos:', formData);
 
     if (!validateForm()) {
-
+      console.log('❌ Validación falló');
       return
     }
 
@@ -284,9 +218,9 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
     }
     delete submitData.confirmPassword
 
+    console.log('✅ Datos preparados para envío:', submitData);
     onSubmit(submitData)
   }, [formData, validateForm, onSubmit, worker])
-
   // Función para obtener nombre legible del rol
   const getRoleName = useCallback((roleName: string) => {
     const roleMap: { [key: string]: string } = {
@@ -296,13 +230,21 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
     }
     return roleMap[roleName.toUpperCase()] || roleName
   }, [])
-
   return (
     <div className="w-full h-full flex flex-col min-h-0 bg-gradient-to-br from-slate-50 to-blue-50">
-      <form onSubmit={handleSubmit} className="flex-1 flex flex-col space-y-6 min-h-0 overflow-y-auto pb-6 px-4">
+      <form onSubmit={handleSubmit} className="worker-form flex-1 flex flex-col space-y-6 min-h-0 overflow-y-auto pb-6 px-4">
         {/* Header del formulario */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-lg shadow-slate-200/50">
-          <div className="text-center">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-lg shadow-slate-200/50 relative">
+          {/* Botón de cerrar */}
+          <button
+            type="button"
+            onClick={onCancel}
+            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 transition-all duration-200 hover:scale-110"
+            aria-label="Cerrar formulario"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <div className="text-center pr-8">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
               {worker ? 'Editar Trabajador' : 'Crear Nuevo Trabajador'}
             </h1>
@@ -311,7 +253,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
             </p>
           </div>
         </div>
-
         {/* Sección: Información Personal */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300 hover:-translate-y-1">
           <div className="mb-6">
@@ -325,7 +266,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
               </div>
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Nombre */}
             <div className="space-y-4">
@@ -348,7 +288,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
                 </Alert>
               )}
             </div>
-
             {/* Email */}
             <div className="space-y-4">
               <Label htmlFor="email" className="text-sm font-semibold text-slate-700">
@@ -370,7 +309,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
                 </Alert>
               )}
             </div>
-
             {/* Teléfono */}
             <div className="space-y-4">
               <Label htmlFor="phone" className="text-sm font-semibold text-slate-700">
@@ -392,7 +330,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
                 </Alert>
               )}
             </div>
-
             {/* Empresa */}
             <div className="space-y-4">
               <Label htmlFor="company" className="text-sm font-semibold text-slate-700">
@@ -422,7 +359,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
                 </Alert>
               )}
             </div>
-
             {/* Rol */}
             <div className="space-y-4">
               <Label htmlFor="role" className="text-sm font-semibold text-slate-700">
@@ -454,7 +390,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
             </div>
           </div>
         </div>
-
         {/* Sección: Seguridad y Estado */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300 hover:-translate-y-1">
           <div className="mb-6">
@@ -468,7 +403,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
               </div>
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Estado - Solo visible al editar */}
             {worker && (
@@ -494,7 +428,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
                 )}
               </div>
             )}
-
             {/* Contraseña */}
             <div className={`space-y-4 ${!worker ? 'md:col-span-2' : ''}`}>
               <Label htmlFor="password" className="text-sm font-semibold text-slate-700">
@@ -517,7 +450,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
                 </Alert>
               )}
             </div>
-
             {/* Confirmar Contraseña */}
             {!worker && (
               <div className="space-y-4 md:col-span-2">
@@ -543,7 +475,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
             )}
           </div>
         </div>
-
         {/* Botones */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-lg shadow-slate-200/50">
           <div className="flex gap-4">
@@ -559,7 +490,7 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 h-14 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+              className="worker-form-submit-button flex-1 h-14 text-base font-semibold rounded-xl transition-all duration-200 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl border-0"
             >
               {loading ? (
                 <>
@@ -575,7 +506,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
             </button>
           </div>
         </div>
-
         {/* Error general */}
         {errors.submit && (
           <Alert variant="destructive" className="py-4 rounded-xl">

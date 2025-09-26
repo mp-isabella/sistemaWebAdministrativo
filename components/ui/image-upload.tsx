@@ -1,12 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import React, { useRef, useState } from "react";
-// import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Image as ImageIcon, Upload, X } from "lucide-react";
 import Image from "next/image";
+import React, { useRef, useState } from "react";
 
 interface ImageUploadProps {
   onImageUpload: (file: File) => void;

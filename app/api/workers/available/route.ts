@@ -36,9 +36,7 @@ export async function GET(request: NextRequest) {
       where: {
         isActive: true,
         role: {
-          name: {
-            in: ['TECNICO', 'tecnico', 'Técnico', 'Técnico', 'Trabajador', 'TRABAJADOR']
-          }
+          name: 'TECNICO'
         }
       },
       select: {

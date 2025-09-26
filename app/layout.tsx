@@ -70,6 +70,8 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.google.com" />
         <link rel="dns-prefetch" href="https://maps.googleapis.com" />
         <link rel="dns-prefetch" href="https://maps.gstatic.com" />
+        {/* Script para fix del menú de tres puntos */}
+        <script src="/fix-dropdown-menu.js" defer></script>
       </head>
       <body className={inter.className} suppressHydrationWarning>
         <CustomSessionProvider>

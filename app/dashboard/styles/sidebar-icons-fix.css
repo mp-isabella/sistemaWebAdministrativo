@@ -1,0 +1,163 @@
+/* Fix para iconos que aparecen incorrectamente en el sidebar */
+
+/* Asegurar que el sidebar tenga el z-index correcto y esté correctamente posicionado */
+[data-sidebar] {
+  position: relative !important;
+  z-index: 50 !important;
+  overflow: hidden !important;
+}
+
+/* Prevenir que elementos del contenido principal aparezcan sobre el sidebar */
+.main-content-mobile {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Asegurar que los elementos del sidebar estén correctamente contenidos */
+[data-sidebar] * {
+  position: relative !important;
+}
+
+/* Fix específico para elementos que puedan estar causando problemas de posicionamiento */
+[data-sidebar] .absolute,
+[data-sidebar] .fixed {
+  position: relative !important;
+}
+
+/* Asegurar que los iconos de editar y eliminar no aparezcan en el sidebar */
+[data-sidebar] [class*="Edit"],
+[data-sidebar] [class*="Trash"],
+[data-sidebar] [class*="Delete"],
+[data-sidebar] [class*="MoreVertical"] {
+  display: none !important;
+}
+
+/* Prevenir que elementos con posicionamiento absoluto aparezcan en el sidebar */
+.sidebar-fix {
+  position: relative !important;
+  z-index: 50 !important;
+  overflow: hidden !important;
+}
+
+/* Asegurar que el contenido del sidebar esté correctamente contenido */
+[data-sidebar] nav {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Fix para elementos que puedan estar escapando del contenedor */
+[data-sidebar] .group {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Prevenir que elementos del contenido principal se posicionen sobre el sidebar */
+.mobile-content {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Asegurar que los elementos del header no interfieran con el sidebar */
+.mobile-header {
+  position: relative !important;
+  z-index: 40 !important;
+}
+
+/* Fix específico para elementos que puedan estar causando el problema */
+[data-sidebar] .flex {
+  position: relative !important;
+}
+
+/* Prevenir que elementos con transform aparezcan incorrectamente */
+[data-sidebar] [class*="transform"],
+[data-sidebar] [class*="translate"] {
+  position: relative !important;
+}
+
+/* Asegurar que los elementos del sidebar estén correctamente contenidos */
+[data-sidebar] > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Fix para elementos que puedan estar escapando del contenedor del sidebar */
+[data-sidebar] .space-y-2 > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Prevenir que elementos del contenido principal aparezcan en el sidebar */
+body:has([data-sidebar]) .main-content-mobile * {
+  position: relative !important;
+}
+
+/* Fix específico para elementos que puedan estar causando el problema de posicionamiento */
+[data-sidebar] .group:hover {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Asegurar que los elementos del sidebar no se posicionen incorrectamente */
+[data-sidebar] .group > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Prevenir que elementos con posicionamiento absoluto aparezcan en el sidebar */
+[data-sidebar] .absolute {
+  position: relative !important;
+}
+
+/* Fix para elementos que puedan estar causando el problema de z-index */
+[data-sidebar] .relative {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Fix específico para elementos que puedan estar causando el problema de posicionamiento */
+[data-sidebar] .group {
+  position: relative !important;
+  z-index: 1 !important;
+  overflow: hidden !important;
+}
+
+/* Asegurar que los elementos del sidebar estén correctamente contenidos */
+[data-sidebar] .group > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Prevenir que elementos con posicionamiento absoluto aparezcan en el sidebar */
+[data-sidebar] .absolute {
+  position: relative !important;
+}
+
+/* Fix para elementos que puedan estar causando el problema de posicionamiento */
+[data-sidebar] .group:hover {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Fix específico para elementos que puedan estar causando el problema de posicionamiento */
+[data-sidebar] .group {
+  position: relative !important;
+  z-index: 1 !important;
+  overflow: hidden !important;
+}
+
+/* Asegurar que los elementos del sidebar estén correctamente contenidos */
+[data-sidebar] .group > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Prevenir que elementos con posicionamiento absoluto aparezcan en el sidebar */
+[data-sidebar] .absolute {
+  position: relative !important;
+}
+
+/* Fix para elementos que puedan estar causando el problema de posicionamiento */
+[data-sidebar] .group:hover {
+  position: relative !important;
+  z-index: 2 !important;
+}

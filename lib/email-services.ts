@@ -25,7 +25,7 @@ const serviceNames: Record<string, string> = {
 export const createEmailContent = (data: EmailData): string => {
   const serviceName = serviceNames[data.servicio] || data.servicio;
   const formSource = data.formType === 'hero' ? 'Formulario Principal (Hero)' : 'Formulario de Contacto';
-  
+
   return `
 🔥 NUEVA COTIZACIÓN - AMÉSTICA LTDA.
 =======================================
@@ -98,24 +98,24 @@ export const sendQuoteEmail = async (data: EmailData): Promise<{
   const sendViaFormSubmit = async (): Promise<boolean> => {
     try {
       const serviceName = serviceNames[data.servicio] || data.servicio;
-      
+
       // FormSubmit es gratuito y funciona desde localhost
       const formData = new FormData();
       formData.append('_to', DESTINATION_EMAIL);
       formData.append('_subject', `🔥 Nueva Cotización: ${serviceName} - ${data.nombre}`);
       formData.append('_replyto', data.email);
       formData.append('_captcha', 'false');
-      
+
       // Crear el contenido del email
       const emailContent = createEmailContent(data);
       formData.append('message', emailContent);
-      
+
       // Enviar a FormSubmit
       const response = await fetch(`https://formsubmit.co/ajax/${DESTINATION_EMAIL}`, {
         method: 'POST',
         body: formData
       });
-      
+
       const result = await response.json();
       return result.success === true;
     } catch (error) {
@@ -126,7 +126,7 @@ export const sendQuoteEmail = async (data: EmailData): Promise<{
   // Usar solo FormSubmit como método principal
   try {
     const success = await sendViaFormSubmit();
-    
+
     if (success) {
       return {
         success: true,
@@ -150,9 +150,7 @@ export const sendQuoteEmail = async (data: EmailData): Promise<{
     localStorage.setItem('cotizaciones', JSON.stringify(cotizaciones));
 
     // Log detallado para el administrador
-    console.log('Cotización guardada localmente:', nuevaCotizacion);
     if (data.mensaje) {
-      console.log('Mensaje del cliente:', data.mensaje);
     }
     return {
       success: true,

@@ -5,6 +5,250 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+/* ===== CORRECCIÓN DE Z-INDEX PARA MODALES ===== */
+/* Modal principal de detalles del trabajo - z-index menor */
+.job-details-modal {
+  z-index: 1000 !important;
+}
+
+.job-details-modal .modal-content {
+  z-index: 1000 !important;
+}
+
+/* Modales secundarios - z-index mayor para aparecer por encima */
+.secondary-modal-overlay {
+  z-index: 2000 !important;
+}
+
+.secondary-modal-content {
+  z-index: 2000 !important;
+}
+
+/* Forzar que los modales secundarios tengan mayor prioridad */
+.fixed.inset-0.z-\[10000\] {
+  z-index: 10000 !important;
+}
+
+.fixed.inset-0.z-\[10000\] .bg-white {
+  z-index: 10000 !important;
+}
+
+/* Asegurar que los modales secundarios aparezcan por encima del modal principal */
+.modal-technician,
+.modal-schedule,
+.modal-payment {
+  z-index: 2000 !important;
+  position: fixed !important;
+}
+
+.modal-technician .bg-white,
+.modal-schedule .bg-white,
+.modal-payment .bg-white {
+  z-index: 2000 !important;
+  position: relative !important;
+}
+
+/* ===== CONFIGURACIÓN SIMPLIFICADA PARA MODALES SECUNDARIOS ===== */
+/* Los modales secundarios aparecen por encima del modal principal */
+.modal-technician {
+  z-index: 2000 !important;
+  position: fixed !important;
+}
+
+.modal-technician .bg-white {
+  z-index: 2000 !important;
+  position: relative !important;
+}
+
+/* ===== CONFIGURACIÓN FINAL SIMPLIFICADA ===== */
+/* Los modales secundarios aparecen por encima del modal principal */
+
+
+/* ===== ESTILOS ESPECÍFICOS PARA BOTONES MEJORADOS ===== */
+/* Botón principal de editar */
+.agenda-enhanced-button-primary {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0.75rem 1.5rem !important;
+  background: #2563eb !important;
+  color: white !important;
+  font-weight: 600 !important;
+  border-radius: 0.5rem !important;
+  transition: background-color 0.2s ease !important;
+  border: none !important;
+}
+
+.agenda-enhanced-button-primary:hover {
+  background: #1d4ed8 !important;
+}
+
+/* Botón secundario (horario, técnico) */
+.agenda-enhanced-button-secondary {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem 0.75rem !important;
+  background: #2563eb !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  border-radius: 0.5rem !important;
+  transition: background-color 0.2s ease !important;
+  border: none !important;
+}
+
+.agenda-enhanced-button-secondary:hover {
+  background: #1d4ed8 !important;
+}
+
+/* Botón de pago */
+.agenda-enhanced-button-success {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem 1rem !important;
+  background: #2563eb !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  border-radius: 0.5rem !important;
+  transition: background-color 0.2s ease !important;
+  border: none !important;
+}
+
+.agenda-enhanced-button-success:hover {
+  background: #1d4ed8 !important;
+}
+
+/* ===== ESTILOS ULTRA ESPECÍFICOS PARA BOTONES DE AGENDA ===== */
+/* Forzar estilos azules en todos los botones de la agenda */
+.job-details-modal button,
+.secondary-modal-content button,
+.agenda-main-content button,
+.modal-content button {
+  background: #2563eb !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
+  border-radius: 0.5rem !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.job-details-modal button:hover,
+.secondary-modal-content button:hover,
+.agenda-main-content button:hover,
+.modal-content button:hover {
+  background: #1d4ed8 !important;
+}
+
+/* Excluir botones específicos que deben mantener su estilo */
+.job-details-modal button[class*="bg-gray"],
+.secondary-modal-content button[class*="bg-gray"],
+.agenda-main-content button[class*="bg-gray"],
+.modal-content button[class*="bg-gray"] {
+  background: #f3f4f6 !important;
+  color: #374151 !important;
+}
+
+.job-details-modal button[class*="bg-gray"]:hover,
+.secondary-modal-content button[class*="bg-gray"]:hover,
+.agenda-main-content button[class*="bg-gray"]:hover,
+.modal-content button[class*="bg-gray"]:hover {
+  background: #e5e7eb !important;
+}
+
+/* ===== ESTILOS ULTRA AGRESIVOS - MÁXIMA ESPECIFICIDAD ===== */
+/* Forzar estilos en TODOS los botones del componente de agenda */
+div[class*="job-details-modal"] button,
+div[class*="secondary-modal"] button,
+div[class*="agenda-main"] button,
+div[class*="modal-content"] button,
+button[class*="bg-blue"],
+button[class*="text-white"] {
+  background-color: #2563eb !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
+  border-radius: 0.5rem !important;
+  transition: background-color 0.2s ease !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+div[class*="job-details-modal"] button:hover,
+div[class*="secondary-modal"] button:hover,
+div[class*="agenda-main"] button:hover,
+div[class*="modal-content"] button:hover,
+button[class*="bg-blue"]:hover,
+button[class*="text-white"]:hover {
+  background-color: #1d4ed8 !important;
+  color: white !important;
+}
+
+/* Forzar estilos en botones específicos por texto */
+button:has-text("Editar"),
+button:has-text("Cambiar"),
+button:has-text("Actualizar"),
+button:has-text("Guardar"),
+button:has-text("Marcar Pagado") {
+  background-color: #2563eb !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
+  border-radius: 0.5rem !important;
+}
+
+button:has-text("Editar"):hover,
+button:has-text("Cambiar"):hover,
+button:has-text("Actualizar"):hover,
+button:has-text("Guardar"):hover,
+button:has-text("Marcar Pagado"):hover {
+  background-color: #1d4ed8 !important;
+  color: white !important;
+}
+
+/* ===== SOLUCIÓN ULTRA ESPECÍFICA PARA BOTONES DE AGENDA ===== */
+/* Clase específica para forzar estilos azules */
+.agenda-button-force-blue {
+  background-color: #2563eb !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
+  border-radius: 0.5rem !important;
+  transition: background-color 0.2s ease !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.agenda-button-force-blue:hover {
+  background-color: #1d4ed8 !important;
+  color: white !important;
+}
+
+/* Forzar estilos en TODOS los botones dentro de modales de agenda */
+.job-details-modal button:not([class*="bg-gray"]),
+.secondary-modal-content button:not([class*="bg-gray"]),
+.agenda-main-content button:not([class*="bg-gray"]),
+.modal-content button:not([class*="bg-gray"]) {
+  background-color: #2563eb !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
+  border-radius: 0.5rem !important;
+  transition: background-color 0.2s ease !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.job-details-modal button:not([class*="bg-gray"]):hover,
+.secondary-modal-content button:not([class*="bg-gray"]):hover,
+.agenda-main-content button:not([class*="bg-gray"]):hover,
+.modal-content button:not([class*="bg-gray"]):hover {
+  background-color: #1d4ed8 !important;
+  color: white !important;
+}
+
 /* ===== VARIABLES CSS PERSONALIZADAS ===== */
 :root {
   --agenda-primary: #3b82f6;
@@ -23,18 +267,28 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: visible;
 }
 
 .agenda-content {
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
 }
 
 /* ===== HEADER DE LA AGENDA ===== */
 .agenda-header {
   text-align: center;
   margin-bottom: 3rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  padding: 3rem 2rem;
+  border-radius: 1rem;
+  margin: 0 1rem 3rem 1rem;
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
 }
 
 .agenda-header-icon {
@@ -52,17 +306,19 @@
 .agenda-title {
   font-size: 3rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #1e293b 0%, #3b82f6 50%, #1e40af 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: white;
   margin-bottom: 1rem;
   line-height: 1.2;
 }
 
+/* Asegurar que el texto sea siempre blanco */
+.agenda-title {
+  color: white !important;
+}
+
 .agenda-subtitle {
   font-size: 1.25rem;
-  color: #64748b;
+  color: #e2e8f0;
   max-width: 48rem;
   margin: 0 auto;
   line-height: 1.6;
@@ -290,6 +546,33 @@
   border-radius: 1.5rem;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== CONTENIDO PRINCIPAL EXPANDIBLE ===== */
+.agenda-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  min-height: 0;
+  max-height: calc(100vh - 200px);
+}
+
+.agenda-main-content .agenda-table-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.agenda-main-content .agenda-table-container > div {
+  flex: 1;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
 }
 
 .agenda-table-header {
@@ -319,6 +602,10 @@
   border: 1px solid #e2e8f0;
   border-radius: 1.5rem;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .agenda-technician-header {
@@ -482,7 +769,7 @@
 .agenda-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(4px);
   z-index: 50;
   display: flex;
@@ -666,8 +953,9 @@
 .agenda-modal-content {
   padding: 1.5rem;
   flex: 1;
-  overflow-y: auto;
+  overflow: visible;
   min-height: 0;
+  height: auto;
 }
 
 /* Desktop improvements for modal content */
@@ -687,6 +975,11 @@
 @media (max-width: 768px) {
   .agenda-content {
     padding: 1rem;
+  }
+  
+  .agenda-header {
+    padding: 2rem 1rem;
+    margin: 0 0.5rem 2rem 0.5rem;
   }
   
   .agenda-title {
@@ -722,6 +1015,11 @@
 }
 
 @media (max-width: 480px) {
+  .agenda-header {
+    padding: 1.5rem 0.75rem;
+    margin: 0 0.25rem 1.5rem 0.25rem;
+  }
+  
   .agenda-title {
     font-size: 1.75rem;
   }
@@ -738,6 +1036,119 @@
   .agenda-technician-view {
     padding: 1rem;
   }
+}
+
+/* ===== LISTA DE TRABAJOS CON SCROLL MEJORADO ===== */
+.agenda-jobs-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: none;
+  min-height: 0;
+  padding-right: 0.5rem;
+  padding-bottom: 2rem;
+}
+
+/* Scrollbar personalizada para la lista de trabajos */
+.agenda-jobs-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.agenda-jobs-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.agenda-jobs-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.agenda-jobs-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.agenda-jobs-list .job-card {
+  flex-shrink: 0;
+}
+
+.agenda-jobs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  overflow: visible;
+  flex: 1;
+}
+
+.agenda-jobs-container {
+  flex: 1;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Asegurar que el contenedor principal permita scroll completo */
+.agenda-main-content {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+.agenda-main-content .agenda-table-container {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+/* Asegurar que los grupos de trabajos se muestren completamente */
+.agenda-jobs-list .mb-8 {
+  margin-bottom: 2rem;
+  overflow: visible;
+}
+
+/* Asegurar que las tarjetas de trabajo se muestren completamente */
+.agenda-jobs-list .space-y-4 {
+  overflow: visible;
+}
+
+.agenda-jobs-list .space-y-4 > * {
+  overflow: visible;
+}
+
+/* Corrección específica para evitar que se corte el contenido */
+.agenda-jobs-list {
+  max-height: none !important;
+  height: auto !important;
+  overflow-y: visible !important;
+}
+
+/* Asegurar que el contenedor padre permita el crecimiento */
+.agenda-table-container {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+/* Asegurar que el contenido principal permita scroll */
+.agenda-main-content {
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* Corrección específica para el contenedor de la página */
+.agenda-container.mobile-optimized {
+  min-height: 100vh !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+.agenda-content {
+  min-height: 100vh !important;
+  height: auto !important;
+  overflow: visible !important;
 }
 
 /* ===== UTILIDADES ===== */
@@ -791,4 +1202,121 @@
   max-width: 32rem;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* ===== ESTILOS PARA MODALES CON MÁXIMA PRIORIDAD ===== */
+.job-details-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 1000 !important;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(4px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem !important;
+}
+
+.job-details-modal-content {
+  position: relative !important;
+  z-index: 100000 !important;
+  background-color: white !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  max-width: 56rem !important;
+  width: 100% !important;
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: visible !important;
+}
+
+.secondary-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 1001 !important;
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(6px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem !important;
+}
+
+.secondary-modal-content {
+  position: relative !important;
+  z-index: 10000 !important;
+  background-color: white !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
+  max-width: 28rem !important;
+  width: 100% !important;
+}
+
+/* ===== CORRECCIÓN PARA DROPDOWN DE ESTADO DEL TRABAJO ===== */
+.job-details-modal-content select {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.job-details-modal-content select:focus {
+  z-index: 10 !important;
+}
+
+/* Asegurar que el dropdown aparezca correctamente */
+.job-details-modal-content .bg-slate-50 {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Corrección específica para el select de estado */
+.job-details-modal-content .bg-slate-50 select {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Asegurar que el contenido del modal permita overflow para dropdowns */
+.job-details-modal-content .space-y-6 {
+  overflow: visible !important;
+}
+
+.job-details-modal-content .space-y-6 > * {
+  overflow: visible !important;
+}
+
+/* Corrección específica para el contenedor del select */
+.job-details-modal-content .bg-slate-50 {
+  overflow: visible !important;
+  position: relative !important;
+}
+
+.job-details-modal-content .space-y-3 {
+  overflow: visible !important;
+  position: relative !important;
+}
+
+/* Corrección adicional para el dropdown del estado */
+.job-details-modal-content select option {
+  position: relative !important;
+  z-index: 15 !important;
+}
+
+/* Asegurar que el modal principal no corte el dropdown */
+.job-details-modal-overlay {
+  overflow: visible !important;
+}
+
+/* Corrección específica para el contenedor del modal de detalles */
+.job-details-modal-content .flex {
+  overflow: visible !important;
+}
+
+.job-details-modal-content .space-y-6 > div {
+  overflow: visible !important;
 }

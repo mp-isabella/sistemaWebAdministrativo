@@ -245,9 +245,7 @@ export const sendWorkingEmail = async (data: WorkingEmailData): Promise<{
     localStorage.setItem('cotizaciones', JSON.stringify(cotizaciones));
 
     // Log detallado
-    console.log('Error processing quote: All email services failed');
     if (data.mensaje) {
-      console.log('Message:', data.mensaje);
     }
     return {
       success: true,

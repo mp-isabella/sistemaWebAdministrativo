@@ -1,0 +1,217 @@
+/* Fix específico para el modal de clientes */
+/* Solución para problemas de posicionamiento y visualización */
+
+/* Contenedor del modal de clientes */
+.modal-open .bg-white.rounded-2xl {
+  position: relative !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  margin: auto !important;
+  transform: none !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+/* Fix para el formulario dentro del modal */
+.modal-open .client-form {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+
+/* Fix para las secciones del formulario */
+.modal-open .client-form .bg-white {
+  margin-bottom: 1.5rem !important;
+}
+
+.modal-open .client-form .bg-white:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Fix para el header del formulario */
+.modal-open .client-form .bg-white:first-child {
+  margin-top: 0 !important;
+  padding-top: 1.5rem !important;
+}
+
+/* Fix para botones del formulario */
+.modal-open .client-form .bg-white:last-child {
+  margin-bottom: 0 !important;
+  padding-bottom: 1.5rem !important;
+}
+
+/* Fix para selectores en el modal */
+.modal-open .client-form .autocomplete-container {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.modal-open .client-form .autocomplete-trigger {
+  height: 3.5rem !important;
+  font-size: 1rem !important;
+  border: 2px solid #e5e7eb !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1rem !important;
+  background: white !important;
+  background-color: white !important;
+  color: #111827 !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Fix específico para SimpleSelect */
+.modal-open .client-form button[role="combobox"] {
+  background: white !important;
+  background-color: white !important;
+  color: #111827 !important;
+  border: 2px solid #e5e7eb !important;
+  border-radius: 0.75rem !important;
+  height: 3.5rem !important;
+  font-size: 1rem !important;
+  padding: 0.75rem 1rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.modal-open .client-form button[role="combobox"]:hover {
+  background: white !important;
+  background-color: white !important;
+  border-color: #9ca3af !important;
+}
+
+.modal-open .client-form button[role="combobox"]:focus {
+  background: white !important;
+  background-color: white !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  outline: none !important;
+}
+
+.modal-open .client-form .autocomplete-trigger:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  outline: none !important;
+}
+
+.modal-open .client-form .autocomplete-trigger:hover {
+  border-color: #9ca3af !important;
+}
+
+.modal-open .client-form .autocomplete-dropdown {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  transform: none !important;
+  z-index: 10001 !important;
+  margin-top: 0.25rem !important;
+  background: white !important;
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  max-height: 200px !important;
+  overflow-y: auto !important;
+}
+
+/* Fix para dropdowns de SimpleSelect */
+.modal-open .client-form .relative > div[style*="backgroundColor"] {
+  background: white !important;
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Fix para elementos dentro de dropdowns */
+.modal-open .client-form .autocomplete-dropdown > div,
+.modal-open .client-form .autocomplete-dropdown .cursor-pointer {
+  background: white !important;
+  background-color: white !important;
+  color: #111827 !important;
+}
+
+.modal-open .client-form .autocomplete-dropdown .cursor-pointer:hover {
+  background: #f3f4f6 !important;
+  background-color: #f3f4f6 !important;
+}
+
+/* Fix para campos de entrada */
+.modal-open .client-form input,
+.modal-open .client-form select {
+  border: 2px solid #e5e7eb !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 1rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.modal-open .client-form input:focus,
+.modal-open .client-form select:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  outline: none !important;
+}
+
+/* Fix para labels */
+.modal-open .client-form label {
+  font-weight: 600 !important;
+  color: #374151 !important;
+  margin-bottom: 0.5rem !important;
+  display: block !important;
+}
+
+/* Fix para alertas de error */
+.modal-open .client-form .bg-red-50 {
+  border: 1px solid #fecaca !important;
+  border-radius: 0.5rem !important;
+  padding: 0.75rem !important;
+  margin-top: 0.5rem !important;
+}
+
+/* Fix para botones */
+.modal-open .client-form button {
+  border-radius: 0.75rem !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.modal-open .client-form button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Fix para el botón de cerrar */
+.modal-open .absolute.top-6.right-6 {
+  z-index: 10 !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Responsive fixes */
+@media (max-width: 768px) {
+  .modal-open .bg-white.rounded-2xl {
+    max-height: 95vh !important;
+    margin: 1rem !important;
+    width: calc(100% - 2rem) !important;
+  }
+  
+  .modal-open .client-form .grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .modal-open .bg-white.rounded-2xl {
+    max-width: 90vw !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  .modal-open .bg-white.rounded-2xl {
+    max-width: 4xl !important;
+  }
+}

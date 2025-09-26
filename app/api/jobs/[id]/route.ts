@@ -153,7 +153,6 @@ export async function PATCH(
     if (body.startTime !== undefined) updateData.startTime = body.startTime
     if (body.endTime !== undefined) updateData.endTime = body.endTime
     if (body.totalBudget !== undefined) {
-      console.log('Updating totalBudget:', body.totalBudget)
       updateData.totalBudget = body.totalBudget ? Number(body.totalBudget) : null
     }
 
@@ -187,8 +186,9 @@ export async function DELETE(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    if (!["admin", "secretaria"].includes((session.user as any).role.toLowerCase())) {
-      return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
+    const userRole = (session.user as any).role?.toLowerCase();
+    if (!["admin", "secretaria", "administrador", "administrator"].includes(userRole)) {
+      return NextResponse.json({ error: "Sin permisos para eliminar trabajos" }, { status: 403 })
     }
 
     const { id } = await params

@@ -1,163 +1,1 @@
-'use client';
-
-import { RoleGuard } from '@/components/auth/role-guard';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bell, Settings, Shield, Users } from 'lucide-react';
-import { memo, useCallback, useMemo } from 'react';
-
-// Componentes lazy para carga diferida (comentados hasta que se implementen)
-// const UsersManagement = lazy(() => import('./components/UsersManagement'));
-// const SystemSettings = lazy(() => import('./components/SystemSettings'));
-// const SecuritySettings = lazy(() => import('./components/SecuritySettings'));
-// const ReportsManagement = lazy(() => import('./components/ReportsManagement'));
-
-// Componente memoizado para el header
-const AdminHeader = memo(() => (
-  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-        <Settings className="h-6 w-6 text-gray-500" />
-        Administración del Sistema
-      </h1>
-      <p className="text-gray-600 mt-1">
-        Configuración y gestión avanzada del sistema
-      </p>
-    </div>
-  </div>
-));
-
-AdminHeader.displayName = 'AdminHeader';
-
-// Componente memoizado para tarjeta de administración
-const AdminCard = memo(({
-  title,
-  description,
-  icon: Icon,
-  onAction,
-  actionText
-}: {
-  title: string;
-  description: string;
-  icon: any;
-  onAction: () => void;
-  actionText: string;
-}) => (
-  <Card>
-    <CardHeader className="pb-2">
-      <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-        <Icon className="h-4 w-4" />
-        {title}
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      <p className="text-sm text-gray-600 mb-4">
-        {description}
-      </p>
-      <Button size="sm" className="w-full" onClick={onAction}>
-        {actionText}
-      </Button>
-    </CardContent>
-  </Card>
-));
-
-AdminCard.displayName = 'AdminCard';
-
-// Componente memoizado para información del sistema
-const SystemInfo = memo(() => {
-  const systemInfo = useMemo(() => ({
-    version: 'v1.0.0',
-    lastUpdate: '15 de Enero, 2024',
-    status: 'Operativo',
-    activeUsers: 12,
-  }), []);
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Settings className="h-5 w-5" />
-          Información del Sistema
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-          <div>
-            <p className="font-medium text-gray-700">Versión del Sistema</p>
-            <p className="text-gray-600">{systemInfo.version}</p>
-          </div>
-          <div>
-            <p className="font-medium text-gray-700">Última Actualización</p>
-            <p className="text-gray-600">{systemInfo.lastUpdate}</p>
-          </div>
-          <div>
-            <p className="font-medium text-gray-700">Estado del Sistema</p>
-            <Badge className="bg-green-100 text-green-800">{systemInfo.status}</Badge>
-          </div>
-          <div>
-            <p className="font-medium text-gray-700">Usuarios Activos</p>
-            <p className="text-gray-600">{systemInfo.activeUsers} usuarios</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-});
-
-SystemInfo.displayName = 'SystemInfo';
-
-// Componente de carga
-const LoadingFallback = memo(() => (
-  <div className="flex items-center justify-center p-8">
-    <div className="text-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-      <p className="text-gray-600">Cargando...</p>
-    </div>
-  </div>
-));
-
-LoadingFallback.displayName = 'LoadingFallback';
-
-export default function AdminPage() {
-  // Memoizar las funciones de callback
-  const handleUserManagement = useCallback(() => {
-  }, []);
-
-  return (
-    <RoleGuard requiredPermission="canAccessAdmin">
-      <div className="space-y-6">
-        <AdminHeader />
-
-        {/* Gestión de Administración */}
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <AdminCard
-              title="Gestión de Usuarios"
-              description="Administra usuarios, roles y permisos del sistema"
-              icon={Users}
-              onAction={handleUserManagement}
-              actionText="Gestionar Usuarios"
-            />
-            <AdminCard
-              title="Roles y Permisos"
-              description="Configura roles y permisos de acceso"
-              icon={Shield}
-              onAction={() => console.log('Configure roles')}
-              actionText="Configurar Roles"
-            />
-            <AdminCard
-              title="Notificaciones"
-              description="Configura notificaciones del sistema"
-              icon={Bell}
-              onAction={() => console.log('Configure notifications')}
-              actionText="Configurar"
-            />
-          </div>
-        </div>
-
-        <SystemInfo />
-      </div>
-    </RoleGuard>
-  );
-}
+'use client';import { RoleGuard } from '@/components/auth/role-guard';import { Badge } from '@/components/ui/badge';import { Button } from '@/components/ui/button';import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';import { Bell, Settings, Shield, Users } from 'lucide-react';import { memo, useCallback, useMemo } from 'react';// Componentes lazy para carga diferida (comentados hasta que se implementen)// const UsersManagement = lazy(() => import('./components/UsersManagement'));// const SystemSettings = lazy(() => import('./components/SystemSettings'));// const SecuritySettings = lazy(() => import('./components/SecuritySettings'));// const ReportsManagement = lazy(() => import('./components/ReportsManagement'));// Componente memoizado para el headerconst AdminHeader = memo(() => (  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">    <div>      <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">        <Settings className="h-6 w-6 text-gray-500" />        Administración del Sistema      </h1>      <p className="text-gray-600 mt-1">        Configuración y gestión avanzada del sistema      </p>    </div>  </div>));AdminHeader.displayName = 'AdminHeader';// Componente memoizado para tarjeta de administraciónconst AdminCard = memo(({  title,  description,  icon: Icon,  onAction,  actionText}: {  title: string;  description: string;  icon: any;  onAction: () => void;  actionText: string;}) => (  <Card>    <CardHeader className="pb-2">      <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">        <Icon className="h-4 w-4" />        {title}      </CardTitle>    </CardHeader>    <CardContent>      <p className="text-sm text-gray-600 mb-4">        {description}      </p>      <Button size="sm" className="w-full" onClick={onAction}>        {actionText}      </Button>    </CardContent>  </Card>));AdminCard.displayName = 'AdminCard';// Componente memoizado para información del sistemaconst SystemInfo = memo(() => {  const systemInfo = useMemo(() => ({    version: 'v1.0.0',    lastUpdate: '15 de Enero, 2024',    status: 'Operativo',    activeUsers: 12,  }), []);  return (    <Card>      <CardHeader>        <CardTitle className="flex items-center gap-2">          <Settings className="h-5 w-5" />          Información del Sistema        </CardTitle>      </CardHeader>      <CardContent>        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">          <div>            <p className="font-medium text-gray-700">Versión del Sistema</p>            <p className="text-gray-600">{systemInfo.version}</p>          </div>          <div>            <p className="font-medium text-gray-700">Última Actualización</p>            <p className="text-gray-600">{systemInfo.lastUpdate}</p>          </div>          <div>            <p className="font-medium text-gray-700">Estado del Sistema</p>            <Badge className="bg-green-100 text-green-800">{systemInfo.status}</Badge>          </div>          <div>            <p className="font-medium text-gray-700">Usuarios Activos</p>            <p className="text-gray-600">{systemInfo.activeUsers} usuarios</p>          </div>        </div>      </CardContent>    </Card>  );});SystemInfo.displayName = 'SystemInfo';// Componente de cargaconst LoadingFallback = memo(() => (  <div className="flex items-center justify-center p-8">    <div className="text-center">      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>      <p className="text-gray-600">Cargando...</p>    </div>  </div>));LoadingFallback.displayName = 'LoadingFallback';export default function AdminPage() {  // Memoizar las funciones de callback  const handleUserManagement = useCallback(() => {  }, []);  return (    <RoleGuard requiredPermission="canAccessAdmin">      <div className="space-y-6">        <AdminHeader />        {/* Gestión de Administración */}        <div className="space-y-4">          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">            <AdminCard              title="Gestión de Usuarios"              description="Administra usuarios, roles y permisos del sistema"              icon={Users}              onAction={handleUserManagement}              actionText="Gestionar Usuarios"            />            <AdminCard              title="Roles y Permisos"              description="Configura roles y permisos de acceso"              icon={Shield}              onAction={() => { }}              actionText="Configurar Roles"            />            <AdminCard              title="Notificaciones"              description="Configura notificaciones del sistema"              icon={Bell}              onAction={() => { }}              actionText="Configurar"            />          </div>        </div>        <SystemInfo />      </div>    </RoleGuard>  );}

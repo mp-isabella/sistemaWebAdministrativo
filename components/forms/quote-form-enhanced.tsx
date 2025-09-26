@@ -1,5 +1,4 @@
 'use client'
-
 import QuotePreview from '@/components/quote/quote-preview'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,7 +11,6 @@ import { useToast } from '@/hooks/use-toast'
 import { REGIONES_Y_COMUNAS } from '@/lib/regions-communes'
 import { ArrowLeft, Eye, FileText, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-
 interface Client {
   id: string
   name: string
@@ -21,7 +19,6 @@ interface Client {
   phone?: string
   address?: string
 }
-
 interface QuoteItem {
   id?: string
   description: string
@@ -31,7 +28,6 @@ interface QuoteItem {
   materials?: string
   exposedArea?: string
 }
-
 interface Company {
   id: string
   name: string
@@ -47,7 +43,6 @@ interface Company {
   phone?: string
   service?: string
 }
-
 interface QuoteFormEnhancedProps {
   initialData?: {
     clientId?: string
@@ -88,7 +83,6 @@ interface QuoteFormEnhancedProps {
   onCancel: () => void
   loading?: boolean
 }
-
 export default function QuoteFormEnhanced({
   initialData,
   onSubmit,
@@ -102,10 +96,8 @@ export default function QuoteFormEnhanced({
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [showPreview, setShowPreview] = useState(false)
-
   // Usar el mapeo completo de regiones y comunas
   const regionCommuneMap = useMemo(() => REGIONES_Y_COMUNAS, []);
-
   const [items, setItems] = useState<QuoteItem[]>(initialData?.items || [{
     id: '1',
     description: '',
@@ -113,7 +105,6 @@ export default function QuoteFormEnhanced({
     unitPrice: 0,
     total: 0
   }]);
-
   const [formData, setFormData] = useState({
     clientId: initialData?.clientId || '',
     clientAddress: initialData?.clientAddress || '',
@@ -130,27 +121,20 @@ export default function QuoteFormEnhanced({
     serviceType: initialData?.serviceType || '',
     warranty: initialData?.warranty || ''
   })
-
   // Actualizar empresa seleccionada cuando cambie el companyId
   useEffect(() => {
     if (formData.companyId && companies.length > 0) {
       const company = companies.find(c => c.id === formData.companyId)
-
       if (company) {
         setSelectedCompany(company)
-
       } else {
-
         setSelectedCompany(null)
       }
     } else {
-
       setSelectedCompany(null)
     }
   }, [formData.companyId, companies])
-
   // Debug: Log initial state after items declaration
-
   // Cargar datos iniciales
   useEffect(() => {
     const loadData = async () => {
@@ -160,35 +144,28 @@ export default function QuoteFormEnhanced({
           fetch('/api/companies'),
           fetch('/api/technicians-test')
         ])
-
         if (clientsRes.ok) {
           const clientsData = await clientsRes.json()
-
           // Filtrar solo clientes activos para cotizaciones
           const activeClients = clientsData.filter((client: any) => client.status === 'active')
           setClients(activeClients)
         } else {
-
         }
-
         if (companiesRes.ok) {
           const companiesData = await companiesRes.json()
-
           // Usar todas las empresas activas para cotizaciones
           const filteredCompanies = companiesData || []
-          // console.log('Filtered companies:', filteredCompanies.length)
+          //
           setCompanies(filteredCompanies)
         } else {
-          // console.log('Companies request failed')
+          //
         }
-
         if (techniciansRes.ok) {
           const techniciansData = await techniciansRes.json()
-
           // El endpoint de prueba ya devuelve solo técnicos activos
           setTechnicians(techniciansData)
         } else {
-          // console.log('Technicians request failed')
+          //
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -201,27 +178,22 @@ export default function QuoteFormEnhanced({
         setIsLoadingData(false)
       }
     }
-
     loadData()
   }, [toast])
-
   // Obtener comunas disponibles según la región seleccionada
   const getAvailableCommunes = () => {
     return [...(regionCommuneMap[formData.clientRegion as keyof typeof regionCommuneMap] || [])];
   };
-
   // Resetear comuna cuando cambia la región
   const handleRegionChange = (region: string) => {
     const availableCommunes = [...(regionCommuneMap[region as keyof typeof regionCommuneMap] || [])];
     const newCommune = availableCommunes.includes(formData.clientCommune as any) ? formData.clientCommune : availableCommunes[0] || "";
-
     setFormData(prev => ({
       ...prev,
       clientRegion: region,
       clientCommune: newCommune
     }));
   };
-
   // Calcular totales
   const calculateTotals = () => {
     const subtotal = items.reduce((sum, item) => {
@@ -236,9 +208,7 @@ export default function QuoteFormEnhanced({
     const total = subtotalAfterDiscount + tax
     return { subtotal, discount, subtotalAfterDiscount, tax, total }
   }
-
   const { subtotal, tax, total } = calculateTotals()
-
   // Formatear moneda
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CL', {
@@ -246,7 +216,6 @@ export default function QuoteFormEnhanced({
       currency: 'CLP'
     }).format(amount)
   }
-
   // Agregar item
   const addItem = () => {
     setItems([...items, {
@@ -257,22 +226,18 @@ export default function QuoteFormEnhanced({
       total: 0
     }])
   }
-
   // Eliminar item
   const removeItem = (index: number) => {
     if (items.length > 1) {
       setItems(items.filter((_, i) => i !== index))
     }
   }
-
   // Actualizar item
   const updateItem = (index: number, field: keyof QuoteItem, value: any) => {
     const newItems = [...items]
     const currentItem = newItems[index]
     if (!currentItem) return
-
     newItems[index] = { ...currentItem, [field]: value }
-
     // Recalcular total del item
     if (field === 'quantity' || field === 'unitPrice') {
       // Solo cuando la cantidad es exactamente 0, mostrar el precio unitario
@@ -280,17 +245,13 @@ export default function QuoteFormEnhanced({
       const unitPrice = newItems[index]?.unitPrice || 0
       if (newItems[index]) {
         newItems[index].total = quantity === 0 ? unitPrice : quantity * unitPrice
-
       }
     }
-
     setItems(newItems)
   }
-
   // Confirmar desde vista previa
   const handleConfirmPreview = async () => {
     try {
-
       const submitData = {
         clientName: formData.clientId, // Ahora clientId contiene el nombre directamente
         clientId: '', // Campo vacío ya que no tenemos ID de cliente
@@ -317,7 +278,6 @@ export default function QuoteFormEnhanced({
         serviceType: formData.serviceType,
         warranty: formData.warranty
       }
-
       await onSubmit({
         clientName: submitData.clientName || '',
         clientId: submitData.clientId || '',
@@ -340,15 +300,12 @@ export default function QuoteFormEnhanced({
         serviceType: submitData.serviceType || '',
         warranty: submitData.warranty || ''
       })
-
       setShowPreview(false)
-
       toast({
         title: "Éxito",
         description: "Presupuesto creado y guardado correctamente.",
       })
     } catch (error) {
-
       toast({
         title: "Error",
         description: "Error al crear el presupuesto. Por favor intenta nuevamente.",
@@ -356,12 +313,10 @@ export default function QuoteFormEnhanced({
       })
     }
   }
-
   // Cancelar vista previa
   const handleCancelPreview = () => {
     setShowPreview(false)
   }
-
   if (isLoadingData) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -372,7 +327,6 @@ export default function QuoteFormEnhanced({
       </div>
     )
   }
-
   // Mostrar mensaje de carga mientras se cargan los datos
   if (isLoadingData) {
     return (
@@ -384,7 +338,6 @@ export default function QuoteFormEnhanced({
       </div>
     )
   }
-
   // Verificar si hay datos disponibles - ser más tolerante
   if (companies.length === 0) {
     return (
@@ -405,7 +358,6 @@ export default function QuoteFormEnhanced({
       </div>
     )
   }
-
   // Función para renderizar el formulario principal
   const renderForm = () => {
     return (
@@ -436,7 +388,13 @@ export default function QuoteFormEnhanced({
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar empresa" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent
+                    className="bg-white z-50"
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                  >
                     {companies.map((company) => (
                       <SelectItem key={company.id} value={company.id}>
                         {company.name}
@@ -446,7 +404,6 @@ export default function QuoteFormEnhanced({
                 </Select>
               </div>
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <Label htmlFor="clientAddress" className="text-sm sm:text-base">Dirección</Label>
@@ -469,7 +426,6 @@ export default function QuoteFormEnhanced({
                 />
               </div>
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <Label htmlFor="clientRegion" className="text-sm sm:text-base">Región</Label>
@@ -477,7 +433,13 @@ export default function QuoteFormEnhanced({
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar región" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent
+                    className="bg-white z-50"
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                  >
                     {Object.keys(regionCommuneMap).map((region) => (
                       <SelectItem key={region} value={region}>
                         {region}
@@ -492,7 +454,13 @@ export default function QuoteFormEnhanced({
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar comuna" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent
+                    className="bg-white z-50"
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                  >
                     {getAvailableCommunes().map((commune) => (
                       <SelectItem key={commune} value={commune}>
                         {commune}
@@ -504,13 +472,11 @@ export default function QuoteFormEnhanced({
             </div>
           </CardContent>
         </Card>
-
         {/* Resto del formulario... */}
         {/* Aquí continuaría con el resto del formulario */}
       </div>
     )
   }
-
   // Si no hay clientes, mostrar un mensaje informativo pero permitir continuar
   if (clients.length === 0) {
     return (
@@ -532,29 +498,21 @@ export default function QuoteFormEnhanced({
             </div>
           </div>
         </div>
-
         {/* Continuar con el formulario normal */}
         {renderForm()}
       </div>
     )
   }
-
   // Mostrar vista previa si está activa
   if (showPreview) {
-
     // Usar la empresa seleccionada del estado, no buscar nuevamente
     const previewCompany = selectedCompany || companies.find(c => c.id === formData.companyId)
-
     // Si no se encuentra la empresa, usar la primera disponible
     if (!previewCompany && companies.length > 0) {
-
       // const fallbackCompany = companies[0]
-
     }
-
     // Verificar que tenemos una empresa válida
     if (!previewCompany) {
-
       toast({
         title: "Error",
         description: "No hay empresa disponible para la vista previa.",
@@ -563,7 +521,6 @@ export default function QuoteFormEnhanced({
       setShowPreview(false)
       return null
     }
-
     // Crear un objeto cliente con los datos del formulario
     const mockClient = {
       id: '',
@@ -573,7 +530,6 @@ export default function QuoteFormEnhanced({
       phone: formData.clientPhone || '',
       address: formData.clientAddress || ''
     }
-
     return (
       <QuotePreview
         data={{
@@ -591,7 +547,6 @@ export default function QuoteFormEnhanced({
       />
     )
   }
-
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Información básica */}
@@ -627,10 +582,8 @@ export default function QuoteFormEnhanced({
                   ))}
                 </SelectContent>
               </Select>
-
             </div>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <Label htmlFor="clientAddress" className="text-sm sm:text-base">Dirección</Label>
@@ -653,7 +606,6 @@ export default function QuoteFormEnhanced({
               />
             </div>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <Label htmlFor="clientRegion" className="text-sm sm:text-base">Región</Label>
@@ -686,7 +638,6 @@ export default function QuoteFormEnhanced({
               </Select>
             </div>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <div>
               <Label htmlFor="validUntil" className="text-sm sm:text-base">Fecha *</Label>
@@ -719,7 +670,13 @@ export default function QuoteFormEnhanced({
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar técnico" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent
+                    className="bg-white z-50"
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                  >
                     {technicians.length === 0 ? (
                       <SelectItem value="no-technicians" disabled>
                         No hay técnicos disponibles
@@ -733,7 +690,6 @@ export default function QuoteFormEnhanced({
                     )}
                   </SelectContent>
                 </Select>
-
                 {technicians.length === 0 && (
                   <p className="text-xs text-red-500">
                     No hay técnicos disponibles. Verifica que existan técnicos activos en el sistema.
@@ -742,7 +698,6 @@ export default function QuoteFormEnhanced({
               </div>
             </div>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="sm:col-span-2">
               <Label htmlFor="serviceType" className="text-sm sm:text-base">Tipo de Servicio</Label>
@@ -750,7 +705,13 @@ export default function QuoteFormEnhanced({
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar tipo de servicio" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent
+                  className="bg-white z-50"
+                  position="popper"
+                  side="bottom"
+                  align="start"
+                  sideOffset={4}
+                >
                   <SelectItem value="deteccion_fugas">Detección de Fugas de Agua</SelectItem>
                   <SelectItem value="destape_alcantarillado">Destape de Alcantarillado</SelectItem>
                   <SelectItem value="videointrospeccion">Videoinspección de Ductos</SelectItem>
@@ -760,7 +721,6 @@ export default function QuoteFormEnhanced({
           </div>
         </CardContent>
       </Card>
-
       {/* Observaciones */}
       <Card>
         <CardHeader>
@@ -778,7 +738,6 @@ export default function QuoteFormEnhanced({
           />
         </CardContent>
       </Card>
-
       {/* Servicios */}
       <Card>
         <CardHeader>
@@ -805,7 +764,6 @@ export default function QuoteFormEnhanced({
               <h4 className="text-sm font-semibold text-gray-700">Acciones</h4>
             </div>
           </div>
-
           {/* Items de servicios */}
           <div className="space-y-4">
             {items.map((item, index) => (
@@ -835,7 +793,6 @@ export default function QuoteFormEnhanced({
                       />
                     </div>
                   </div>
-
                   {/* Cantidad */}
                   <div className="col-span-1 sm:col-span-2">
                     <Label className="text-sm font-medium text-gray-700 mb-2 block sm:hidden">Cantidad</Label>
@@ -853,7 +810,6 @@ export default function QuoteFormEnhanced({
                       />
                     </div>
                   </div>
-
                   {/* Precio Unitario */}
                   <div className="col-span-1 sm:col-span-2">
                     <Label className="text-sm font-medium text-gray-700 mb-2 block sm:hidden">Precio Unitario</Label>
@@ -878,7 +834,6 @@ export default function QuoteFormEnhanced({
                       />
                     </div>
                   </div>
-
                   {/* Total */}
                   <div className="col-span-1 sm:col-span-2">
                     <Label className="text-sm font-medium text-gray-700 mb-2 block sm:hidden">Total</Label>
@@ -888,7 +843,6 @@ export default function QuoteFormEnhanced({
                       </div>
                     </div>
                   </div>
-
                   {/* Acciones */}
                   <div className="col-span-1 sm:col-span-1">
                     <Label className="text-sm font-medium text-gray-700 mb-2 block sm:hidden">Acciones</Label>
@@ -910,7 +864,6 @@ export default function QuoteFormEnhanced({
               </div>
             ))}
           </div>
-
           {/* Botón para agregar nuevo servicio */}
           <div className="flex justify-center">
             <Button
@@ -925,7 +878,6 @@ export default function QuoteFormEnhanced({
           </div>
         </CardContent>
       </Card>
-
       {/* Totales */}
       <Card>
         <CardContent className="pt-6">
@@ -970,7 +922,6 @@ export default function QuoteFormEnhanced({
           </div>
         </CardContent>
       </Card>
-
       {/* Diagnóstico */}
       <Card>
         <CardHeader>
@@ -989,7 +940,6 @@ export default function QuoteFormEnhanced({
           />
         </CardContent>
       </Card>
-
       {/* Garantía y Condiciones */}
       <Card>
         <CardHeader>
@@ -1008,19 +958,16 @@ export default function QuoteFormEnhanced({
           />
         </CardContent>
       </Card>
-
       {/* Botones */}
       <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
         <Button type="button" variant="outline" onClick={onCancel} className="text-sm sm:text-base">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Cancelar
         </Button>
-
         <Button
           type="button"
           variant="outline"
           onClick={() => {
-
             // Validación básica
             if (!formData.clientId || formData.clientId.trim() === '') {
               toast({
@@ -1030,7 +977,6 @@ export default function QuoteFormEnhanced({
               })
               return
             }
-
             if (!formData.companyId || formData.companyId.trim() === '') {
               toast({
                 title: "Campo Requerido",
@@ -1039,7 +985,6 @@ export default function QuoteFormEnhanced({
               })
               return
             }
-
             if (!formData.validUntil || formData.validUntil.trim() === '') {
               toast({
                 title: "Campo Requerido",
@@ -1048,7 +993,6 @@ export default function QuoteFormEnhanced({
               })
               return
             }
-
             setShowPreview(true)
           }}
           className="text-sm sm:text-base bg-yellow-100 hover:bg-yellow-200"
@@ -1056,18 +1000,14 @@ export default function QuoteFormEnhanced({
           <Eye className="mr-2 h-4 w-4" />
           Vista Previa
         </Button>
-
         <Button
           type="button"
           onClick={async () => {
-
             // Validación completa para crear presupuesto
             const errors = []
-
             if (!formData.clientId || formData.clientId.trim() === '') errors.push('Señor (a)')
             if (!formData.companyId || formData.companyId.trim() === '') errors.push('Empresa')
             if (!formData.validUntil || formData.validUntil.trim() === '') errors.push('Fecha')
-
             if (errors.length > 0) {
               toast({
                 title: "Campos Requeridos",
@@ -1076,7 +1016,6 @@ export default function QuoteFormEnhanced({
               })
               return
             }
-
             // Validar que al menos haya un item válido
             const validItems = items.filter(item =>
               item.description &&
@@ -1084,7 +1023,6 @@ export default function QuoteFormEnhanced({
               item.quantity > 0 &&
               item.unitPrice > 0
             )
-
             if (validItems.length === 0) {
               toast({
                 title: "Items Requeridos",
@@ -1093,7 +1031,6 @@ export default function QuoteFormEnhanced({
               })
               return
             }
-
             try {
               const submitData = {
                 clientName: formData.clientId,
@@ -1121,7 +1058,6 @@ export default function QuoteFormEnhanced({
                 serviceType: formData.serviceType,
                 warranty: formData.warranty
               }
-
               await onSubmit({
                 clientName: submitData.clientName || '',
                 clientId: submitData.clientId || '',
@@ -1148,13 +1084,11 @@ export default function QuoteFormEnhanced({
                 serviceType: submitData.serviceType || '',
                 warranty: submitData.warranty || ''
               })
-
               toast({
                 title: "Éxito",
                 description: "Presupuesto creado y guardado en el historial correctamente.",
               })
             } catch (error) {
-
               toast({
                 title: "Error",
                 description: "Error al crear el presupuesto. Por favor intenta nuevamente.",

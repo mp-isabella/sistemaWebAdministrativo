@@ -1,20 +1,15 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
+import { ModalSelect } from "@/components/ui/modal-select"
 import { Textarea } from "@/components/ui/textarea"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
 import {
   AlertCircle,
-  Building,
   Calendar,
-  CheckCircle,
   CreditCard,
   DollarSign,
   FileText,
@@ -22,16 +17,13 @@ import {
   GraduationCap,
   Home,
   Megaphone,
-  Plus,
   Shield,
   Tag,
   TrendingDown,
   TrendingUp,
   Users,
-  Wallet,
   Wrench,
-  X,
-  Zap
+  X
 } from 'lucide-react'
 
 interface CashTransactionFormProps {
@@ -48,7 +40,6 @@ interface FormData {
   reference: string
   date: string
   notes?: string
-  attachments?: string[]
 }
 
 interface ValidationErrors {
@@ -57,6 +48,8 @@ interface ValidationErrors {
   category?: string
   paymentMethod?: string
   date?: string
+  reference?: string
+  notes?: string
 }
 
 interface TouchedFields {
@@ -72,6 +65,18 @@ export default function CashTransactionForm({
   onSubmit,
   onCancel
 }: CashTransactionFormProps) {
+  // Listener para cerrar modal al hacer clic fuera
+  useEffect(() => {
+    const handleCloseModal = () => {
+      onCancel();
+    };
+
+    window.addEventListener('closeModal', handleCloseModal);
+    return () => {
+      window.removeEventListener('closeModal', handleCloseModal);
+    };
+  }, [onCancel]);
+
   const [formData, setFormData] = useState<FormData>({
     amount: '',
     description: '',
@@ -79,8 +84,7 @@ export default function CashTransactionForm({
     paymentMethod: '',
     reference: '',
     date: new Date().toISOString().split('T')[0] || '',
-    notes: '',
-    attachments: []
+    notes: ''
   })
 
   const [errors, setErrors] = useState<ValidationErrors>({})
@@ -91,112 +95,84 @@ export default function CashTransactionForm({
     paymentMethod: false,
     date: false
   })
+
   const [loading, setLoading] = useState(false)
-  const [isValid, setIsValid] = useState(false)
 
-  // Categorías con iconos y colores
-  const incomeCategories = [
-    { value: 'servicios_plomeria', label: 'Servicios de Plomería', icon: Wrench, color: 'bg-blue-100 text-blue-800' },
-    { value: 'deteccion_fugas', label: 'Detección de Fugas', icon: Zap, color: 'bg-purple-100 text-purple-800' },
-    { value: 'reparaciones', label: 'Reparaciones', icon: Wrench, color: 'bg-orange-100 text-orange-800' },
-    { value: 'mantencion', label: 'Mantención', icon: Building, color: 'bg-green-100 text-green-800' },
-    { value: 'instalaciones', label: 'Instalaciones', icon: Home, color: 'bg-indigo-100 text-indigo-800' },
-    { value: 'emergencias', label: 'Emergencias', icon: Zap, color: 'bg-red-100 text-red-800' },
-    { value: 'consultoria', label: 'Consultoría', icon: Users, color: 'bg-teal-100 text-teal-800' },
-    { value: 'otros_ingresos', label: 'Otros Ingresos', icon: Plus, color: 'bg-gray-100 text-gray-800' }
-  ]
-
-  const expenseCategories = [
-    { value: 'materiales', label: 'Materiales', icon: Wrench, color: 'bg-blue-100 text-blue-800' },
-    { value: 'herramientas', label: 'Herramientas', icon: Wrench, color: 'bg-orange-100 text-orange-800' },
-    { value: 'combustible', label: 'Combustible', icon: Fuel, color: 'bg-yellow-100 text-yellow-800' },
-    { value: 'salarios', label: 'Salarios', icon: Users, color: 'bg-green-100 text-green-800' },
-    { value: 'servicios_basicos', label: 'Servicios Básicos', icon: Zap, color: 'bg-purple-100 text-purple-800' },
-    { value: 'arriendo', label: 'Arriendo', icon: Home, color: 'bg-indigo-100 text-indigo-800' },
-    { value: 'seguros', label: 'Seguros', icon: Shield, color: 'bg-red-100 text-red-800' },
-    { value: 'marketing', label: 'Marketing', icon: Megaphone, color: 'bg-pink-100 text-pink-800' },
-    { value: 'capacitacion', label: 'Capacitación', icon: GraduationCap, color: 'bg-cyan-100 text-cyan-800' },
-    { value: 'otros_gastos', label: 'Otros Gastos', icon: Plus, color: 'bg-gray-100 text-gray-800' }
+  const categories = [
+    { value: 'materials', label: 'Materiales', icon: Wrench },
+    { value: 'tools', label: 'Herramientas', icon: Wrench },
+    { value: 'fuel', label: 'Combustible', icon: Fuel },
+    { value: 'salaries', label: 'Salarios', icon: Users },
+    { value: 'utilities', label: 'Servicios Básicos', icon: Home },
+    { value: 'marketing', label: 'Marketing', icon: Megaphone },
+    { value: 'insurance', label: 'Seguros', icon: Shield },
+    { value: 'education', label: 'Capacitación', icon: GraduationCap },
+    { value: 'other', label: 'Otros', icon: FileText }
   ]
 
   const paymentMethods = [
-    { value: 'efectivo', label: 'Efectivo', icon: Wallet },
-    { value: 'transferencia', label: 'Transferencia', icon: CreditCard },
-    { value: 'cheque', label: 'Cheque', icon: FileText },
-    { value: 'tarjeta_debito', label: 'Tarjeta de Débito', icon: CreditCard },
-    { value: 'tarjeta_credito', label: 'Tarjeta de Crédito', icon: CreditCard },
-    { value: 'otros', label: 'Otros', icon: Plus }
+    { value: 'cash', label: 'Efectivo', icon: DollarSign },
+    { value: 'transfer', label: 'Transferencia', icon: CreditCard },
+    { value: 'check', label: 'Cheque', icon: FileText },
+    { value: 'card', label: 'Tarjeta', icon: CreditCard }
   ]
 
-  const categories = type === 'income' ? incomeCategories : expenseCategories
-
-  const validateForm = useCallback(() => {
-    const newErrors: ValidationErrors = {}
-
-    const numericAmount = parseFloat(formData.amount.replace(/[^\d]/g, ''))
-    if (!formData.amount || numericAmount <= 0) {
-      newErrors.amount = 'El monto debe ser mayor a 0'
+  const validateField = (field: keyof FormData, value: string | undefined): string => {
+    switch (field) {
+      case 'amount':
+        if (!value || value.trim() === '') return 'El monto es requerido'
+        const numValue = parseFloat(value.replace(/[^\d]/g, ''))
+        if (isNaN(numValue) || numValue <= 0) return 'El monto debe ser mayor a 0'
+        return ''
+      case 'description':
+        if (!value || value.trim() === '') return 'La descripción es requerida'
+        if (value.trim().length < 10) return 'La descripción debe tener al menos 10 caracteres'
+        return ''
+      case 'category':
+        if (!value || value.trim() === '') return 'La categoría es requerida'
+        return ''
+      case 'paymentMethod':
+        if (!value || value.trim() === '') return 'El método de pago es requerido'
+        return ''
+      case 'date':
+        if (!value || value.trim() === '') return 'La fecha es requerida'
+        return ''
+      default:
+        return ''
     }
-
-    if (!formData.description.trim()) {
-      newErrors.description = 'La descripción es requerida'
-    }
-
-    if (!formData.category) {
-      newErrors.category = 'Selecciona una categoría'
-    }
-
-    if (!formData.paymentMethod) {
-      newErrors.paymentMethod = 'Selecciona un método de pago'
-    }
-
-    if (!formData.date) {
-      newErrors.date = 'La fecha es requerida'
-    }
-
-    setErrors(newErrors)
-    setIsValid(Object.keys(newErrors).length === 0)
-  }, [formData])
-
-  useEffect(() => {
-    validateForm()
-  }, [formData, validateForm])
+  }
 
   const handleInputChange = (field: keyof FormData, value: string) => {
-    if (field === 'amount') {
-      // Para el campo de monto, permitir solo números y formatear
-      const numericValue = value.replace(/[^\d]/g, '')
-      setFormData(prev => ({
-        ...prev,
-        [field]: numericValue
-      }))
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [field]: value
-      }))
+    setFormData(prev => ({ ...prev, [field]: value }))
+
+    if (touched[field as keyof TouchedFields]) {
+      const error = validateField(field, value)
+      setErrors(prev => ({ ...prev, [field]: error }))
     }
   }
 
-  const handleFieldBlur = (field: keyof TouchedFields) => {
-    setTouched(prev => ({
-      ...prev,
-      [field]: true
-    }))
+  const handleFieldBlur = (field: keyof FormData) => {
+    setTouched(prev => ({ ...prev, [field]: true }))
+    const error = validateField(field, formData[field])
+    setErrors(prev => ({ ...prev, [field]: error }))
   }
 
-  const shouldShowError = (field: keyof ValidationErrors) => {
-    return touched[field] && errors[field]
+  const shouldShowError = (field: keyof FormData) => {
+    return touched[field as keyof TouchedFields] && !!errors[field]
   }
 
-  // Función para formatear monto en CLP
-  const formatAmount = (value: string) => {
-    if (!value) return ''
+  const isValid = Object.values(errors).every(error => !error) &&
+    formData.amount &&
+    formData.description &&
+    formData.category &&
+    formData.paymentMethod &&
+    formData.date
+
+  const formatCurrencyInput = (value: string) => {
     const numericValue = parseFloat(value.replace(/[^\d]/g, ''))
     if (isNaN(numericValue)) return ''
+
     return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(numericValue)
@@ -204,7 +180,6 @@ export default function CashTransactionForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     // Marcar todos los campos como tocados al intentar enviar
     setTouched({
       amount: true,
@@ -214,361 +189,256 @@ export default function CashTransactionForm({
       date: true
     })
 
-    if (!isValid) return
+    if (!isValid) {
+      return
+    }
 
     setLoading(true)
     try {
-      await onSubmit({
+      const submitData = {
         ...formData,
         amount: parseFloat(formData.amount.replace(/[^\d]/g, ''))
-      })
+      }
+      await onSubmit(submitData)
     } catch (error) {
-      
+      console.error('Error in form submission:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const formatCurrency = (value: string) => {
-    const numValue = parseFloat(value) || 0
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP'
-    }).format(numValue)
-  }
-
   return (
-    <div className="fixed inset-0 bg-transparent flex items-center justify-center p-2 sm:p-4 z-50">
-      <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
-        <Card className="border-0 shadow-soft">
-          <CardHeader className="bg-gradient-to-r from-[#002D71] to-[#1e40af] text-white rounded-t-xl sm:rounded-t-2xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white/20 rounded-xl">
-                  {type === 'income' ? (
-                    <TrendingUp className="h-7 w-7" />
-                  ) : (
-                    <TrendingDown className="h-7 w-7" />
-                  )}
-                </div>
-                <div>
-                  <CardTitle className="text-2xl font-bold text-white">
-                    Registrar {type === 'income' ? 'Ingreso' : 'Gasto'}
-                  </CardTitle>
-                  <p className="text-blue-100 text-sm mt-1">
-                    Completa los detalles del movimiento financiero
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onCancel}
-                className="text-white hover:bg-white/20 rounded-full p-2"
-              >
-                <X className="h-6 w-6" />
-              </Button>
-            </div>
-          </CardHeader>
+    <div className="flex flex-col h-full max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden">
+      {/* Header con botón de cerrar */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-[#002D71] to-[#1e40af] text-white flex-shrink-0">
+        <div className="flex items-center space-x-2">
+          {type === 'income' ? (
+            <TrendingUp className="h-5 w-5" />
+          ) : (
+            <TrendingDown className="h-5 w-5" />
+          )}
+          <h2 className="text-xl font-semibold">
+            Registrar {type === 'income' ? 'Ingreso' : 'Gasto'}
+          </h2>
+        </div>
+        <button
+          onClick={onCancel}
+          className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md border border-white/20"
+          aria-label="Cerrar modal"
+        >
+          <X className="h-4 w-4 text-white" />
+        </button>
+      </div>
 
-          <CardContent className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Sección Principal - Monto y Categoría */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Monto */}
-                <div className="space-y-2">
-                  <Label htmlFor="amount" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-green-600" />
-                    Monto *
-                  </Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-semibold text-lg">
-                      $
-                    </span>
-                    <Input
-                      id="amount"
-                      type="text"
-                      placeholder="0"
-                      value={formData.amount ? formatAmount(formData.amount) : ''}
-                      onChange={(e) => handleInputChange('amount', e.target.value)}
-                      onBlur={() => handleFieldBlur('amount')}
-                      className={`h-12 pl-10 text-lg font-semibold border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 ${shouldShowError('amount')
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
-                        : ''
-                        }`}
-                    />
-                  </div>
-                  {shouldShowError('amount') && (
-                    <p className="text-red-500 text-sm flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.amount}
-                    </p>
-                  )}
-                </div>
-
-                {/* Categoría */}
-                <div className="space-y-2">
-                  <Label htmlFor="category" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Tag className="h-4 w-4 text-blue-600" />
-                    Categoría *
-                  </Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) => {
-                      handleInputChange('category', value)
-                      handleFieldBlur('category')
-                    }}
-                  >
-                    <SelectTrigger className={`h-12 border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 ${shouldShowError('category')
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
-                      : ''
-                      }`}>
-                      <SelectValue placeholder="Seleccionar categoría" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {categories.map((category) => {
-                        const IconComponent = category.icon
-                        return (
-                          <SelectItem key={category.value} value={category.value} className="py-3">
-                            <div className="flex items-center gap-3">
-                              <IconComponent className="h-4 w-4" />
-                              <span className="font-medium">{category.label}</span>
-                            </div>
-                          </SelectItem>
-                        )
-                      })}
-                    </SelectContent>
-                  </Select>
-                  {shouldShowError('category') && (
-                    <p className="text-red-500 text-sm flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.category}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Método de Pago y Fecha */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Método de Pago */}
-                <div className="space-y-2">
-                  <Label htmlFor="paymentMethod" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <CreditCard className="h-4 w-4 text-purple-600" />
-                    Método de Pago *
-                  </Label>
-                  <Select
-                    value={formData.paymentMethod}
-                    onValueChange={(value) => {
-                      handleInputChange('paymentMethod', value)
-                      handleFieldBlur('paymentMethod')
-                    }}
-                  >
-                    <SelectTrigger className={`h-12 border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 ${shouldShowError('paymentMethod')
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
-                      : ''
-                      }`}>
-                      <SelectValue placeholder="Seleccionar método" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {paymentMethods.map((method) => {
-                        const IconComponent = method.icon
-                        return (
-                          <SelectItem key={method.value} value={method.value} className="py-3">
-                            <div className="flex items-center gap-3">
-                              <IconComponent className="h-4 w-4" />
-                              <span className="font-medium">{method.label}</span>
-                            </div>
-                          </SelectItem>
-                        )
-                      })}
-                    </SelectContent>
-                  </Select>
-                  {shouldShowError('paymentMethod') && (
-                    <p className="text-red-500 text-sm flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.paymentMethod}
-                    </p>
-                  )}
-                </div>
-
-                {/* Fecha */}
-                <div className="space-y-2">
-                  <Label htmlFor="date" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-indigo-600" />
-                    Fecha *
-                  </Label>
-                  <Input
-                    id="date"
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => handleInputChange('date', e.target.value)}
-                    onBlur={() => handleFieldBlur('date')}
-                    className={`h-12 border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 ${shouldShowError('date')
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
-                      : ''
-                      }`}
-                  />
-                  {shouldShowError('date') && (
-                    <p className="text-red-500 text-sm flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.date}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Descripción */}
-              <div className="space-y-2">
-                <Label htmlFor="description" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-orange-600" />
-                  Descripción *
-                </Label>
-                <Textarea
-                  id="description"
-                  placeholder="Describe detalladamente el motivo del movimiento..."
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  onBlur={() => handleFieldBlur('description')}
-                  rows={4}
-                  className={`border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 resize-none ${shouldShowError('description')
+      {/* Contenido con scroll */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Sección Principal - Monto y Categoría */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Monto */}
+            <div className="space-y-2">
+              <Label htmlFor="amount" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-green-600" />
+                Monto *
+              </Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-semibold text-lg">
+                  $
+                </span>
+                <Input
+                  id="amount"
+                  type="text"
+                  value={formData.amount}
+                  onChange={(e) => {
+                    const formatted = formatCurrencyInput(e.target.value)
+                    handleInputChange('amount', formatted)
+                  }}
+                  onBlur={() => handleFieldBlur('amount')}
+                  placeholder="0"
+                  className={`pl-8 h-12 text-lg font-semibold border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 ${shouldShowError('amount')
                     ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
                     : ''
                     }`}
                 />
-                {shouldShowError('description') && (
-                  <p className="text-red-500 text-sm flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.description}
-                  </p>
-                )}
               </div>
-
-              {/* Referencia y Notas */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Referencia */}
-                <div className="space-y-2">
-                  <Label htmlFor="reference" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-gray-600" />
-                    Referencia
-                  </Label>
-                  <Input
-                    id="reference"
-                    placeholder="Número de factura, boleta, etc."
-                    value={formData.reference}
-                    onChange={(e) => handleInputChange('reference', e.target.value)}
-                    className="h-12 border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200"
-                  />
-                  <p className="text-xs text-gray-500">Opcional: Número de documento relacionado</p>
-                </div>
-
-                {/* Notas adicionales */}
-                <div className="space-y-2">
-                  <Label htmlFor="notes" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-teal-600" />
-                    Notas Adicionales
-                  </Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Información adicional relevante..."
-                    value={formData.notes}
-                    onChange={(e) => handleInputChange('notes', e.target.value)}
-                    rows={4}
-                    className="border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 resize-none"
-                  />
-                  <p className="text-xs text-gray-500">Opcional: Comentarios adicionales</p>
-                </div>
-              </div>
-
-              {/* Resumen de la transacción */}
-              {formData.amount && formData.category && (
-                <Card className="border-0 shadow-soft">
-                  <CardContent className="p-6">
-                    <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2 text-lg">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      Resumen de la Transacción
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-1">
-                        <span className="text-sm font-medium text-gray-600">Monto:</span>
-                        <div className="text-2xl font-bold text-gray-900">
-                          {formatCurrency(formData.amount)}
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-sm font-medium text-gray-600">Categoría:</span>
-                        <div className="flex items-center">
-                          {(() => {
-                            const category = categories.find(cat => cat.value === formData.category)
-                            const IconComponent = category?.icon || Plus
-                            return (
-                              <div className="flex items-center gap-2">
-                                <IconComponent className="h-4 w-4" />
-                                <Badge variant="secondary" className={`${category?.color} text-xs font-medium px-2 py-1`}>
-                                  {category?.label}
-                                </Badge>
-                              </div>
-                            )
-                          })()}
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-sm font-medium text-gray-600">Método:</span>
-                        <div className="flex items-center">
-                          {(() => {
-                            const method = paymentMethods.find(m => m.value === formData.paymentMethod)
-                            const IconComponent = method?.icon || CreditCard
-                            return (
-                              <div className="flex items-center gap-2">
-                                <IconComponent className="h-4 w-4 text-gray-600" />
-                                <span className="font-medium text-gray-900 text-sm">{method?.label}</span>
-                              </div>
-                            )
-                          })()}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              {shouldShowError('amount') && (
+                <p className="text-red-500 text-sm flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.amount}
+                </p>
               )}
+            </div>
 
-              <Separator className="my-6" />
+            {/* Categoría */}
+            <div className="space-y-2">
+              <Label htmlFor="category" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Tag className="h-4 w-4 text-blue-600" />
+                Categoría *
+              </Label>
+              <ModalSelect
+                value={formData.category}
+                onValueChange={(value) => {
+                  handleInputChange('category', value)
+                  handleFieldBlur('category')
+                }}
+                placeholder="Seleccionar categoría"
+                options={categories.map(category => ({
+                  value: category.value,
+                  label: category.label
+                }))}
+                className={`h-12 border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 ${shouldShowError('category')
+                  ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
+                  : ''
+                  }`}
+                emptyMessage="No se encontraron categorías."
+              />
+              {shouldShowError('category') && (
+                <p className="text-red-500 text-sm flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.category}
+                </p>
+              )}
+            </div>
+          </div>
 
-              {/* Botones de acción */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onCancel}
-                  className="flex-1 h-12 text-gray-700 hover:bg-gray-50 border-gray-200 hover:border-gray-300 transition-colors"
-                  disabled={loading}
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  className={`flex-1 h-12 transition-colors font-medium ${type === 'income'
-                    ? 'bg-green-600 hover:bg-green-700 text-white'
-                    : 'bg-red-600 hover:bg-red-700 text-white'
-                    } ${!isValid ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  disabled={loading || !isValid}
-                >
-                  {loading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Guardando...
-                    </div>
-                  ) : (
-                    <div className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      {`Registrar ${type === 'income' ? 'Ingreso' : 'Gasto'}`}
-                    </div>
-                  )}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+          {/* Método de Pago y Fecha */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Método de Pago */}
+            <div className="space-y-2">
+              <Label htmlFor="paymentMethod" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <CreditCard className="h-4 w-4 text-purple-600" />
+                Método de Pago *
+              </Label>
+              <ModalSelect
+                value={formData.paymentMethod}
+                onValueChange={(value) => {
+                  handleInputChange('paymentMethod', value)
+                  handleFieldBlur('paymentMethod')
+                }}
+                placeholder="Seleccionar método"
+                options={paymentMethods.map(method => ({
+                  value: method.value,
+                  label: method.label
+                }))}
+                className={`h-12 border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 ${shouldShowError('paymentMethod')
+                  ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
+                  : ''
+                  }`}
+                emptyMessage="No se encontraron métodos de pago."
+              />
+              {shouldShowError('paymentMethod') && (
+                <p className="text-red-500 text-sm flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.paymentMethod}
+                </p>
+              )}
+            </div>
+
+            {/* Fecha */}
+            <div className="space-y-2">
+              <Label htmlFor="date" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-orange-600" />
+                Fecha *
+              </Label>
+              <Input
+                id="date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => handleInputChange('date', e.target.value)}
+                onBlur={() => handleFieldBlur('date')}
+                className={`h-12 border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 ${shouldShowError('date')
+                  ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
+                  : ''
+                  }`}
+              />
+              {shouldShowError('date') && (
+                <p className="text-red-500 text-sm flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.date}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Descripción */}
+          <div className="space-y-2">
+            <Label htmlFor="description" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-indigo-600" />
+              Descripción *
+            </Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              onBlur={() => handleFieldBlur('description')}
+              placeholder="Describe detalladamente el motivo del movimiento..."
+              className={`min-h-[100px] border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 resize-none ${shouldShowError('description')
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
+                : ''
+                }`}
+            />
+            {shouldShowError('description') && (
+              <p className="text-red-500 text-sm flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.description}
+              </p>
+            )}
+          </div>
+
+          {/* Referencia */}
+          <div className="space-y-2">
+            <Label htmlFor="reference" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-gray-600" />
+              Referencia
+            </Label>
+            <Input
+              id="reference"
+              type="text"
+              value={formData.reference}
+              onChange={(e) => handleInputChange('reference', e.target.value)}
+              placeholder="Número de factura, boleta, etc."
+              className="h-12 border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200"
+            />
+            <p className="text-xs text-gray-500">Opcional: Número de documento relacionado</p>
+          </div>
+
+          {/* Notas Adicionales */}
+          <div className="space-y-2">
+            <Label htmlFor="notes" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-gray-600" />
+              Notas Adicionales
+            </Label>
+            <Textarea
+              id="notes"
+              value={formData.notes || ''}
+              onChange={(e) => handleInputChange('notes', e.target.value)}
+              placeholder="Información adicional relevante..."
+              className="min-h-[80px] border-gray-200 focus:border-[#002D71] focus:ring-[#002D71] transition-all duration-200 resize-none"
+            />
+            <p className="text-xs text-gray-500">Opcional: Comentarios adicionales</p>
+          </div>
+        </form>
+      </div>
+
+      {/* Footer con botones */}
+      <div className="flex justify-end space-x-4 p-6 border-t border-gray-200 bg-gray-50/50 flex-shrink-0">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={loading}
+          className="px-6 py-2"
+        >
+          Cancelar
+        </Button>
+        <Button
+          type="submit"
+          disabled={loading || !isValid}
+          className="px-6 py-2 bg-[#002D71] hover:bg-[#001a4d] text-white"
+          onClick={handleSubmit}
+        >
+          {loading ? "Guardando..." : "Registrar"}
+        </Button>
       </div>
     </div>
   )

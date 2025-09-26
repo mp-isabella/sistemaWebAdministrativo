@@ -142,7 +142,6 @@ export const performanceUtils = {
     const start = performance.now();
     fn();
     const end = performance.now();
-    console.log(`${name} took ${end - start} milliseconds`);
   },
 
   // Medir tiempo de una función async
@@ -150,7 +149,6 @@ export const performanceUtils = {
     const start = performance.now();
     const result = await fn();
     const end = performance.now();
-    console.log(`${name} took ${end - start} milliseconds`);
     return result;
   },
 
@@ -225,7 +223,6 @@ export const usePerformance = () => {
     return () => {
       const end = performance.now();
       if (performanceUtils.isDevelopment()) {
-        console.log(`${componentName} render took ${end - start} milliseconds`);
       }
     };
   };
@@ -236,13 +233,11 @@ export const usePerformance = () => {
       const result = await apiCall();
       const end = performance.now();
       if (performanceUtils.isDevelopment()) {
-        console.log(`${apiName} API call took ${end - start} milliseconds`);
       }
       return result;
     } catch (error) {
       const end = performance.now();
       if (performanceUtils.isDevelopment()) {
-        console.log(`${apiName} API call failed after ${end - start} milliseconds`);
       }
       throw error;
     }

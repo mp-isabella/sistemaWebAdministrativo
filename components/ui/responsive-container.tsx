@@ -21,12 +21,8 @@ export default function ResponsiveContainer({
   center = true,
   fullHeight = false,
 }: ResponsiveContainerProps) {
-  const { isMobile, isTablet, isDesktop } = useResponsive();
-  // Variables are used in the component logic below
+  const { } = useResponsive();
   const responsiveClasses = useResponsiveClasses();
-
-  // Use the destructured variables to avoid unused variable warnings
-  console.log('Responsive state:', { isMobile, isTablet, isDesktop });
 
   const containerClasses = cn(
     // Base classes

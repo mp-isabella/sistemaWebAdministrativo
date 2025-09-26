@@ -1,0 +1,197 @@
+/* Fix limpio y optimizado para formularios de clientes */
+/* Solución unificada para todos los selectores y popovers */
+
+/* ===== CONFIGURACIÓN BASE ===== */
+.client-form {
+  position: relative;
+  overflow: visible;
+}
+
+.client-form .space-y-4,
+.client-form .relative {
+  position: relative;
+  overflow: visible;
+}
+
+/* ===== SELECTORES RADIX UI ===== */
+.client-form [data-radix-select-content] {
+  position: absolute !important;
+  z-index: 50 !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-height: 200px !important;
+  overflow-y: auto !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  margin-top: 0.25rem !important;
+  transform: none !important;
+}
+
+/* ===== POPOVERS (AUTOCOMPLETE SELECT) ===== */
+.client-form [data-radix-popover-content] {
+  position: absolute !important;
+  z-index: 50 !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-height: 200px !important;
+  overflow-y: auto !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  margin-top: 0.25rem !important;
+  transform: none !important;
+}
+
+/* ===== TRIGGERS ===== */
+.client-form [data-radix-select-trigger],
+.client-form [data-radix-popover-trigger] {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== MODALES ===== */
+.modal-open .client-form [data-radix-select-content],
+.modal-open .client-form [data-radix-popover-content] {
+  z-index: 10000 !important;
+}
+
+/* ===== ELEMENTOS INTERNOS ===== */
+.client-form [data-radix-select-content] > *,
+.client-form [data-radix-popover-content] > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== ITEMS DE SELECTORES ===== */
+.client-form [data-radix-select-content] [data-radix-select-item] {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  margin: 0.125rem;
+  transition: background-color 0.15s ease;
+}
+
+.client-form [data-radix-select-content] [data-radix-select-item]:hover {
+  background-color: #f3f4f6;
+}
+
+.client-form [data-radix-select-content] [data-radix-select-item][data-highlighted] {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.client-form [data-radix-select-content] [data-radix-select-item][data-state="checked"] {
+  background-color: #dbeafe;
+  color: #1e40af;
+  font-weight: 600;
+}
+
+/* ===== ITEMS DE POPOVERS (COMMAND ITEMS) ===== */
+.client-form [data-radix-popover-content] [cmdk-item] {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  margin: 0.125rem;
+  transition: background-color 0.15s ease;
+}
+
+.client-form [data-radix-popover-content] [cmdk-item]:hover {
+  background-color: #f3f4f6;
+}
+
+.client-form [data-radix-popover-content] [cmdk-item][data-highlighted] {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.client-form [data-radix-popover-content] [cmdk-item][data-selected] {
+  background-color: #dbeafe;
+  color: #1e40af;
+  font-weight: 600;
+}
+
+/* ===== SCROLLBARS ===== */
+.client-form [data-radix-select-content],
+.client-form [data-radix-popover-content] {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.client-form [data-radix-select-content]::-webkit-scrollbar,
+.client-form [data-radix-popover-content]::-webkit-scrollbar {
+  width: 6px;
+}
+
+.client-form [data-radix-select-content]::-webkit-scrollbar-track,
+.client-form [data-radix-popover-content]::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.client-form [data-radix-select-content]::-webkit-scrollbar-thumb,
+.client-form [data-radix-popover-content]::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.client-form [data-radix-select-content]::-webkit-scrollbar-thumb:hover,
+.client-form [data-radix-popover-content]::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .client-form [data-radix-select-content],
+  .client-form [data-radix-popover-content] {
+    max-height: 150px;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .client-form [data-radix-select-content],
+  .client-form [data-radix-popover-content] {
+    max-height: 250px;
+  }
+}
+
+/* ===== CONTENEDORES CON OVERFLOW ===== */
+.client-form .bg-white [data-radix-select-content],
+.client-form .bg-white [data-radix-popover-content] {
+  position: absolute !important;
+  z-index: 50 !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+}
+
+/* ===== FORZAR POSICIONAMIENTO ===== */
+.client-form [data-radix-select-content][data-side="bottom"],
+.client-form [data-radix-select-content][data-side="bottom-end"],
+.client-form [data-radix-popover-content][data-side="bottom"],
+.client-form [data-radix-popover-content][data-side="bottom-end"] {
+  top: 100% !important;
+  bottom: auto !important;
+  transform: none !important;
+}
+
+/* ===== WRAPPERS ===== */
+.client-form [data-radix-select-content-wrapper],
+.client-form [data-radix-popover-content-wrapper] {
+  position: absolute !important;
+  z-index: 50 !important;
+}
+
+/* ===== ROOTS ===== */
+.client-form [data-radix-select-root],
+.client-form [data-radix-popover-root] {
+  position: relative;
+}

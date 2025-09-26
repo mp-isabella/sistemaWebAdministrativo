@@ -85,13 +85,12 @@ export default function CompanyLogo({
           width={200}
           height={100}
           className="w-full h-full object-contain"
-          onError={() => {
-
+          onError={(e) => {
+            console.error(`Error loading logo: ${finalLogo}`, e)
             setIsLoading(false)
             setHasError(true)
           }}
           onLoad={() => {
-
             setIsLoading(false)
           }}
         />

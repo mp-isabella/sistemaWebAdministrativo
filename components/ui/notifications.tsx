@@ -18,8 +18,6 @@ const Notifications: React.FC<NotificationsProps> = ({ userRole, userId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const {
     unreadCount,
-    addNotification: _addNotification,
-    addJobNotification: _addJobNotification,
     markAsRead,
     markAllAsRead,
     removeNotification,

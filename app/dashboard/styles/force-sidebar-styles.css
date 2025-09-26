@@ -1,0 +1,70 @@
+/* ===== FORZAR ESTILOS DEL SIDEBAR - MÁXIMA ESPECIFICIDAD ===== */
+
+/* Estilos globales para forzar fondo gris en todos los elementos activos */
+.dashboard-sidebar nav a[href="/dashboard/schedule/calendar"],
+.dashboard-sidebar nav a[href="/dashboard/clients"],
+.dashboard-sidebar nav a[href="/dashboard/workers"],
+.dashboard-sidebar nav a[href="/dashboard/cash"],
+.dashboard-sidebar nav a[href="/dashboard/quotes"],
+.dashboard-sidebar nav a[href="/dashboard/liquidations"],
+.dashboard-sidebar nav a[href="/dashboard/reports"],
+.dashboard-sidebar nav a[href="/dashboard/admin"] {
+  background-color: rgba(71, 85, 105, 0.7) !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+/* Forzar estilos para cualquier fondo azul */
+.dashboard-sidebar nav a[class*="bg-gradient-to-r"],
+.dashboard-sidebar nav a[class*="from-blue-600"],
+.dashboard-sidebar nav a[class*="to-blue-500"],
+.dashboard-sidebar nav a[class*="bg-blue-600"],
+.dashboard-sidebar nav a[class*="bg-blue-500"],
+.dashboard-sidebar nav a[class*="bg-slate-700"] {
+  background-color: rgba(71, 85, 105, 0.7) !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+/* Forzar estilos para elementos con estilos inline */
+.dashboard-sidebar nav a[style*="background-color: rgb(37, 99, 235)"],
+.dashboard-sidebar nav a[style*="background-color: rgb(59, 130, 246)"],
+.dashboard-sidebar nav a[style*="background-color: #2563eb"],
+.dashboard-sidebar nav a[style*="background-color: #3b82f6"],
+.dashboard-sidebar nav a[style*="background-color: #1d4ed8"],
+.dashboard-sidebar nav a[style*="background-color: #1e40af"] {
+  background-color: rgba(71, 85, 105, 0.7) !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+/* Forzar estilos para elementos con cualquier fondo */
+.dashboard-sidebar nav a[style*="background"] {
+  background-color: rgba(71, 85, 105, 0.7) !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+/* Forzar estilos para elementos activos con cualquier clase */
+.dashboard-sidebar nav a[class*="active"],
+.dashboard-sidebar nav a[class*="selected"],
+.dashboard-sidebar nav a[class*="current"],
+.dashboard-sidebar nav a[class*="sidebar-active-item"],
+.dashboard-sidebar nav a[class*="force-grey-bg"] {
+  background-color: rgba(71, 85, 105, 0.7) !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+/* Estilos para elementos inactivos */
+.dashboard-sidebar nav a:not([href="/dashboard/schedule/calendar"]):not([href="/dashboard/clients"]):not([href="/dashboard/workers"]):not([href="/dashboard/cash"]):not([href="/dashboard/quotes"]):not([href="/dashboard/liquidations"]):not([href="/dashboard/reports"]):not([href="/dashboard/admin"]) {
+  background-color: transparent !important;
+  background-image: none !important;
+  color: #cbd5e1 !important;
+}
+
+/* Estilos para hover */
+.dashboard-sidebar nav a:hover {
+  background-color: rgba(71, 85, 105, 0.5) !important;
+  color: white !important;
+}

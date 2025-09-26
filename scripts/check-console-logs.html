@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Logs de Consola</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .step {
+            margin: 15px 0;
+            padding: 10px;
+            border-left: 4px solid #007bff;
+            background-color: #f8f9fa;
+        }
+
+        .code {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+
+        .button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔍 Verificador de Logs de Consola</h1>
+
+        <div class="step">
+            <h3>Paso 1: Abrir Herramientas de Desarrollador</h3>
+            <p>Presiona <strong>F12</strong> o <strong>Ctrl + Shift + I</strong></p>
+        </div>
+
+        <div class="step">
+            <h3>Paso 2: Ir a la pestaña "Console"</h3>
+            <p>Haz clic en la pestaña "Console" en las herramientas de desarrollador</p>
+        </div>
+
+        <div class="step">
+            <h3>Paso 3: Buscar estos logs específicos</h3>
+            <p>Deberías ver estos logs en la consola:</p>
+            <div class="code">
+                📋 Trabajos cargados desde la API (orden por fecha de creación):<br>
+                1. [Nombre del trabajo] - Creado: [fecha]<br>
+                🔄 Ordenando: [trabajo1] vs [trabajo2]<br>
+                📋 Orden final de trabajos filtrados:<br>
+                1. [trabajo] - Creado: [fecha]
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Paso 4: Verificar el orden correcto</h3>
+            <p>El orden debería ser:</p>
+            <div class="code">
+                1. Destape de alcantarillado (26-09 15:57) - MÁS RECIENTE<br>
+                2. Video inspección de ductos (26-09 12:48)<br>
+                3. Destape de alcantarillado (25-09 23:16)<br>
+                4. Detección de fugas de agua (25-09 23:09) - MÁS ANTIGUO
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Paso 5: Si no ves los logs</h3>
+            <p>Prueba estas soluciones:</p>
+            <button class="button" onclick="clearCacheAndReload()">🔄 Limpiar Caché y Recargar</button>
+            <button class="button" onclick="openIncognito()">👁️ Abrir en Modo Incógnito</button>
+            <button class="button" onclick="checkLogs()">🔍 Verificar Logs</button>
+        </div>
+
+        <div id="result" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        function clearCacheAndReload() {
+            console.log("🔄 Limpiando caché y recargando...");
+
+            // Limpiar caché del navegador
+            if ('caches' in window) {
+                caches.keys().then(function (names) {
+                    for (let name of names) {
+                        caches.delete(name);
+                    }
+                    console.log("✅ Caché del navegador limpiado");
+                });
+            }
+
+            // Limpiar localStorage y sessionStorage
+            localStorage.clear();
+            sessionStorage.clear();
+            console.log("✅ Almacenamiento local limpiado");
+
+            // Recargar con parámetros de caché
+            const url = new URL(window.location.href);
+            url.searchParams.set('t', Date.now());
+            url.searchParams.set('nocache', Math.random());
+            url.searchParams.set('debug', 'true');
+
+            setTimeout(() => {
+                window.location.replace(url.toString());
+            }, 1000);
+        }
+
+        function openIncognito() {
+            const url = `http://localhost:3000/dashboard/schedule?t=${Date.now()}&debug=true&nocache=${Math.random()}`;
+            window.open(url, '_blank');
+        }
+
+        function checkLogs() {
+            const resultDiv = document.getElementById('result');
+
+            // Verificar si estamos en la página correcta
+            if (window.location.href.includes('/dashboard/schedule')) {
+                resultDiv.innerHTML = '<div class="success">✅ Estás en la página correcta: /dashboard/schedule</div>';
+
+                // Verificar si hay logs en la consola
+                console.log('🔍 Verificando logs de consola...');
+                console.log('📋 Este es un log de prueba - si lo ves, la consola funciona');
+
+                resultDiv.innerHTML += '<div class="success">✅ Log de prueba enviado a la consola</div>';
+                resultDiv.innerHTML += '<div>💡 Revisa la consola para ver si aparecen los logs de debug</div>';
+            } else {
+                resultDiv.innerHTML = '<div class="error">❌ No estás en la página correcta. Ve a /dashboard/schedule</div>';
+            }
+        }
+
+        // Verificar automáticamente al cargar
+        window.onload = function () {
+            console.log('🔍 Página de verificación cargada');
+            checkLogs();
+        };
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,68 @@
+/* ===== FIX PARA ICONOS DE BÚSQUEDA - POSICIONAMIENTO CORRECTO ===== */
+
+/* Estilos básicos para asegurar que los iconos funcionen correctamente */
+.relative {
+  position: relative;
+}
+
+/* Asegurar que los iconos de búsqueda estén correctamente posicionados */
+.absolute {
+  position: absolute;
+}
+
+/* Asegurar que el z-index funcione correctamente */
+.z-10 {
+  z-index: 10;
+}
+
+/* Asegurar que los inputs tengan el padding correcto */
+.pl-10 {
+  padding-left: 2.5rem !important;
+}
+
+/* Asegurar que los iconos estén centrados verticalmente */
+.left-3 {
+  left: 0.75rem;
+}
+
+.top-1\/2 {
+  top: 50%;
+}
+
+.-translate-y-1\/2 {
+  transform: translateY(-50%);
+}
+
+/* Asegurar que el centrado vertical funcione correctamente */
+.absolute {
+  position: absolute;
+}
+
+/* Fix específico para el centrado vertical */
+[class*="Search"] {
+  position: absolute !important;
+  left: 0.75rem !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 10 !important;
+  pointer-events: none !important;
+}
+
+/* Asegurar que los iconos no interfieran con el input */
+.pointer-events-none {
+  pointer-events: none;
+}
+
+/* Asegurar que los iconos mantengan su posición */
+.h-4 {
+  height: 1rem;
+}
+
+.w-4 {
+  width: 1rem;
+}
+
+/* Asegurar que los iconos estén dentro del campo */
+.overflow-hidden {
+  overflow: hidden;
+}

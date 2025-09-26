@@ -203,9 +203,7 @@ export const sendPracticalEmail = async (data: PracticalEmailData): Promise<{
     localStorage.setItem('cotizaciones', JSON.stringify(cotizaciones));
 
     // Log detallado
-    console.log('Error processing quote: Services unavailable');
     if (data.mensaje) {
-      console.log('Message:', data.mensaje);
     }
     return {
       success: true,

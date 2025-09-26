@@ -1,0 +1,87 @@
+/* Fix para el sidebar oscuro - hacerlo más sutil */
+[data-sidebar] {
+  width: 240px !important;
+  min-width: 240px !important;
+  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%) !important;
+  border-right: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Logo section más sutil */
+[data-sidebar] .flex.items-center.justify-between {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Texto del logo en colores más suaves */
+[data-sidebar] h1 {
+  color: #374151 !important;
+  font-weight: 600 !important;
+}
+
+[data-sidebar] p {
+  color: #6b7280 !important;
+}
+
+/* Navegación más sutil */
+[data-sidebar] nav a {
+  color: #4b5563 !important;
+  background: transparent !important;
+  border-radius: 0.5rem !important;
+  margin-bottom: 0.25rem !important;
+}
+
+[data-sidebar] nav a:hover {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #1d4ed8 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+[data-sidebar] nav a[class*="bg-gradient-to-r"] {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #1d4ed8 !important;
+}
+
+/* Iconos más sutiles */
+[data-sidebar] nav a .group-hover\:bg-slate-600\/30 {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+[data-sidebar] nav a .group-hover\:bg-slate-600\/30 svg {
+  color: #1d4ed8 !important;
+}
+
+/* Footer más sutil */
+[data-sidebar] .absolute.bottom-0 {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+[data-sidebar] .absolute.bottom-0 .text-slate-400 {
+  color: #6b7280 !important;
+}
+
+/* Ajustar el contenido principal para el nuevo ancho del sidebar */
+.main-content-mobile {
+  margin-left: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* En desktop, ajustar el margen */
+@media (min-width: 1024px) {
+  .main-content-mobile {
+    margin-left: 240px !important;
+    width: calc(100vw - 240px) !important;
+    max-width: calc(100vw - 240px) !important;
+  }
+}
+
+/* Hacer el sidebar más compacto en mobile */
+@media (max-width: 1023px) {
+  [data-sidebar] {
+    width: 100% !important;
+    max-width: 320px !important;
+  }
+}

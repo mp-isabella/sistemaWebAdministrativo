@@ -1,16 +1,13 @@
 "use client"
 
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AutocompleteSelect } from "@/components/ui/autocomplete-select"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import ResponsiveContainer, { ResponsiveFlex, ResponsiveGrid } from "@/components/ui/responsive-container"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useResponsive } from "@/hooks/use-responsive"
+import { ModalSelect } from "@/components/ui/modal-select"
+import { ResponsiveGrid } from "@/components/ui/responsive-container"
 import { REGIONES_Y_COMUNAS } from "@/lib/regions-communes"
-import { Building, CreditCard, Mail, MapPin, Phone, User } from 'lucide-react'
+import { CreditCard, Mail, Phone, User } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 export interface ClientData {
@@ -35,10 +32,20 @@ interface ClientFormProps {
 export default function ClientForm({ client, onSubmit, onCancel, loading = false }: ClientFormProps) {
   // Usar el mapeo completo de regiones y comunas
   const regionCommuneMap = useMemo(() => REGIONES_Y_COMUNAS, []);
-  const { isMobile, isTablet } = useResponsive();
+
+  // Listener para cerrar modal al hacer clic fuera
+  useEffect(() => {
+    const handleCloseModal = () => {
+      onCancel();
+    };
+
+    window.addEventListener('closeModal', handleCloseModal);
+    return () => {
+      window.removeEventListener('closeModal', handleCloseModal);
+    };
+  }, [onCancel]);
 
   // Use the destructured variables to avoid unused variable warnings
-  console.log('Responsive state:', { isMobile, isTablet });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -209,234 +216,241 @@ export default function ClientForm({ client, onSubmit, onCancel, loading = false
   }
 
   return (
-    <ResponsiveContainer className="w-full max-w-2xl mx-auto">
-      <Card className="w-full">
-        <CardHeader className="p-3 sm:p-4 lg:p-6 pb-4">
-          <CardTitle className="flex items-center space-x-2 text-lg sm:text-xl">
-            <User className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span>{client ? "Editar Cliente" : "Nuevo Cliente"}</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-3 sm:p-4 lg:p-6">
-          <form onSubmit={handleSubmit} className="client-form space-y-3 sm:space-y-4">
-            {/* Nombre y RUT */}
-            <ResponsiveGrid
-              cols={{ mobile: 1, tablet: 2, desktop: 2 }}
-              gap="md"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm sm:text-base">Nombre/Razón Social *</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Nombre del cliente"
-                    value={formData.name}
-                    onChange={(e) => handleChange("name", e.target.value)}
-                    className={`pl-10 text-sm sm:text-base ${errors.name ? "border-red-500" : ""}`}
-                  />
-                </div>
-                {errors.name && (
-                  <Alert variant="destructive" className="text-xs sm:text-sm">
-                    <AlertDescription>{errors.name}</AlertDescription>
-                  </Alert>
-                )}
-              </div>
+    <div className="flex flex-col h-full max-h-[85vh] sm:max-h-[80vh] bg-white rounded-2xl shadow-2xl overflow-hidden client-form-modal">
+      {/* Header con botón de cerrar */}
+      <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gray-50/50 flex-shrink-0">
+        <div className="flex items-center space-x-2">
+          <User className="h-5 w-5 text-gray-600" />
+          <h2 className="text-xl font-semibold text-gray-900">
+            {client ? "Editar Cliente" : "Nuevo Cliente"}
+          </h2>
+        </div>
+        <button
+          onClick={onCancel}
+          className="w-8 h-8 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md border border-gray-200"
+          aria-label="Cerrar modal"
+        >
+          <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="rut" className="text-sm sm:text-base">RUT</Label>
-                <div className="relative">
-                  <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="rut"
-                    type="text"
-                    placeholder="12.345.678-9"
-                    value={formData.rut}
-                    onChange={(e) => handleChange("rut", e.target.value)}
-                    className="pl-10 text-sm sm:text-base"
-                  />
-                </div>
-              </div>
-            </ResponsiveGrid>
-
-            {/* Teléfono y Email */}
-            <ResponsiveGrid
-              cols={{ mobile: 1, tablet: 2, desktop: 2 }}
-              gap="md"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-sm sm:text-base">Teléfono *</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+56 9 1234 5678"
-                    value={formData.phone}
-                    onChange={(e) => handleChange("phone", e.target.value)}
-                    className={`pl-10 text-sm sm:text-base ${errors.phone ? "border-red-500" : ""}`}
-                  />
-                </div>
-                {errors.phone && (
-                  <Alert variant="destructive" className="text-xs sm:text-sm">
-                    <AlertDescription>{errors.phone}</AlertDescription>
-                  </Alert>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm sm:text-base">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="correo@ejemplo.com"
-                    value={formData.email}
-                    onChange={(e) => handleChange("email", e.target.value)}
-                    className={`pl-10 text-sm sm:text-base ${errors.email ? "border-red-500" : ""}`}
-                  />
-                </div>
-                {errors.email && (
-                  <Alert variant="destructive" className="text-xs sm:text-sm">
-                    <AlertDescription>{errors.email}</AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            </ResponsiveGrid>
-
-            {/* Dirección */}
+      {/* Contenido con scroll */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <form onSubmit={handleSubmit} className="client-form space-y-3 sm:space-y-4">
+          {/* Nombre y RUT */}
+          <ResponsiveGrid
+            cols={{ mobile: 1, tablet: 2, desktop: 2 }}
+            gap="md"
+          >
             <div className="space-y-2">
-              <Label htmlFor="address" className="text-sm sm:text-base">Dirección (Calle) *</Label>
+              <Label htmlFor="name" className="text-sm sm:text-base">Nombre/Razón Social *</Label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 flex items-center justify-center" />
                 <Input
-                  id="address"
+                  id="name"
                   type="text"
-                  placeholder="Calle y número"
-                  value={formData.address}
-                  onChange={(e) => handleChange("address", e.target.value)}
-                  className={`pl-10 text-sm sm:text-base ${errors.address ? "border-red-500" : ""}`}
+                  placeholder="Nombre del cliente"
+                  value={formData.name}
+                  onChange={(e) => handleChange("name", e.target.value)}
+                  className={`pl-10 text-sm sm:text-base h-11 ${errors.name ? "border-red-500" : ""}`}
                 />
               </div>
-              {errors.address && (
+              {errors.name && (
                 <Alert variant="destructive" className="text-xs sm:text-sm">
-                  <AlertDescription>{errors.address}</AlertDescription>
+                  <AlertDescription>{errors.name}</AlertDescription>
                 </Alert>
               )}
             </div>
 
-            {/* Región y Comuna */}
-            <ResponsiveGrid
-              cols={{ mobile: 1, tablet: 2, desktop: 2 }}
-              gap="md"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="region" className="text-sm sm:text-base">Región *</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
-                  <AutocompleteSelect
-                    value={formData.region}
-                    onValueChange={handleRegionChange}
-                    placeholder="Seleccionar región"
-                    options={regionOptions}
-                    className={`pl-10 text-sm sm:text-base h-11 ${errors.region ? "border-red-500" : ""}`}
-                    emptyMessage="No se encontraron regiones."
-                  />
-                </div>
-                {errors.region && (
-                  <Alert variant="destructive" className="text-xs sm:text-sm">
-                    <AlertDescription>{errors.region}</AlertDescription>
-                  </Alert>
-                )}
+            <div className="space-y-2">
+              <Label htmlFor="rut" className="text-sm sm:text-base">RUT</Label>
+              <div className="relative">
+                <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 flex items-center justify-center" />
+                <Input
+                  id="rut"
+                  type="text"
+                  placeholder="12.345.678-9"
+                  value={formData.rut}
+                  onChange={(e) => handleChange("rut", e.target.value)}
+                  className="pl-10 text-sm sm:text-base h-11"
+                />
               </div>
+            </div>
+          </ResponsiveGrid>
 
-              <div className="space-y-2">
-                <Label htmlFor="commune" className="text-sm sm:text-base">Comuna *</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
-                  <AutocompleteSelect
-                    value={formData.commune}
-                    onValueChange={(value) => handleChange("commune", value)}
-                    placeholder="Seleccionar comuna"
-                    options={communeOptions}
-                    className={`pl-10 text-sm sm:text-base h-11 ${errors.commune ? "border-red-500" : ""}`}
-                    emptyMessage="No se encontraron comunas."
-                    disabled={!formData.region}
-                  />
-                </div>
-                {errors.commune && (
-                  <Alert variant="destructive" className="text-xs sm:text-sm">
-                    <AlertDescription>{errors.commune}</AlertDescription>
-                  </Alert>
-                )}
+          {/* Teléfono y Email */}
+          <ResponsiveGrid
+            cols={{ mobile: 1, tablet: 2, desktop: 2 }}
+            gap="md"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-sm sm:text-base">Teléfono *</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 flex items-center justify-center" />
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="+56 9 1234 5678"
+                  value={formData.phone}
+                  onChange={(e) => handleChange("phone", e.target.value)}
+                  className={`pl-10 text-sm sm:text-base h-11 ${errors.phone ? "border-red-500" : ""}`}
+                />
               </div>
-            </ResponsiveGrid>
+              {errors.phone && (
+                <Alert variant="destructive" className="text-xs sm:text-sm">
+                  <AlertDescription>{errors.phone}</AlertDescription>
+                </Alert>
+              )}
+            </div>
 
-            {/* Empresa y Estado */}
-            <ResponsiveGrid
-              cols={{ mobile: 1, tablet: 2, desktop: 2 }}
-              gap="md"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="company" className="text-sm sm:text-base">Empresa</Label>
-                <div className="relative">
-                  <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
-                  <AutocompleteSelect
-                    value={formData.company}
-                    onValueChange={(value) => handleChange("company", value)}
-                    placeholder="Seleccionar empresa"
-                    options={companyOptions}
-                    className="pl-10 text-sm sm:text-base h-11"
-                    emptyMessage="No se encontraron empresas."
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm sm:text-base">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 flex items-center justify-center" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="correo@ejemplo.com"
+                  value={formData.email}
+                  onChange={(e) => handleChange("email", e.target.value)}
+                  className={`pl-10 text-sm sm:text-base h-11 ${errors.email ? "border-red-500" : ""}`}
+                />
               </div>
+              {errors.email && (
+                <Alert variant="destructive" className="text-xs sm:text-sm">
+                  <AlertDescription>{errors.email}</AlertDescription>
+                </Alert>
+              )}
+            </div>
+          </ResponsiveGrid>
 
-              <div className="space-y-2">
-                <Label htmlFor="status" className="text-sm sm:text-base">Estado</Label>
-                <div className="relative">
-                  <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
-                    <SelectTrigger className="text-sm sm:text-base">
-                      <SelectValue placeholder="Seleccionar estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Activo</SelectItem>
-                      <SelectItem value="inactive">Inactivo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+          {/* Dirección */}
+          <div className="space-y-2">
+            <Label htmlFor="address" className="text-sm sm:text-base">Dirección (Calle) *</Label>
+            <div className="relative">
+              <Input
+                id="address"
+                type="text"
+                placeholder="Calle y número"
+                value={formData.address}
+                onChange={(e) => handleChange("address", e.target.value)}
+                className={`text-sm sm:text-base h-11 ${errors.address ? "border-red-500" : ""}`}
+              />
+            </div>
+            {errors.address && (
+              <Alert variant="destructive" className="text-xs sm:text-sm">
+                <AlertDescription>{errors.address}</AlertDescription>
+              </Alert>
+            )}
+          </div>
+
+          {/* Región y Comuna */}
+          <ResponsiveGrid
+            cols={{ mobile: 1, tablet: 2, desktop: 2 }}
+            gap="md"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="region" className="text-sm sm:text-base">Región *</Label>
+              <div className="relative">
+                <ModalSelect
+                  value={formData.region}
+                  onValueChange={handleRegionChange}
+                  placeholder="Seleccionar región"
+                  options={regionOptions}
+                  className={`text-sm sm:text-base h-11 ${errors.region ? "border-red-500" : ""}`}
+                  emptyMessage="No se encontraron regiones."
+                />
               </div>
-            </ResponsiveGrid>
+              {errors.region && (
+                <Alert variant="destructive" className="text-xs sm:text-sm">
+                  <AlertDescription>{errors.region}</AlertDescription>
+                </Alert>
+              )}
+            </div>
 
-            {/* Botones */}
-            <ResponsiveFlex
-              direction="responsive"
-              justify="end"
-              gap="md"
-              className="pt-3 sm:pt-4"
-            >
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                disabled={loading}
-                className="w-full sm:w-auto text-sm sm:text-base"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto text-sm sm:text-base"
-              >
-                {loading ? "Guardando..." : client ? "Actualizar" : "Crear"}
-              </Button>
-            </ResponsiveFlex>
-          </form>
-        </CardContent>
-      </Card>
-    </ResponsiveContainer>
+            <div className="space-y-2">
+              <Label htmlFor="commune" className="text-sm sm:text-base">Comuna *</Label>
+              <div className="relative">
+                <ModalSelect
+                  value={formData.commune}
+                  onValueChange={(value) => handleChange("commune", value)}
+                  placeholder="Seleccionar comuna"
+                  options={communeOptions}
+                  className={`text-sm sm:text-base h-11 ${errors.commune ? "border-red-500" : ""}`}
+                  emptyMessage="No se encontraron comunas."
+                  disabled={!formData.region}
+                />
+              </div>
+              {errors.commune && (
+                <Alert variant="destructive" className="text-xs sm:text-sm">
+                  <AlertDescription>{errors.commune}</AlertDescription>
+                </Alert>
+              )}
+            </div>
+          </ResponsiveGrid>
+
+          {/* Empresa y Estado */}
+          <ResponsiveGrid
+            cols={{ mobile: 1, tablet: 2, desktop: 2 }}
+            gap="md"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="company" className="text-sm sm:text-base">Empresa</Label>
+              <div className="relative">
+                <ModalSelect
+                  value={formData.company}
+                  onValueChange={(value) => handleChange("company", value)}
+                  placeholder="Seleccionar empresa"
+                  options={companyOptions}
+                  className="text-sm sm:text-base h-11"
+                  emptyMessage="No se encontraron empresas."
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status" className="text-sm sm:text-base">Estado</Label>
+              <div className="relative">
+                <ModalSelect
+                  value={formData.status}
+                  onValueChange={(value) => handleChange("status", value)}
+                  placeholder="Seleccionar estado"
+                  options={[
+                    { value: "active", label: "Activo" },
+                    { value: "inactive", label: "Inactivo" }
+                  ]}
+                  className="text-sm sm:text-base h-11"
+                  emptyMessage="No se encontraron estados."
+                />
+              </div>
+            </div>
+          </ResponsiveGrid>
+
+        </form>
+      </div>
+
+      {/* Footer con botones */}
+      <div className="flex justify-end space-x-4 p-4 sm:p-6 border-t border-gray-200 bg-gray-50/50 flex-shrink-0">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={loading}
+          className="px-6 py-2"
+        >
+          Cancelar
+        </Button>
+        <Button
+          type="submit"
+          disabled={loading}
+          onClick={handleSubmit}
+          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          {loading ? "Guardando..." : client ? "Actualizar" : "Crear"}
+        </Button>
+      </div>
+    </div>
   )
 }

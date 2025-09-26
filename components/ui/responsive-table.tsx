@@ -266,13 +266,15 @@ export function ResponsiveHybridTable({
   onRowClick,
   stickyHeader = false,
 }: ResponsiveHybridTableProps) {
+  const { } = useResponsive();
+
   return (
     <div className={className}>
       {/* Vista de tarjetas para móvil */}
       <ResponsiveCardTable
         data={data}
         columns={columns}
-        onRowClick={onRowClick || (() => { })}
+        {...(onRowClick && { onRowClick })}
         className="mobile-only"
       />
 
@@ -283,7 +285,7 @@ export function ResponsiveHybridTable({
             {columns.map((column) => (
               <ResponsiveTableHeaderCell
                 key={column.key}
-                className={column.headerClassName || ""}
+                {...(column.headerClassName && { className: column.headerClassName })}
               >
                 {column.label}
               </ResponsiveTableHeaderCell>
@@ -299,7 +301,7 @@ export function ResponsiveHybridTable({
               {columns.map((column) => (
                 <ResponsiveTableCell
                   key={column.key}
-                  className={column.className || ""}
+                  {...(column.className && { className: column.className })}
                 >
                   {column.render ? column.render(row[column.key], row) : row[column.key]}
                 </ResponsiveTableCell>
