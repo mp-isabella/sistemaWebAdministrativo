@@ -94,9 +94,15 @@ async function runMigrations() {
 }
 
 try {
+    // Set memory optimization for Node.js
+    process.env.NODE_OPTIONS = '--max-old-space-size=4096';
+
     // Step 1: Generate Prisma Client
     console.log('📦 Generating Prisma Client...');
-    execSync('npx prisma generate', { stdio: 'inherit' });
+    execSync('npx prisma generate', {
+        stdio: 'inherit',
+        env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=4096' }
+    });
 
     // Step 2: Check if DATABASE_URL is available and run migrations
     const databaseUrl = process.env.DATABASE_URL;
@@ -109,19 +115,38 @@ try {
             console.log('⚠️  DATABASE_URL format appears incorrect (should start with postgresql://)');
         }
 
-        await runMigrations();
+        // Use our optimized migration script
+        console.log('🚀 Running optimized database migration...');
+        execSync('node scripts/vercel-migrate.js', {
+            stdio: 'inherit',
+            timeout: 120000 // 2 minutes timeout
+        });
     } else {
         console.log('⚠️  DATABASE_URL not found, skipping migrations...');
         console.log('💡 Make sure to set DATABASE_URL in Vercel environment variables');
     }
 
-    // Step 3: Build Next.js application
+    // Step 3: Build Next.js application with memory optimization
     console.log('🏗️  Building Next.js application...');
-    execSync('npx next build', { stdio: 'inherit' });
+    execSync('npx next build', {
+        stdio: 'inherit',
+        env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=4096' }
+    });
 
     console.log('✅ Build completed successfully!');
 
 } catch (error) {
     console.error('❌ Build failed:', error.message);
+
+    // Provide specific guidance for P3019 error
+    if (error.message.includes('P3019') || error.message.includes('memory') || error.message.includes('size')) {
+        console.log('💡 P3019 Error - Build size/memory limit exceeded');
+        console.log('   Solutions:');
+        console.log('   1. Reduce bundle size by removing unused dependencies');
+        console.log('   2. Optimize images and assets');
+        console.log('   3. Use dynamic imports for large components');
+        console.log('   4. Check for circular dependencies');
+    }
+
     process.exit(1);
 }

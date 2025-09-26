@@ -8,6 +8,37 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  // Optimizaciones para reducir el tamaño del bundle
+  webpack: (config, { isServer }) => {
+    // Optimizar para reducir el tamaño del bundle
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+
+    // Optimizar chunks
+    config.optimization = {
+      ...config.optimization,
+      splitChunks: {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+            maxSize: 244000, // 244KB
+          },
+        },
+      },
+    };
+
+    return config;
+  },
   // Configuración optimizada de imágenes
   images: {
     // Formatos optimizados para mejor rendimiento

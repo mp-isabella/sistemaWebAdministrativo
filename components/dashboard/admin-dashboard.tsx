@@ -23,7 +23,7 @@ import { Bar, Pie } from "react-chartjs-2"
 import CashTransactionForm from "@/components/forms/cash-transaction-form"
 import ClientForm from "@/components/forms/client-form"
 import InvoiceForm from "@/components/forms/invoice-form"
-import JobForm from "@/components/forms/job-form"
+import JobForm from "@/components/forms/job-form-fixed"
 import ReportGeneratorForm from "@/components/forms/report-generator-form"
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend)
@@ -105,7 +105,7 @@ export default function AdminDashboard() {
         },
       ])
     } catch (error) {
-      
+
     } finally {
       setLoading(false)
     }

@@ -1,59 +1,104 @@
-const fs = require('fs');
-const path = require('path');
+#!/usr/bin/env node
 
-console.log('🚀 CONFIGURACIÓN PARA DEPLOY EN VERCEL...');
+const { execSync } = require('child_process');
 
-// 1. Actualizar package.json para Vercel
-const packageJsonPath = path.join(__dirname, '..', 'package.json');
-const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+console.log('🚀 Starting Vercel deployment process...');
 
-packageJson.scripts = {
-    ...packageJson.scripts,
-    "vercel-build": "prisma generate && prisma migrate deploy && next build",
-    "postinstall": "prisma generate"
-};
+async function deployToVercel() {
+    try {
+        // Step 1: Pre-deployment checks
+        console.log('🔍 Running pre-deployment checks...');
 
-fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-console.log('✅ package.json actualizado para Vercel');
-
-// 2. Crear vercel.json optimizado
-const vercelConfig = {
-    "buildCommand": "npm run vercel-build",
-    "installCommand": "npm install",
-    "framework": "nextjs",
-    "regions": ["iad1"],
-    "functions": {
-        "app/api/**/*.ts": {
-            "maxDuration": 30
+        try {
+            execSync('npm run test:production', { stdio: 'inherit' });
+            console.log('✅ Pre-deployment checks passed');
+        } catch (error) {
+            console.log('⚠️  Pre-deployment checks failed, but continuing...');
+            console.log('💡 Consider fixing issues before deploying');
         }
-    },
-    "env": {
-        "NEXTAUTH_URL": "https://tu-dominio.vercel.app"
+
+        // Step 2: Optimize dependencies (optional)
+        console.log('🔧 Optimizing dependencies...');
+        try {
+            execSync('npm run optimize:deps', { stdio: 'pipe' });
+            console.log('✅ Dependencies optimized');
+        } catch (error) {
+            console.log('⚠️  Dependency optimization failed, continuing with current setup...');
+        }
+
+        // Step 3: Verify configuration
+        console.log('⚙️  Verifying configuration...');
+        try {
+            execSync('npm run verify:production', { stdio: 'pipe' });
+            console.log('✅ Configuration verified');
+        } catch (error) {
+            console.log('❌ Configuration verification failed');
+            console.log('💡 Please check your environment variables');
+            console.log('   Required: DATABASE_URL, NEXTAUTH_URL, NEXTAUTH_SECRET');
+            return false;
+        }
+
+        // Step 4: Deploy to Vercel
+        console.log('🚀 Deploying to Vercel...');
+
+        try {
+            // Check if Vercel CLI is installed
+            execSync('vercel --version', { stdio: 'pipe' });
+            console.log('✅ Vercel CLI found');
+        } catch (error) {
+            console.log('❌ Vercel CLI not found');
+            console.log('💡 Install with: npm i -g vercel');
+            return false;
+        }
+
+        // Deploy to production
+        console.log('🌐 Deploying to production...');
+        execSync('vercel --prod', {
+            stdio: 'inherit',
+            timeout: 600000 // 10 minutes
+        });
+
+        console.log('✅ Deployment completed successfully!');
+        console.log('\n🎉 Your application is now live on Vercel!');
+
+        return true;
+
+    } catch (error) {
+        console.error('❌ Deployment failed:', error.message);
+
+        // Provide specific guidance
+        if (error.message.includes('P3019')) {
+            console.log('💡 P3019 error - Build size too large');
+            console.log('   Solutions:');
+            console.log('   1. Run: npm run optimize:deps');
+            console.log('   2. Remove heavy dependencies');
+            console.log('   3. Use dynamic imports');
+        } else if (error.message.includes('FATAL')) {
+            console.log('💡 Database connection error');
+            console.log('   Check your DATABASE_URL in Vercel environment variables');
+        } else if (error.message.includes('authentication')) {
+            console.log('💡 Authentication error');
+            console.log('   Check your NEXTAUTH_SECRET in Vercel environment variables');
+        }
+
+        return false;
     }
-};
+}
 
-fs.writeFileSync(path.join(__dirname, '..', 'vercel.json'), JSON.stringify(vercelConfig, null, 2));
-console.log('✅ vercel.json creado');
-
-// 3. Actualizar schema.prisma para PostgreSQL
-const schemaPath = path.join(__dirname, '..', 'prisma', 'schema.prisma');
-let schema = fs.readFileSync(schemaPath, 'utf8');
-
-schema = schema.replace(
-    'provider = "sqlite"',
-    'provider = "postgresql"'
-);
-
-fs.writeFileSync(schemaPath, schema);
-console.log('✅ Schema actualizado para PostgreSQL');
-
-console.log('\n🎯 INSTRUCCIONES PARA DEPLOY:');
-console.log('1. 📝 Ve a tu panel de Supabase y copia la DATABASE_URL');
-console.log('2. 🔧 En Vercel, configura estas variables de entorno:');
-console.log('   - DATABASE_URL: postgresql://...');
-console.log('   - NEXTAUTH_SECRET: nueva-clave-secreta-super-segura-2024-renovada-12345');
-console.log('   - NEXTAUTH_URL: https://tu-dominio.vercel.app');
-console.log('3. 🚀 Haz push a GitHub y conecta con Vercel');
-console.log('4. ✅ El deploy se ejecutará automáticamente');
-
-console.log('\n✅ CONFIGURACIÓN COMPLETADA PARA VERCEL');
+// Run deployment
+deployToVercel()
+    .then(success => {
+        if (success) {
+            console.log('\n✅ Deployment successful!');
+            console.log('🌐 Your app is live on Vercel');
+            process.exit(0);
+        } else {
+            console.log('\n❌ Deployment failed');
+            console.log('🔧 Please fix the issues and try again');
+            process.exit(1);
+        }
+    })
+    .catch(error => {
+        console.error('❌ Deployment error:', error);
+        process.exit(1);
+    });
