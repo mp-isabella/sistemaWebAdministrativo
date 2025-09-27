@@ -19,6 +19,7 @@
     "db:seed": "node scripts/seed.js",
     "db:push": "prisma db push",
     "setup": "node scripts/quick-setup.js",
+    "setup:vercel": "node scripts/setup-vercel-database.js",
     "db:generate": "prisma generate",
     "db:deploy": "prisma db push --accept-data-loss",
     "setup:prod": "node scripts/setup-production.js",

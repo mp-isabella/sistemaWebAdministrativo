@@ -49,25 +49,14 @@ model Client {
   address   String?
   region    String?
   commune   String?
-  status    String   @default("active")
-  company   String?
   rut       String?
+  company   String?
+  status    String   @default("active")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   jobs      Job[]
-  quotes    Quote[]  // Cotizaciones del cliente
-  invoices  Invoice[] // Facturas del cliente
-}
-
-model Service {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  price       Float?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  jobs        Job[]
+  quotes    Quote[]
+  payments  Payment[]
 }
 
 model Company {
@@ -95,232 +84,139 @@ model Company {
   invoices     Invoice[]
 }
 
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  jobs        Job[]
+}
+
 model Job {
-  id           String    @id @default(cuid())
-  title        String
-  description  String?
-  status       String    @default("PENDING")
-  priority     String    @default("MEDIUM")
-  scheduledAt  DateTime?
-  startTime    String?
-  endTime      String?
-  completedAt  DateTime? // Fecha de finalización del trabajo
-  totalBudget  Float?    // Presupuesto total del trabajo
-  observations String?   // Observaciones del trabajo completado
-  images       String?   // JSON array de imágenes en base64
-  signature    String?   // Firma del cliente en base64
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  clientId     String
-  serviceId    String
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      String   @default("PENDING")
+  priority    String   @default("MEDIUM")
+  startTime   DateTime?
+  endTime     DateTime?
+  scheduledAt DateTime?
+  completedAt DateTime?
+  price       Float?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  clientId    String
+  serviceId    String?
   companyId    String
-  technicianId String?
   createdById  String
-  createdBy    User      @relation("JobCreatedBy", fields: [createdById], references: [id])
-  technician   User?     @relation("JobTechnician", fields: [technicianId], references: [id])
-  company      Company   @relation(fields: [companyId], references: [id])
-  service      Service   @relation(fields: [serviceId], references: [id])
-  client       Client    @relation(fields: [clientId], references: [id])
-  payments     Payment[] // Historial de pagos
-  quotes       Quote[]   // Cotizaciones del trabajo
+  assignedToId String?
+  client      Client   @relation(fields: [clientId], references: [id])
+  service     Service? @relation(fields: [serviceId], references: [id])
+  company     Company  @relation(fields: [companyId], references: [id])
+  createdBy   User     @relation("JobCreatedBy", fields: [createdById], references: [id])
+  technician  User?    @relation("JobTechnician", fields: [assignedToId], references: [id])
+  payments    Payment[]
+  quotes      Quote[]
 }
 
 model Payment {
   id          String   @id @default(cuid())
-  amount      Float    // Monto del pago
-  status      String   @default("PENDING") // Estado del pago
-  method      String?  // Método de pago (efectivo, transferencia, etc.)
-  notes       String?  // Notas adicionales del pago
+  amount      Float
+  method      String
+  status      String   @default("PENDING")
+  reference   String?
+  notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  jobId       String   // ID del trabajo al que pertenece el pago
-  createdById String   // ID del usuario que creó el pago
-  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId       String
+  clientId    String
+  createdById String
+  job         Job      @relation(fields: [jobId], references: [id])
+  client      Client   @relation(fields: [clientId], references: [id])
   createdBy   User     @relation(fields: [createdById], references: [id])
 }
 
 model Quote {
   id          String   @id @default(cuid())
-  quoteNumber String?  // Número de cotización
-  status      String   @default("DRAFT") // Estado de la cotización
-  total       Float    @default(0) // Total de la cotización
-  subtotal    Float    @default(0) // Subtotal antes de descuentos
-  discount    Float    @default(0) // Descuento aplicado
-  tax         Float    @default(0) // IVA
-  taxRate     Float    @default(19) // Tasa de IVA
-  notes       String?  // Notas adicionales
-  validUntil  DateTime // Fecha de vencimiento
+  title       String
+  description String?
+  amount      Float
+  status      String   @default("PENDING")
+  validUntil  DateTime?
+  notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  jobId       String?  // ID del trabajo (opcional para cotizaciones independientes)
-  clientId    String?  // ID del cliente (opcional para cotizaciones independientes)
-  companyId   String?  // ID de la empresa
-  createdById String   // ID del usuario que creó la cotización
-  // Campos del cliente (texto libre)
-  clientName    String? // Nombre del cliente
-  clientAddress String? // Dirección del cliente
-  clientEmail   String? // Email del cliente
-  clientPhone   String? // Teléfono del cliente
-  clientRegion  String? // Región del cliente
-  clientCommune String? // Comuna del cliente
-  // Campos técnicos
-  technician String? // Técnico asignado
-  diagnosis  String? // Diagnóstico
-  serviceType String? // Tipo de servicio
-  warranty   String? // Garantía
-  job         Job?     @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  client      Client?  @relation(fields: [clientId], references: [id])
-  company     Company? @relation(fields: [companyId], references: [id])
+  clientId    String
+  companyId   String
+  jobId       String?
+  createdById String
+  client      Client   @relation(fields: [clientId], references: [id])
+  company     Company  @relation(fields: [companyId], references: [id])
+  job         Job?     @relation(fields: [jobId], references: [id])
   createdBy   User     @relation(fields: [createdById], references: [id])
-  items       QuoteItem[] // Items de la cotización
-}
-
-model QuoteItem {
-  id          String   @id @default(cuid())
-  description String   // Descripción del item
-  quantity    Int      @default(1) // Cantidad
-  unitPrice   Float    // Precio unitario
-  total       Float    // Total del item
-  materials   String?  // Materiales utilizados
-  exposedArea String?  // Área expuesta
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  quoteId     String   // ID de la cotización
-  quote       Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 }
 
 model CashTransaction {
-  id            String   @id @default(cuid())
-  amount        Float    // Monto de la transacción
-  type          String   // INCOME (ingreso) o EXPENSE (gasto)
-  description   String   // Descripción de la transacción
-  category      String?  // Categoría (servicios, materiales, etc.)
-  paymentMethod String?  // Método de pago (efectivo, transferencia, etc.)
-  reference     String?  // Referencia (ID del trabajo, factura, etc.)
-  date          DateTime @default(now()) // Fecha de la transacción
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  createdById   String   // ID del usuario que creó la transacción
-  createdBy     User     @relation(fields: [createdById], references: [id])
+  id          String   @id @default(cuid())
+  type        String   // "INCOME" o "EXPENSE"
+  amount      Float
+  description String
+  category    String?
+  reference   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
 }
 
 model Liquidation {
-  id              String   @id @default(cuid())
-  liquidationNumber String @unique // Número único de liquidación
-  periodStart     DateTime // Fecha de inicio del período
-  periodEnd       DateTime // Fecha de fin del período
-  baseSalary      Float    // Sueldo base
-  totalEarnings   Float    // Total ganancias
-  totalDeductions Float    // Total deducciones
-  totalAdvances   Float    // Total anticipos
-  netSalary       Float    // Sueldo neto
-  taxRate         Float    @default(19) // IVA
-  notes           String?  // Notas adicionales
-  status          String   @default("DRAFT") // DRAFT, APPROVED, PAID
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  technicianId    String   // ID del técnico
-  companyId       String   // ID de la empresa
-  createdById     String   // ID del usuario que creó la liquidación
-  technician      User     @relation("LiquidationTechnician", fields: [technicianId], references: [id])
-  company         Company  @relation(fields: [companyId], references: [id])
-  createdBy       User     @relation("LiquidationCreatedBy", fields: [createdById], references: [id])
-  items           LiquidationItem[] // Items de la liquidación
-  advances        LiquidationAdvance[] // Anticipos
-}
-
-model LiquidationItem {
-  id            String   @id @default(cuid())
-  description   String   // Descripción del item
-  type          String   // EARNINGS, DEDUCTION, MATERIAL, FUEL, LOAN, ADVANCE
-  quantity      Float?   // Cantidad
-  unitPrice     Float?   // Precio unitario
-  total         Float    // Monto total
-  notes         String?  // Notas adicionales
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  liquidationId String   // ID de la liquidación
-  liquidation   Liquidation @relation(fields: [liquidationId], references: [id], onDelete: Cascade)
-}
-
-model LiquidationAdvance {
-  id            String   @id @default(cuid())
-  amount        Float    // Monto del anticipo
-  description   String   // Descripción del anticipo
-  date          DateTime // Fecha del anticipo
-  notes         String?  // Notas adicionales
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  liquidationId String   // ID de la liquidación
-  liquidation   Liquidation @relation(fields: [liquidationId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  amount      Float
+  status      String   @default("PENDING")
+  period      String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  technicianId String
+  companyId   String
+  createdById String
+  technician  User     @relation("LiquidationTechnician", fields: [technicianId], references: [id])
+  company     Company  @relation(fields: [companyId], references: [id])
+  createdBy   User     @relation("LiquidationCreatedBy", fields: [createdById], references: [id])
 }
 
 model Report {
-  id            String   @id @default(cuid())
-  title         String   // Título del reporte
-  type          String   // FINANCIAL, OPERATIONAL, PERFORMANCE, QUALITY
-  period        String   // MONTHLY, YEARLY, CUSTOM
-  year          Int      // Año del reporte
-  month         Int?     // Mes del reporte (opcional para reportes anuales)
-  startDate     DateTime // Fecha de inicio del período
-  endDate       DateTime // Fecha de fin del período
-  status        String   @default("GENERATING") // GENERATING, COMPLETED, FAILED
-  filePath      String?  // Ruta del archivo PDF generado
-  fileSize      Int?     // Tamaño del archivo en bytes
-  downloadCount Int      @default(0) // Número de descargas
-  data          String?  // Datos del reporte en JSON
-  summary       String?  // Resumen del reporte
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  companyId     String   // ID de la empresa
-  createdById   String   // ID del usuario que generó el reporte
-  company       Company  @relation(fields: [companyId], references: [id])
-  createdBy     User     @relation(fields: [createdById], references: [id])
-  metrics       ReportMetric[] // Métricas del reporte
-}
-
-model ReportMetric {
   id          String   @id @default(cuid())
-  name        String   // Nombre de la métrica
-  value       Float    // Valor de la métrica
-  unit        String?  // Unidad de medida
-  category    String?  // Categoría de la métrica
-  description String?  // Descripción de la métrica
+  title       String
+  type        String
+  data        String?  // JSON data
+  status      String   @default("GENERATED")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  reportId    String   // ID del reporte
-  report      Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  companyId   String
+  createdById String
+  company     Company  @relation(fields: [companyId], references: [id])
+  createdBy   User     @relation(fields: [createdById], references: [id])
 }
 
 model Invoice {
-  id            String        @id @default(cuid())
-  invoiceNumber String        @unique
-  date          DateTime
-  dueDate       DateTime?
-  subtotal      Float
-  tax           Float
-  total         Float
-  status        String        @default("PENDING")
-  notes         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  clientId      String
-  companyId     String
-  createdById   String
-  client        Client        @relation(fields: [clientId], references: [id])
-  company       Company       @relation(fields: [companyId], references: [id])
-  createdBy     User          @relation(fields: [createdById], references: [id])
-  items         InvoiceItem[]
-}
-
-model InvoiceItem {
   id          String   @id @default(cuid())
-  description String
-  quantity    Int
-  unitPrice   Float
-  total       Float
+  number      String
+  amount      Float
+  status      String   @default("PENDING")
+  dueDate     DateTime?
+  paidAt      DateTime?
+  notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  invoiceId   String
-  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  companyId   String
+  createdById String
+  company     Company  @relation(fields: [companyId], references: [id])
+  createdBy   User     @relation(fields: [createdById], references: [id])
 }
