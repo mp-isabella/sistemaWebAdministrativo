@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
@@ -7,9 +7,9 @@ const globalForPrisma = globalThis as unknown as {
 // Configuración optimizada para evitar conflictos de prepared statements
 const createPrismaClient = () => {
   // Verificar si estamos en build time
-  const isBuildTime = process.env.NODE_ENV === 'production' && 
-                     process.env.SKIP_ENV_VALIDATION === 'true';
-  
+  const isBuildTime = process.env.NODE_ENV === 'production' &&
+    process.env.SKIP_ENV_VALIDATION === 'true';
+
   if (isBuildTime) {
     console.log('⚠️ Build time detected - using dummy Prisma client');
     return new PrismaClient({
@@ -20,7 +20,7 @@ const createPrismaClient = () => {
       }
     });
   }
-  
+
   return new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     datasources: {
@@ -60,4 +60,5 @@ export const reconnectPrisma = async () => {
   }
 }
 
-export { prisma }
+export { prisma };
+

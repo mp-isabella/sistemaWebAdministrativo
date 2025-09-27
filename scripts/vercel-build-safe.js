@@ -8,7 +8,14 @@ try {
   // 1. Limpiar builds anteriores
   console.log('🧹 Cleaning previous builds...');
   if (fs.existsSync('.next')) {
-    execSync('rm -rf .next', { stdio: 'inherit' });
+    // Usar comando compatible con Windows y Unix
+    const isWindows = process.platform === 'win32';
+    const rmCommand = isWindows ? 'rmdir /s /q .next' : 'rm -rf .next';
+    try {
+      execSync(rmCommand, { stdio: 'inherit', shell: true });
+    } catch (error) {
+      console.log('⚠️ Could not clean .next directory, continuing...');
+    }
   }
 
   // 2. Configurar variables de entorno para build
