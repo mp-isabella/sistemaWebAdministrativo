@@ -6,8 +6,7 @@ const nextConfig = {
         scrollRestoration: true,
     },
 
-    // Disable telemetry
-    telemetry: false,
+    // Disable telemetry (moved to environment variables)
 
     // Optimize images
     images: {
@@ -23,11 +22,7 @@ const nextConfig = {
     // Output configuration
     output: 'standalone',
 
-    // Environment variables
-    env: {
-        NODE_OPTIONS: '--max-old-space-size=4096',
-        NEXT_TELEMETRY_DISABLED: '1',
-    },
+    // Environment variables are handled in vercel.json
 
     // Webpack optimizations
     webpack: (config, { isServer }) => {

@@ -4,8 +4,8 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-async function buildForProduction() {
-    console.log('🚀 Starting production build process...');
+async function buildSimple() {
+    console.log('🚀 Starting simple production build process...');
 
     try {
         // Step 1: Clean previous builds
@@ -37,18 +37,9 @@ async function buildForProduction() {
         });
         console.log('✅ Prisma Client generated successfully');
 
-        // Step 4: Run database migrations
-        console.log('🗄️  Running database migrations...');
-        try {
-            execSync('node scripts/vercel-migrate-robust.js', {
-                stdio: 'inherit',
-                timeout: 180000 // 3 minutes
-            });
-            console.log('✅ Database migrations completed');
-        } catch (migrateError) {
-            console.log('⚠️  Database migration failed, but continuing with build...');
-            console.log('⚠️  Database setup will be handled at runtime');
-        }
+        // Step 4: Skip database migrations (handle at runtime)
+        console.log('⚠️  Skipping database migrations - will be handled at runtime');
+        console.log('💡 This avoids connection pooling issues during build');
 
         // Step 5: Use production Next.js config
         console.log('⚙️  Setting up production Next.js configuration...');
@@ -73,14 +64,14 @@ async function buildForProduction() {
         });
         console.log('✅ Next.js build completed successfully');
 
-        // Step 6: Verify build output
+        // Step 7: Verify build output
         console.log('🔍 Verifying build output...');
         if (!fs.existsSync('.next')) {
             throw new Error('Build output directory not found');
         }
         console.log('✅ .next directory created successfully');
 
-        // Step 7: Check bundle size
+        // Step 8: Check bundle size
         console.log('📊 Checking bundle size...');
         const buildManifest = path.join('.next', 'build-manifest.json');
         if (fs.existsSync(buildManifest)) {
@@ -89,38 +80,28 @@ async function buildForProduction() {
             console.log(`📦 Build manifest contains ${pageCount} pages`);
         }
 
-        console.log('✅ Optimized build completed successfully');
+        console.log('✅ Simple build completed successfully');
         console.log('🚀 Ready for Vercel deployment!');
         return true;
 
     } catch (error) {
-        console.error('❌ Build failed:', error.message);
-
-        // Provide specific guidance
-        if (error.message.includes('FATAL: password authentication failed')) {
-            console.log('💡 Check your DATABASE_URL password in Vercel environment variables');
-        } else if (error.message.includes('FATAL: database') && error.message.includes('does not exist')) {
-            console.log('💡 Check your DATABASE_URL database name in Vercel environment variables');
-        } else if (error.message.includes('P1001')) {
-            console.log('💡 Cannot reach database server. Check your DATABASE_URL connection string');
-        }
-
+        console.error('❌ Simple build failed:', error.message);
         return false;
     }
 }
 
 // Run the build
-buildForProduction()
+buildSimple()
     .then(success => {
         if (success) {
-            console.log('✅ Production build completed successfully');
+            console.log('✅ Simple production build completed successfully');
             process.exit(0);
         } else {
-            console.log('❌ Production build failed');
+            console.log('❌ Simple production build failed');
             process.exit(1);
         }
     })
     .catch(error => {
-        console.error('❌ Production build error:', error);
+        console.error('❌ Simple production build error:', error);
         process.exit(1);
     });
