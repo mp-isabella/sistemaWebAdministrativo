@@ -1,0 +1,4 @@
+# Trigger file for Vercel deployment
+# This file forces a new deployment
+# Timestamp: 2024-12-19
+# Commit: 0ebcd32 - Debug visible en calendario
