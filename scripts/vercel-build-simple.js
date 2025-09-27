@@ -33,13 +33,19 @@ try {
 
     console.log('✅ Build completed successfully');
 
-    // 4. Configurar base de datos después del build
-    console.log('🔧 Setting up database after build...');
+    // 4. Configurar base de datos directamente
+    console.log('🔧 Setting up database directly...');
     try {
         const { execSync } = require('child_process');
-        execSync('node scripts/vercel-post-deploy.js', { stdio: 'inherit' });
+        execSync('node scripts/setup-database-simple.js', {
+            stdio: 'inherit',
+            env: {
+                ...process.env,
+                DATABASE_URL: process.env.DATABASE_URL || 'postgresql://postgres.rwsqkirgxsxrpjepjhtr:amesticaportal@aws-1-us-east-2.pooler.supabase.com:6543/postgres'
+            }
+        });
     } catch (error) {
-        console.log('⚠️ Post-deploy setup failed, manual setup required');
+        console.log('⚠️ Database setup failed, manual setup required');
     }
 
 } catch (error) {
