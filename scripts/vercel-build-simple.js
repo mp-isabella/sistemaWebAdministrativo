@@ -8,7 +8,7 @@ try {
     console.log('⚙️ Setting up environment...');
     process.env.NODE_ENV = 'production';
     process.env.SKIP_ENV_VALIDATION = 'true';
-    process.env.DATABASE_URL = 'postgresql://dummy:dummy@localhost:5432/dummy';
+    process.env.DATABASE_URL = 'postgresql://dummy:dummy@dummy.com:6543/dummy';
 
     // 2. Generar Prisma Client
     console.log('📦 Generating Prisma Client...');
@@ -27,7 +27,7 @@ try {
             ...process.env,
             NODE_ENV: 'production',
             SKIP_ENV_VALIDATION: 'true',
-            DATABASE_URL: 'postgresql://dummy:dummy@localhost:5432/dummy'
+            DATABASE_URL: 'postgresql://dummy:dummy@dummy.com:6543/dummy'
         }
     });
 

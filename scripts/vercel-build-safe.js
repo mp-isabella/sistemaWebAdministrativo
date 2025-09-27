@@ -22,7 +22,7 @@ try {
   console.log('⚙️ Setting up build environment...');
   process.env.NODE_ENV = 'production';
   process.env.SKIP_ENV_VALIDATION = 'true';
-  process.env.DATABASE_URL = 'postgresql://dummy:dummy@localhost:5432/dummy'; // URL dummy para build
+  process.env.DATABASE_URL = 'postgresql://dummy:dummy@dummy.com:6543/dummy'; // URL dummy para build
 
   // 3. Generar Prisma Client sin conectar a BD
   console.log('📦 Generating Prisma Client...');
@@ -42,13 +42,13 @@ try {
 
   // 5. Build de Next.js
   console.log('🏗️ Building Next.js application...');
-  execSync('npx next build', { 
+  execSync('npx next build', {
     stdio: 'inherit',
     env: {
       ...process.env,
       NODE_ENV: 'production',
       SKIP_ENV_VALIDATION: 'true',
-      DATABASE_URL: 'postgresql://dummy:dummy@localhost:5432/dummy'
+      DATABASE_URL: 'postgresql://dummy:dummy@dummy.com:6543/dummy'
     }
   });
 

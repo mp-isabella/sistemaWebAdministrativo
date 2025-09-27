@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { getDatabaseConfig, isDatabaseConfigured } from './database-config';
+import { isDatabaseConfigured } from './database-config';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
@@ -16,7 +16,7 @@ const createPrismaClient = () => {
     return new PrismaClient({
       datasources: {
         db: {
-          url: 'postgresql://dummy:dummy@localhost:5432/dummy'
+          url: 'postgresql://dummy:dummy@dummy.com:6543/dummy'
         }
       }
     });
@@ -40,13 +40,11 @@ const createPrismaClient = () => {
     `);
   }
 
-  const config = getDatabaseConfig();
-
   return new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     datasources: {
       db: {
-        url: config.url
+        url: process.env.DATABASE_URL || 'postgresql://postgres.rwsqkirgxsxrpjepjhtr:amesticaportal@aws-1-us-east-2.pooler.supabase.com:6543/postgres'
       }
     }
   })

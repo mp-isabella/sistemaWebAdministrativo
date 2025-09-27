@@ -4,25 +4,9 @@ export const getDatabaseConfig = () => {
     const isVercel = process.env.VERCEL === '1';
     const isProduction = process.env.NODE_ENV === 'production';
 
-    // En Vercel, usar la DATABASE_URL de las variables de entorno
+    // En Vercel, usar la DATABASE_URL de las variables de entorno o Supabase por defecto
     if (isVercel || isProduction) {
-        const databaseUrl = process.env.DATABASE_URL;
-
-        if (!databaseUrl) {
-            throw new Error(`
-        ❌ DATABASE_URL no configurada en Vercel
-        
-        Para solucionarlo:
-        1. Ve a Vercel Dashboard → Tu proyecto → Settings → Environment Variables
-        2. Agrega: DATABASE_URL = [tu-url-de-postgresql]
-        3. Redeploya la aplicación
-        
-        Opciones de base de datos:
-        - Vercel PostgreSQL (gratuito)
-        - Supabase (gratuito)
-        - Railway (gratuito)
-      `);
-        }
+        const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres.rwsqkirgxsxrpjepjhtr:amesticaportal@aws-1-us-east-2.pooler.supabase.com:6543/postgres';
 
         return {
             url: databaseUrl,
