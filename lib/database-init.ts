@@ -9,23 +9,17 @@ export async function initializeDatabase() {
     }
 
     try {
-        console.log('🗄️  Initializing database connection...');
-
         prisma = new PrismaClient({
             log: ['error'],
         });
 
         // Test connection
         await prisma.$connect();
-        console.log('✅ Database connection established');
-
         // Try to push schema if needed
         try {
             // This will create tables if they don't exist
             await prisma.$executeRaw`SELECT 1`;
-            console.log('✅ Database schema verified');
         } catch (error) {
-            console.log('⚠️  Database schema might need setup:', error);
             // Don't fail here, let the app continue
         }
 

@@ -19,7 +19,7 @@ export function RoleRedirect({ children, allowedRoles }: RoleRedirectProps) {
     if (status === "loading") return
 
     if (status === "unauthenticated") {
-      
+
       router.replace("/login")
       return
     }
@@ -30,14 +30,14 @@ export function RoleRedirect({ children, allowedRoles }: RoleRedirectProps) {
       if (allowedRoles) {
         // Normalizar roles permitidos a minúsculas
         const normalizedAllowedRoles = allowedRoles.map(r => r.toLowerCase())
-        
+
         // Verificar si el rol está permitido (incluyendo equivalencias admin/administrador)
-        const isAuthorized = normalizedAllowedRoles.includes(role || "") || 
+        const isAuthorized = normalizedAllowedRoles.includes(role || "") ||
           (role === "admin" && normalizedAllowedRoles.includes("administrador")) ||
           (role === "administrador" && normalizedAllowedRoles.includes("admin"))
-        
+
         if (!isAuthorized) {
-          
+
           // Redirigir a la ruta por defecto del rol
           const defaultRoute = getDefaultRoute(role)
           router.replace(defaultRoute)

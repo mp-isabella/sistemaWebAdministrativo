@@ -15,7 +15,7 @@ export default function ResponsiveExample() {
           <h1 className="text-responsive-2xl font-bold text-gray-900">
             Panel Administrativo
           </h1>
-          
+
           {/* Botones que se adaptan al dispositivo */}
           <div className="flex gap-responsive-sm">
             <button className="dashboard-button bg-blue-600 text-white hover:bg-blue-700">
@@ -128,7 +128,7 @@ export default function ResponsiveExample() {
               <h2 className="text-responsive-xl font-semibold text-gray-900 mb-responsive-md">
                 Crear Nuevo Usuario
               </h2>
-              
+
               <form className="dashboard-form">
                 <div className="grid gap-responsive-md">
                   <div className={isMobile ? 'col-span-1' : 'col-span-2'}>
@@ -141,7 +141,7 @@ export default function ResponsiveExample() {
                       placeholder="Ingresa el nombre completo"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-responsive-sm font-medium text-gray-700 mb-responsive-xs">
                       Email
@@ -152,7 +152,7 @@ export default function ResponsiveExample() {
                       placeholder="usuario@ejemplo.com"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-responsive-sm font-medium text-gray-700 mb-responsive-xs">
                       Teléfono
@@ -163,7 +163,7 @@ export default function ResponsiveExample() {
                       placeholder="+1 234 567 8900"
                     />
                   </div>
-                  
+
                   <div className={isMobile ? 'col-span-1' : 'col-span-2'}>
                     <label className="block text-responsive-sm font-medium text-gray-700 mb-responsive-xs">
                       Rol
@@ -175,7 +175,7 @@ export default function ResponsiveExample() {
                       <option>Editor</option>
                     </select>
                   </div>
-                  
+
                   <div className={isMobile ? 'col-span-1' : 'col-span-2'}>
                     <label className="block text-responsive-sm font-medium text-gray-700 mb-responsive-xs">
                       Descripción
@@ -187,7 +187,7 @@ export default function ResponsiveExample() {
                     />
                   </div>
                 </div>
-                
+
                 <div className="flex gap-responsive-md mt-responsive-lg">
                   <button
                     type="submit"
@@ -212,7 +212,7 @@ export default function ResponsiveExample() {
               <h2 className="text-responsive-xl font-semibold text-gray-900 mb-responsive-md">
                 Usuarios Recientes
               </h2>
-              
+
               <div className="overflow-x-auto">
                 <table className="dashboard-table">
                   <thead>

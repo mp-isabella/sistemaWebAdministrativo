@@ -25,10 +25,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Verificar que el trabajo existe y está completado
     const job = await prisma.job.findUnique({
       where: { id: jobId },
-      include: { 
-        service: true, 
-        client: true, 
-        technician: true 
+      include: {
+        service: true,
+        client: true,
+        technician: true
       },
     })
 
@@ -80,14 +80,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       }
     })
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       transaction,
       message: "Trabajo marcado como pagado exitosamente"
     })
 
   } catch (error) {
-    
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

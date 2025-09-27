@@ -92,11 +92,11 @@ export default function TestTailwindPage() {
   const handleGeneratePDF = async (type: string, data: any) => {
     setIsGenerating(true)
     try {
-      const { 
-        downloadQuotePDF, 
-        downloadLiquidationPDF, 
-        downloadInvoicePDF, 
-        downloadWorkOrderPDF 
+      const {
+        downloadQuotePDF,
+        downloadLiquidationPDF,
+        downloadInvoicePDF,
+        downloadWorkOrderPDF
       } = await import('@/components/pdf-generator')
 
       switch (type) {
@@ -119,7 +119,7 @@ export default function TestTailwindPage() {
         description: `El ${type === 'quote' ? 'presupuesto' : type === 'liquidation' ? 'liquidación' : type === 'invoice' ? 'factura' : 'orden de trabajo'} se ha descargado correctamente`,
       })
     } catch (error) {
-      
+
       toast({
         title: "Error",
         description: "No se pudo generar el PDF",
@@ -138,7 +138,7 @@ export default function TestTailwindPage() {
             Demostración de PDFs Mejorados
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Sistema unificado para generar PDFs de alta calidad con mejor posicionamiento, 
+            Sistema unificado para generar PDFs de alta calidad con mejor posicionamiento,
             diseño consistente y formato profesional para todos los documentos de la empresa.
           </p>
         </div>
@@ -155,7 +155,7 @@ export default function TestTailwindPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button 
+              <Button
                 onClick={() => handleGeneratePDF('quote', sampleQuote)}
                 disabled={isGenerating}
                 className="w-full"
@@ -177,7 +177,7 @@ export default function TestTailwindPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button 
+              <Button
                 onClick={() => handleGeneratePDF('liquidation', sampleLiquidation)}
                 disabled={isGenerating}
                 className="w-full"
@@ -200,7 +200,7 @@ export default function TestTailwindPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button 
+              <Button
                 onClick={() => handleGeneratePDF('invoice', sampleInvoice)}
                 disabled={isGenerating}
                 className="w-full"
@@ -223,7 +223,7 @@ export default function TestTailwindPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button 
+              <Button
                 onClick={() => handleGeneratePDF('workOrder', sampleWorkOrder)}
                 disabled={isGenerating}
                 className="w-full"
@@ -240,7 +240,7 @@ export default function TestTailwindPage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
             Características de los PDFs Mejorados
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
@@ -334,7 +334,7 @@ export default function TestTailwindPage() {
                   </li>
                 </ul>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
                   <Badge variant="default" className="mr-3">Ahora</Badge>

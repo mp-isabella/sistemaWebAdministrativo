@@ -297,8 +297,8 @@ export default function LiquidationPreview({
                 margin: 0.5in;
                 size: A4;
             }
-            body { 
-                margin: 0; 
+            body {
+                margin: 0;
                 padding: 12px;
                 font-size: 16px;
                 line-height: 1.5;
@@ -319,27 +319,27 @@ export default function LiquidationPreview({
             .info-row { font-size: 14px; margin-bottom: 6px; }
             .info-label { min-width: 80px; }
             .items-table th,
-            .items-table td { 
-                padding: 8px 10px; 
+            .items-table td {
+                padding: 8px 10px;
                 font-size: 13px;
             }
             .totals { margin-top: 16px; }
             .totals-content { width: 220px; }
-            .total-row { 
-                font-size: 14px; 
-                margin-bottom: 8px; 
+            .total-row {
+                font-size: 14px;
+                margin-bottom: 8px;
             }
             .total-final { font-size: 16px; }
-            .notes-section { 
-                padding: 16px; 
+            .notes-section {
+                padding: 16px;
                 font-size: 13px;
             }
-            .notes-title { 
-                font-size: 15px; 
-                margin-bottom: 8px; 
+            .notes-title {
+                font-size: 15px;
+                margin-bottom: 8px;
             }
         }
-        
+
         body {
             font-family: Arial, sans-serif;
             line-height: 1.5;
@@ -360,7 +360,7 @@ export default function LiquidationPreview({
             -webkit-print-color-adjust: exact;
             color-adjust: exact;
         }
-        
+
         .main-container {
             width: 100%;
             height: 100%;
@@ -371,21 +371,21 @@ export default function LiquidationPreview({
             overflow: hidden;
             box-sizing: border-box;
         }
-        
+
         .header {
             margin-bottom: 25px;
             position: relative;
             left: 0;
             top: 0;
         }
-        
+
         .company-section {
             display: flex;
             align-items: flex-start;
             gap: 20px;
             margin-bottom: 15px;
         }
-        
+
         .company-logo {
             width: 120px;
             height: 120px;
@@ -394,11 +394,11 @@ export default function LiquidationPreview({
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
         }
-        
+
         .company-info {
             flex: 1;
         }
-        
+
         .company-name {
             font-size: 22px;
             font-weight: bold;
@@ -406,19 +406,19 @@ export default function LiquidationPreview({
             margin-bottom: 8px;
             line-height: 1.2;
         }
-        
+
         .company-service {
             font-size: 14px;
             color: #666;
             margin-bottom: 8px;
         }
-        
+
         .company-details {
             font-size: 13px;
             color: #666;
             line-height: 1.4;
         }
-        
+
         .liquidation-title {
             font-size: 26px;
             font-weight: bold;
@@ -426,47 +426,47 @@ export default function LiquidationPreview({
             margin-bottom: 8px;
             text-align: center;
         }
-        
+
         .period-info {
             font-size: 16px;
             color: #666;
             text-align: center;
             margin-bottom: 20px;
         }
-        
+
         .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
             margin-bottom: 20px;
         }
-        
+
         .info-section {
             background: #f8f9fa;
             padding: 16px;
             border-radius: 8px;
             border-left: 4px solid ${companyConfig.colors.primary};
         }
-        
+
         .info-section h3 {
             margin: 0 0 12px 0;
             color: ${companyConfig.colors.primary};
             font-size: 16px;
             font-weight: bold;
         }
-        
+
         .info-row {
             margin-bottom: 6px;
             font-size: 14px;
         }
-        
+
         .info-label {
             font-weight: bold;
             color: #555;
             min-width: 80px;
             display: inline-block;
         }
-        
+
         .section-title {
             font-size: 18px;
             font-weight: bold;
@@ -475,46 +475,46 @@ export default function LiquidationPreview({
             border-bottom: 1px solid #ddd;
             padding-bottom: 8px;
         }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 16px;
         }
-        
+
         th, td {
             border: 1px solid #ddd;
             padding: 10px;
             text-align: left;
             font-size: 13px;
         }
-        
+
         th {
             background-color: #f5f5f5;
             font-weight: bold;
             color: #333;
         }
-        
+
         .text-center {
             text-align: center;
         }
-        
+
         .text-right {
             text-align: right;
         }
-        
+
         .text-green {
             color: #059669;
         }
-        
+
         .text-red {
             color: #dc2626;
         }
-        
+
         .text-orange {
             color: #ea580c;
         }
-        
+
         .badge {
             display: inline-block;
             padding: 4px 8px;
@@ -522,50 +522,50 @@ export default function LiquidationPreview({
             font-size: 11px;
             font-weight: bold;
         }
-        
+
         .badge-earnings {
             background-color: #dcfce7;
             color: #059669;
         }
-        
+
         .badge-deduction {
             background-color: #fee2e2;
             color: #dc2626;
         }
-        
+
         .badge-material {
             background-color: #fef3c7;
             color: #d97706;
         }
-        
+
         .badge-fuel {
             background-color: #fce7f3;
             color: #be185d;
         }
-        
+
         .badge-loan {
             background-color: #f3e8ff;
             color: #7c3aed;
         }
-        
+
         .badge-advance {
             background-color: #fff7ed;
             color: #ea580c;
         }
-        
+
         .summary-section {
             background: #f8f9fa;
             padding: 20px;
             border-radius: 8px;
             margin: 20px 0;
         }
-        
+
         .summary-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        
+
         .summary-item {
             display: flex;
             justify-content: space-between;
@@ -573,33 +573,33 @@ export default function LiquidationPreview({
             padding: 6px 0;
             font-size: 14px;
         }
-        
+
         .total-section {
             border-left: 4px solid #059669;
             padding-left: 16px;
             text-align: center;
         }
-        
+
         .total-title {
             font-size: 18px;
             font-weight: bold;
             color: #059669;
             margin-bottom: 8px;
         }
-        
+
         .total-amount {
             font-size: 28px;
             font-weight: bold;
             color: #059669;
         }
-        
+
         .notes-section {
             background: #f8f9fa;
             padding: 16px;
             border-radius: 6px;
             margin: 16px 0;
         }
-        
+
         .footer {
             text-align: center;
             margin-top: 30px;
@@ -648,7 +648,7 @@ export default function LiquidationPreview({
                     <span class="info-label">Teléfono:</span> ${technician?.phone || 'No especificado'}
                 </div>
             </div>
-            
+
             <div class="info-section">
                 <h3>Detalles del Período</h3>
                 <div class="info-row">
@@ -752,7 +752,7 @@ export default function LiquidationPreview({
                         <span class="text-orange"><strong>-${formatCurrency(totals.totalAdvances)}</strong></span>
                     </div>
                 </div>
-                
+
                 <div class="total-section">
                     <div class="total-title">TOTAL A PAGAR</div>
                     <div class="total-amount">${formatCurrency(totals.netSalary)}</div>

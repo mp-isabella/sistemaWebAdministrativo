@@ -13,16 +13,16 @@ const transporter = nodemailer.createTransport({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { 
-      type, 
-      name, 
-      email, 
-      phone, 
-      service, 
-      region, 
-      commune, 
-      address, 
-      message 
+    const {
+      type,
+      name,
+      email,
+      phone,
+      service,
+      region,
+      commune,
+      address,
+      message
     } = body;
 
     // Validar campos requeridos
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #002D71; text-align: center;">Nueva Solicitud de Contacto</h2>
           <p>Se ha recibido una nueva solicitud de contacto desde el sitio web de Améstica.</p>
-          
+
           <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="color: #014C90; margin-top: 0;">Información del Cliente:</h3>
             <p><strong>Nombre:</strong> ${name}</p>
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
             ${address ? `<p><strong>Dirección:</strong> ${address}</p>` : ''}
             ${message ? `<p><strong>Mensaje:</strong> ${message}</p>` : ''}
           </div>
-          
+
           <p style="color: #6b7280; font-size: 14px; text-align: center;">
             Este email fue enviado automáticamente desde el formulario de contacto del sitio web.
           </p>
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #002D71; text-align: center;">Nueva Solicitud de Cotización</h2>
           <p>Se ha recibido una nueva solicitud de cotización desde el sitio web de Améstica.</p>
-          
+
           <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="color: #014C90; margin-top: 0;">Detalles de la Solicitud:</h3>
             <p><strong>Nombre del Cliente:</strong> ${name}</p>
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
             ${address ? `<p><strong>Dirección:</strong> ${address}</p>` : ''}
             ${message ? `<p><strong>Mensaje Adicional:</strong> ${message}</p>` : ''}
           </div>
-          
+
           <p style="color: #6b7280; font-size: 14px; text-align: center;">
             Este email fue enviado automáticamente desde el formulario de cotización del sitio web.
           </p>
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #002D71; text-align: center;">Nueva Solicitud Recibida</h2>
           <p>Se ha recibido una nueva solicitud desde el sitio web de Améstica.</p>
-          
+
           <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="color: #014C90; margin-top: 0;">Información de la Solicitud:</h3>
             <p><strong>Nombre:</strong> ${name}</p>
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
             ${address ? `<p><strong>Dirección:</strong> ${address}</p>` : ''}
             ${message ? `<p><strong>Mensaje:</strong> ${message}</p>` : ''}
           </div>
-          
+
           <p style="color: #6b7280; font-size: 14px; text-align: center;">
             Este email fue enviado automáticamente desde el sitio web.
           </p>

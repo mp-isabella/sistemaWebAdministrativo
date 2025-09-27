@@ -74,7 +74,7 @@ Améstica Ltda. - Servicios Profesionales
     formData.append('_captcha', 'false');
     formData.append('_template', 'table'); // Usar template de tabla para mejor formato
     formData.append('_next', 'https://amesticaltda.com/gracias'); // Página de confirmación
-    
+
     // Enviar campos individuales para mejor procesamiento
     formData.append('nombre', data.nombre);
     formData.append('email', data.email);
@@ -85,7 +85,7 @@ Améstica Ltda. - Servicios Profesionales
     formData.append('servicio', serviceName);
     formData.append('mensaje', data.mensaje || '');
     formData.append('formType', data.formType);
-    
+
     // También enviar el contenido completo como mensaje
     formData.append('message', emailContent);
     const response = await fetch('https://formsubmit.co/ajax/mpriquelme.dev@gmail.com', {
@@ -96,11 +96,11 @@ Améstica Ltda. - Servicios Profesionales
     const result = await response.json();
     // FormSubmit puede devolver success: true o simplemente un status 200
     const success = result.success === true || response.ok;
-    
+
     if (success) {
     } else {
     }
-    
+
     return success;
   } catch (error) {
     return false;
@@ -132,7 +132,7 @@ export const sendFormSubmitQuote = async (data: FormSubmitData): Promise<{
 
   try {
     const success = await sendViaFormSubmit(data);
-    
+
     if (success) {
       return {
         success: true,

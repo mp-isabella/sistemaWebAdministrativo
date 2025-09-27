@@ -65,7 +65,7 @@ export default function EditQuotePage() {
         router.push('/dashboard/quotes')
       }
     } catch (error) {
-      
+
       toast({
         title: "Error",
         description: "Error al cargar el presupuesto",
@@ -111,7 +111,7 @@ export default function EditQuotePage() {
         })
       }
     } catch (error) {
-      
+
       toast({
         title: "Error",
         description: "Error al actualizar el presupuesto",

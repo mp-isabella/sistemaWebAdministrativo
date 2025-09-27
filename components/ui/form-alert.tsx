@@ -1,7 +1,7 @@
 "use client";
 
-import React from 'react';
 import { AlertCircle, CheckCircle, Info, X } from 'lucide-react';
+import React from 'react';
 
 export interface FormAlertProps {
   type: 'error' | 'success' | 'warning' | 'info';
@@ -78,15 +78,14 @@ export const FormAlert: React.FC<FormAlertProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className={`inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  type === 'error' 
-                    ? 'text-red-500 hover:bg-red-100 focus:ring-red-600' 
-                    : type === 'success'
+                className={`inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${type === 'error'
+                  ? 'text-red-500 hover:bg-red-100 focus:ring-red-600'
+                  : type === 'success'
                     ? 'text-green-500 hover:bg-green-100 focus:ring-green-600'
                     : type === 'warning'
-                    ? 'text-yellow-500 hover:bg-yellow-100 focus:ring-yellow-600'
-                    : 'text-blue-500 hover:bg-blue-100 focus:ring-blue-600'
-                }`}
+                      ? 'text-yellow-500 hover:bg-yellow-100 focus:ring-yellow-600'
+                      : 'text-blue-500 hover:bg-blue-100 focus:ring-blue-600'
+                  }`}
               >
                 <span className="sr-only">Cerrar</span>
                 <X className="h-4 w-4" />
@@ -112,7 +111,7 @@ export const ValidationAlert: React.FC<ValidationAlertProps> = ({
   className = ''
 }) => {
   const errorMessages = Object.values(errors).filter(Boolean) as string[];
-  
+
   if (errorMessages.length === 0) {
     return null;
   }
@@ -122,7 +121,7 @@ export const ValidationAlert: React.FC<ValidationAlertProps> = ({
       type="error"
       title="Por favor, corrige los siguientes errores:"
       message={errorMessages.join('. ')}
-      onClose={onClose}
+      onClose={onClose ?? (() => { })}
       className={className}
     />
   );

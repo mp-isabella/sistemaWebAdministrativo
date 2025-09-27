@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(invoices)
 
   } catch (error) {
-    
+
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !session.user) { 
+    if (!session || !session.user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(invoice, { status: 201 })
 
   } catch (error) {
-    
+
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

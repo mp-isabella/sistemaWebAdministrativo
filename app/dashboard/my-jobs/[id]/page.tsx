@@ -89,11 +89,11 @@ export default function JobDetailPage() {
         setJob(data)
       } else {
         // Si no hay datos reales, usar datos de ejemplo
-        
+
         setJob(mockJob)
       }
     } catch (error) {
-      
+
       // En caso de error, usar datos de ejemplo
       setJob(mockJob)
     } finally {

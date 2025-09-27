@@ -185,7 +185,7 @@ export async function GET(
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.4;
@@ -194,13 +194,13 @@ export async function GET(
             padding: 30px;
             margin: 0;
         }
-        
+
         .document-container {
             max-width: 800px;
             margin: 0 auto;
             background: white;
         }
-        
+
         .company-header {
             display: flex;
             align-items: center;
@@ -208,7 +208,7 @@ export async function GET(
             padding-bottom: 20px;
             border-bottom: 3px solid #22c55e;
         }
-        
+
         .company-logo {
             width: 120px;
             height: 120px;
@@ -218,14 +218,14 @@ export async function GET(
             margin-right: 20px;
             position: relative;
         }
-        
+
         .company-logo img {
             width: 120px;
             height: 120px;
             object-fit: contain;
             border-radius: 8px;
         }
-        
+
         .company-logo-fallback {
             width: 120px;
             height: 120px;
@@ -238,24 +238,24 @@ export async function GET(
             font-size: 24px;
             font-weight: bold;
         }
-        
+
         .company-info {
             flex: 1;
         }
-        
+
         .company-name {
             font-size: 20px;
             font-weight: bold;
             color: #22c55e;
             margin-bottom: 5px;
         }
-        
+
         .company-description {
             font-size: 14px;
             color: #666;
             margin-bottom: 15px;
         }
-        
+
         .company-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -263,31 +263,31 @@ export async function GET(
             font-size: 12px;
             color: #555;
         }
-        
+
         .document-title {
             text-align: center;
             margin: 40px 0;
         }
-        
+
         .document-title h1 {
             font-size: 32px;
             font-weight: bold;
             color: #2c3e50;
             margin-bottom: 10px;
         }
-        
+
         .document-title .period {
             font-size: 16px;
             color: #666;
         }
-        
+
         .info-panels {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
             margin-bottom: 30px;
         }
-        
+
         .info-panel {
             background: #f8f9fa;
             border: 1px solid #e9ecef;
@@ -295,7 +295,7 @@ export async function GET(
             padding: 20px;
             position: relative;
         }
-        
+
         .info-panel::after {
             content: '';
             position: absolute;
@@ -305,11 +305,11 @@ export async function GET(
             width: 2px;
             background: #22c55e;
         }
-        
+
         .info-panel:last-child::after {
             display: none;
         }
-        
+
         .panel-title {
             font-size: 16px;
             font-weight: bold;
@@ -318,24 +318,24 @@ export async function GET(
             border-bottom: 2px solid #22c55e;
             padding-bottom: 5px;
         }
-        
+
         .info-item {
             display: flex;
             margin-bottom: 8px;
         }
-        
+
         .info-label {
             font-weight: bold;
             color: #555;
             min-width: 80px;
             margin-right: 10px;
         }
-        
+
         .info-value {
             color: #333;
             flex: 1;
         }
-        
+
         .liquidation-summary {
             background: #f8f9fa;
             border: 2px solid #22c55e;
@@ -344,7 +344,7 @@ export async function GET(
             margin: 30px 0;
             position: relative;
         }
-        
+
         .summary-title {
             font-size: 20px;
             font-weight: bold;
@@ -352,39 +352,39 @@ export async function GET(
             text-align: center;
             margin-bottom: 20px;
         }
-        
+
         .summary-content {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
         }
-        
+
         .summary-items {
             flex: 1;
             margin-right: 30px;
         }
-        
+
         .summary-item {
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
             border-bottom: 1px solid #dee2e6;
         }
-        
+
         .summary-item:last-child {
             border-bottom: none;
         }
-        
+
         .summary-label {
             font-weight: 600;
             color: #495057;
         }
-        
+
         .summary-value {
             font-weight: 600;
             color: #2c3e50;
         }
-        
+
         .total-section {
             background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
             color: white;
@@ -393,22 +393,22 @@ export async function GET(
             text-align: center;
             min-width: 200px;
         }
-        
+
         .total-label {
             font-size: 16px;
             font-weight: bold;
             margin-bottom: 5px;
         }
-        
+
         .total-amount {
             font-size: 24px;
             font-weight: bold;
         }
-        
+
         .items-section {
             margin: 30px 0;
         }
-        
+
         .items-title {
             font-size: 18px;
             font-weight: bold;
@@ -417,7 +417,7 @@ export async function GET(
             border-bottom: 2px solid #22c55e;
             padding-bottom: 5px;
         }
-        
+
         .items-table {
             width: 100%;
             border-collapse: collapse;
@@ -426,7 +426,7 @@ export async function GET(
             overflow: hidden;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
+
         .items-table th {
             background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
             color: white;
@@ -435,17 +435,17 @@ export async function GET(
             font-weight: 600;
             font-size: 14px;
         }
-        
+
         .items-table td {
             padding: 12px;
             border-bottom: 1px solid #e9ecef;
             font-size: 14px;
         }
-        
+
         .items-table tr:nth-child(even) {
             background: #f8f9fa;
         }
-        
+
         .notes-section {
             background: #fff7ed;
             border: 1px solid #fed7aa;
@@ -453,14 +453,14 @@ export async function GET(
             padding: 20px;
             margin: 30px 0;
         }
-        
+
         .notes-title {
             color: #ea580c;
             font-size: 16px;
             font-weight: bold;
             margin-bottom: 10px;
         }
-        
+
         .footer {
             margin-top: 50px;
             text-align: center;
@@ -469,7 +469,7 @@ export async function GET(
             border-top: 1px solid #dee2e6;
             padding-top: 20px;
         }
-        
+
         .footer p {
             margin: 3px 0;
         }
@@ -524,7 +524,7 @@ export async function GET(
                     <span class="info-value">${liquidation.technician?.phone || 'No especificado'}</span>
                 </div>
             </div>
-            
+
             <div class="info-panel">
                 <div class="panel-title">Detalles del Período</div>
                 <div class="info-item">
@@ -676,7 +676,7 @@ export async function GET(
         })
 
     } catch (error) {
-        
+
         return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
     }
 }

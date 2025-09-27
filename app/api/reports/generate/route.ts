@@ -9,18 +9,18 @@ export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
     const body = await request.json()
-    const { 
-      reportId, 
-      type, 
-      companyId, 
-      startDate, 
-      endDate 
+    const {
+      reportId,
+      type,
+      companyId,
+      startDate,
+      endDate
     } = body
 
     // Validar permisos
@@ -93,9 +93,9 @@ export async function POST(request: NextRequest) {
         })
       }
     } catch (parseError) {
-      
+
     }
-    
+
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }
@@ -139,12 +139,12 @@ async function generateFinancialReport(companyId: string, startDate: Date, endDa
 
   // Calcular métricas financieras
   const totalRevenue = jobs.reduce((sum, job) => {
-    return sum + job.payments.reduce((paymentSum, payment) => 
+    return sum + job.payments.reduce((paymentSum, payment) =>
       paymentSum + (payment.status === 'COMPLETED' ? payment.amount : 0), 0)
   }, 0)
 
   const totalQuotes = jobs.reduce((sum, job) => {
-    return sum + job.quotes.reduce((quoteSum, quote) => 
+    return sum + job.quotes.reduce((quoteSum, quote) =>
       quoteSum + (quote.status === 'APPROVED' ? quote.total : 0), 0)
   }, 0)
 
@@ -292,7 +292,7 @@ async function generatePerformanceReport(companyId: string, startDate: Date, end
 
   // Calcular tiempos promedio
   const completedJobs = jobs.filter(job => job.status === 'COMPLETED' && job.completedAt)
-  const averageCompletionTime = completedJobs.length > 0 
+  const averageCompletionTime = completedJobs.length > 0
     ? completedJobs.reduce((sum, job) => {
         const start = new Date(job.createdAt)
         const end = new Date(job.completedAt!)
@@ -352,28 +352,28 @@ async function generateQualityReport(companyId: string, startDate: Date, endDate
 function generateMonthlyData(jobs: any[], cashTransactions: any[], startDate: Date, endDate: Date) {
   const monthlyData = []
   const current = new Date(startDate)
-  
+
   while (current <= endDate) {
     const monthStart = new Date(current.getFullYear(), current.getMonth(), 1)
     const monthEnd = new Date(current.getFullYear(), current.getMonth() + 1, 0)
-    
-    const monthJobs = jobs.filter(job => 
+
+    const monthJobs = jobs.filter(job =>
       job.createdAt >= monthStart && job.createdAt <= monthEnd
     )
-    
+
     const monthTransactions = cashTransactions.filter(transaction =>
       transaction.date >= monthStart && transaction.date <= monthEnd
     )
-    
+
     const monthRevenue = monthJobs.reduce((sum, job) => {
-      return sum + job.payments.reduce((paymentSum: number, payment: any) => 
+      return sum + job.payments.reduce((paymentSum: number, payment: any) =>
         paymentSum + (payment.status === 'COMPLETED' ? payment.amount : 0), 0)
     }, 0)
-    
+
     const monthExpenses = monthTransactions
       .filter(t => t.type === 'EXPENSE')
       .reduce((sum, t) => sum + t.amount, 0)
-    
+
     monthlyData.push({
       month: current.getMonth() + 1,
       year: current.getFullYear(),
@@ -382,10 +382,10 @@ function generateMonthlyData(jobs: any[], cashTransactions: any[], startDate: Da
       profit: monthRevenue - monthExpenses,
       jobsCount: monthJobs.length
     })
-    
+
     current.setMonth(current.getMonth() + 1)
   }
-  
+
   return monthlyData
 }
 

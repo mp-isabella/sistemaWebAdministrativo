@@ -128,7 +128,7 @@ export async function PATCH(
     })
 
   } catch (error) {
-    
+
     return NextResponse.json({
       success: false,
       error: "Error interno del servidor"

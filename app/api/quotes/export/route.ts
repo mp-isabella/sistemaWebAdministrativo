@@ -352,7 +352,7 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
 </head>
 <body>
     <button class="print-button no-print" onclick="window.print()">Imprimir PDF</button>
-    
+
     <div class="header">
         <div class="company-info">
             <img src="${companyConfig.logo}" alt="${companyConfig.name}" class="company-logo">
@@ -437,7 +437,7 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
                 `).join('')}
             </tbody>
         </table>
-        
+
         <div class="totals">
             <div class="total-row">
                 <span>Neto:</span>
@@ -505,11 +505,11 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
             .page-break { page-break-before: always; }
             .container { max-width: none; margin: 0; }
         }
-        
+
         * {
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
@@ -518,14 +518,14 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
             color: black;
             line-height: 1.4;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             background: white;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        
+
         .header {
             background: white;
             color: black;
@@ -533,46 +533,46 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
             text-align: center;
             border-bottom: 2px solid #333;
         }
-        
+
         .header h1 {
             margin: 0 0 10px 0;
             font-size: 2rem;
             font-weight: bold;
             color: black;
         }
-        
+
         .header-subtitle {
             font-size: 1.1rem;
             color: #333;
             margin-bottom: 20px;
         }
-        
+
         .header-info {
             display: flex;
             justify-content: space-between;
             margin-top: 20px;
             flex-wrap: wrap;
         }
-        
+
         .header-item {
             flex: 1;
             min-width: 200px;
             margin: 5px;
         }
-        
+
         .header-item strong {
             display: block;
             font-size: 0.9rem;
             margin-bottom: 5px;
             color: #333;
         }
-        
+
         .content {
             padding: 30px;
             background: white;
             color: black;
         }
-        
+
         .stats-section {
             margin: 30px 0;
             padding: 20px;
@@ -580,19 +580,19 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
             border-radius: 8px;
             border-left: 4px solid #333;
         }
-        
+
         .stats-section h3 {
             margin: 0 0 15px 0;
             color: black;
             font-size: 1.2rem;
         }
-        
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
         }
-        
+
         .stat-item {
             background: white;
             padding: 15px;
@@ -600,23 +600,23 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
             border: 1px solid #333;
             color: black;
         }
-        
+
         .stat-item h4 {
             margin: 0 0 10px 0;
             color: black;
             font-size: 1rem;
         }
-        
+
         .stat-item p {
             margin: 5px 0;
             font-size: 0.9rem;
             color: black;
         }
-        
+
         .quotes-section {
             margin-top: 40px;
         }
-        
+
         .quotes-title {
             font-size: 1.5rem;
             font-weight: bold;
@@ -625,13 +625,13 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
             border-bottom: 2px solid #333;
             padding-bottom: 10px;
         }
-        
+
         .quotes-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
-        
+
         .quotes-table th,
         .quotes-table td {
             border: 1px solid #333;
@@ -640,17 +640,17 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
             font-size: 0.9rem;
             color: black;
         }
-        
+
         .quotes-table th {
             background: #f8f9fa;
             font-weight: bold;
             color: black;
         }
-        
+
         .quotes-table tr:nth-child(even) {
             background: #f8f9fa;
         }
-        
+
         .status-badge {
             padding: 4px 8px;
             border-radius: 4px;
@@ -659,7 +659,7 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
             text-transform: uppercase;
             color: white;
         }
-        
+
         .print-button {
             position: fixed;
             top: 20px;
@@ -674,11 +674,11 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
             z-index: 1000;
             border-radius: 4px;
         }
-        
+
         .print-button:hover {
             background: #555;
         }
-        
+
         @media (max-width: 768px) {
             .header-info { flex-direction: column; }
             .header-item { min-width: auto; }
@@ -690,7 +690,7 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
 </head>
 <body>
     <button class="print-button no-print" onclick="window.print()">Imprimir PDF</button>
-    
+
     <div class="container">
         <div class="header">
             <h1>REPORTE DE COTIZACIONES</h1>
@@ -714,7 +714,7 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
                 </div>
             </div>
         </div>
-        
+
         <div class="content">
             <div class="stats-section">
                 <h3>📊 Estadísticas Generales</h3>
@@ -739,7 +739,7 @@ function generateQuotesHTML(quotes: any[], type: 'single' | 'multiple') {
                     </div>
                 </div>
             </div>
-            
+
             <div class="quotes-section">
                 <h2 class="quotes-title">Detalle de Cotizaciones</h2>
                 <table class="quotes-table">

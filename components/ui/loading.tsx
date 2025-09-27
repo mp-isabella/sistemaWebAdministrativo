@@ -104,7 +104,7 @@ export function LoadingTable({ rows = 5, columns = 4, className }: LoadingTableP
             ))}
           </div>
         </div>
-        
+
         {/* Rows */}
         {Array.from({ length: rows }).map((_, rowIndex) => (
           <div key={rowIndex} className="px-6 py-4 border-b border-gray-100 last:border-b-0">

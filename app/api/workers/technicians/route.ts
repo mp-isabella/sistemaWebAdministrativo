@@ -30,12 +30,6 @@ export async function GET(_request: NextRequest) {
     })
 
     // Log para debugging
-    console.log('🔧 API - Técnicos encontrados en BD:', technicians.map(tech => ({
-      id: tech.id,
-      name: tech.name,
-      role: tech.role?.name,
-      isActive: tech.isActive
-    })));
 
     return NextResponse.json(technicians)
   } catch (error) {

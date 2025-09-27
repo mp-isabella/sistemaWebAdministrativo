@@ -340,72 +340,72 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
     <title>${getReportTitle(type)} - ${companyName}</title>
     <style>
         @media print {
-            body { 
-                margin: 0; 
+            body {
+                margin: 0;
                 padding: 5px;
                 font-size: 8px;
             }
             .no-print { display: none; }
             .page-break { page-break-before: always; }
-            .container { 
-                max-width: none; 
-                margin: 0; 
+            .container {
+                max-width: none;
+                margin: 0;
                 box-shadow: none;
             }
-            .header { 
-                padding: 10px; 
+            .header {
+                padding: 10px;
                 margin-bottom: 10px;
             }
             .header h1 { font-size: 1.2rem; }
             .header-subtitle { font-size: 0.8rem; }
             .header-info { margin-top: 8px; }
-            .header-item { 
-                min-width: 120px; 
-                margin: 2px; 
+            .header-item {
+                min-width: 120px;
+                margin: 2px;
             }
             .header-item strong { font-size: 0.7rem; }
             .content { padding: 10px; }
-            .stats-section { 
-                margin: 10px 0; 
-                padding: 8px; 
+            .stats-section {
+                margin: 10px 0;
+                padding: 8px;
             }
-            .stats-section h3 { 
-                font-size: 0.9rem; 
-                margin-bottom: 6px; 
+            .stats-section h3 {
+                font-size: 0.9rem;
+                margin-bottom: 6px;
             }
             .jobs-section { margin-top: 15px; }
-            .jobs-title { 
-                font-size: 1rem; 
-                margin-bottom: 8px; 
-                padding-bottom: 4px; 
+            .jobs-title {
+                font-size: 1rem;
+                margin-bottom: 8px;
+                padding-bottom: 4px;
             }
             .jobs-table th,
-            .jobs-table td { 
-                padding: 3px 4px; 
-                font-size: 7px; 
+            .jobs-table td {
+                padding: 3px 4px;
+                font-size: 7px;
             }
-            .stat-item { 
-                padding: 6px; 
-                margin-bottom: 4px; 
+            .stat-item {
+                padding: 6px;
+                margin-bottom: 4px;
             }
-            .stat-item h4 { 
-                font-size: 0.8rem; 
-                margin-bottom: 3px; 
+            .stat-item h4 {
+                font-size: 0.8rem;
+                margin-bottom: 3px;
             }
-            .stat-item p { 
-                font-size: 0.7rem; 
-                margin: 1px 0; 
+            .stat-item p {
+                font-size: 0.7rem;
+                margin: 1px 0;
             }
-            .stats-grid { 
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
-                gap: 6px; 
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 6px;
             }
         }
-        
+
         * {
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
@@ -415,14 +415,14 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
             line-height: 1.2;
             font-size: 10px;
         }
-        
+
         .container {
             max-width: 100%;
             margin: 0 auto;
             background: white;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        
+
         .header {
             background: white;
             color: black;
@@ -430,46 +430,46 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
             text-align: center;
             border-bottom: 2px solid #333;
         }
-        
+
         .header h1 {
             margin: 0 0 6px 0;
             font-size: 1.3rem;
             font-weight: bold;
             color: black;
         }
-        
+
         .header-subtitle {
             font-size: 0.9rem;
             color: #333;
             margin-bottom: 10px;
         }
-        
+
         .header-info {
             display: flex;
             justify-content: space-between;
             margin-top: 10px;
             flex-wrap: wrap;
         }
-        
+
         .header-item {
             flex: 1;
             min-width: 120px;
             margin: 2px;
         }
-        
+
         .header-item strong {
             display: block;
             font-size: 0.7rem;
             margin-bottom: 2px;
             color: #333;
         }
-        
+
         .content {
             padding: 15px;
             background: white;
             color: black;
         }
-        
+
         .stats-section {
             margin: 15px 0;
             padding: 12px;
@@ -477,19 +477,19 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
             border-radius: 4px;
             border-left: 3px solid #333;
         }
-        
+
         .stats-section h3 {
             margin: 0 0 8px 0;
             color: black;
             font-size: 1rem;
         }
-        
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 8px;
         }
-        
+
         .stat-item {
             background: white;
             padding: 8px;
@@ -497,23 +497,23 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
             border: 1px solid #333;
             color: black;
         }
-        
+
         .stat-item h4 {
             margin: 0 0 6px 0;
             color: black;
             font-size: 0.8rem;
         }
-        
+
         .stat-item p {
             margin: 2px 0;
             font-size: 0.7rem;
             color: black;
         }
-        
+
         .jobs-section {
             margin-top: 20px;
         }
-        
+
         .jobs-title {
             font-size: 1.1rem;
             font-weight: bold;
@@ -522,13 +522,13 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
             border-bottom: 2px solid #333;
             padding-bottom: 6px;
         }
-        
+
         .jobs-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 12px;
         }
-        
+
         .jobs-table th,
         .jobs-table td {
             border: 1px solid #333;
@@ -537,17 +537,17 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
             font-size: 0.7rem;
             color: black;
         }
-        
+
         .jobs-table th {
             background: #f8f9fa;
             font-weight: bold;
             color: black;
         }
-        
+
         .jobs-table tr:nth-child(even) {
             background: #f8f9fa;
         }
-        
+
         .status-badge {
             padding: 4px 8px;
             border-radius: 4px;
@@ -555,22 +555,22 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
             font-weight: bold;
             text-transform: uppercase;
         }
-        
+
         .status-completed {
             background: #d4edda;
             color: #155724;
         }
-        
+
         .status-pending {
             background: #fff3cd;
             color: #856404;
         }
-        
+
         .status-progress {
             background: #d1ecf1;
             color: #0c5460;
         }
-        
+
         .print-button {
             position: fixed;
             top: 20px;
@@ -585,11 +585,11 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
             z-index: 1000;
             border-radius: 4px;
         }
-        
+
         .print-button:hover {
             background: #555;
         }
-        
+
         @media (max-width: 768px) {
             .header-info { flex-direction: column; }
             .header-item { min-width: auto; }
@@ -601,7 +601,7 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
 </head>
 <body>
     <button class="print-button no-print" onclick="window.print()">Imprimir PDF</button>
-    
+
     <div class="container">
         <div class="header">
             <h1>${getReportTitle(type).toUpperCase()}</h1>
@@ -625,10 +625,10 @@ function generateReportHTML(jobs: any[], companyName: string, type: string, star
                 </div>
             </div>
         </div>
-        
+
         <div class="content">
             ${generateSpecificContent()}
-            
+
             <div class="jobs-section">
                 <h2 class="jobs-title">Detalle de Trabajos</h2>
                 <table class="jobs-table">
@@ -877,7 +877,7 @@ function generatePDF(report: any) {
         <h1>${report.title}</h1>
         <div class="date">Generado el ${new Date().toLocaleDateString('es-CL')}</div>
     </div>
-    
+
     <div class="content">
         <div class="section">
             <h3>Resumen Ejecutivo</h3>
@@ -902,7 +902,7 @@ function generatePDF(report: any) {
                 </div>
             ` : ''}
         </div>
-        
+
         ${report.data.technicians ? `
             <div class="section">
                 <h3>Rendimiento de Técnicos</h3>
@@ -928,7 +928,7 @@ function generatePDF(report: any) {
                 </table>
             </div>
         ` : ''}
-        
+
         ${report.data.topServices ? `
             <div class="section">
                 <h3>Servicios Principales</h3>

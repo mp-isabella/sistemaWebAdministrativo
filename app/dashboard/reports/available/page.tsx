@@ -107,7 +107,7 @@ export default function AvailableReportsPage() {
         throw new Error('Error al exportar reporte')
       }
     } catch (error) {
-      
+
       alert(`Error al exportar el reporte: ${error}`)
     } finally {
       setLoading(false)

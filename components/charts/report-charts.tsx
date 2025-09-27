@@ -18,7 +18,6 @@ import {
   YAxis
 } from 'recharts';
 
-
 interface ReportChartsProps {
   data: any;
   type: 'FINANCIAL' | 'OPERATIONAL' | 'PERFORMANCE' | 'QUALITY';

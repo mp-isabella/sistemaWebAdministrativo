@@ -28,7 +28,7 @@ export async function GET(_request: NextRequest) {
 
     return NextResponse.json(technicians)
   } catch (error) {
-    
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

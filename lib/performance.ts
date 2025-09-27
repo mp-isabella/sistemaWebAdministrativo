@@ -142,6 +142,9 @@ export const performanceUtils = {
     const start = performance.now();
     fn();
     const end = performance.now();
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`⏱️ ${name}: ${(end - start).toFixed(2)}ms`);
+    }
   },
 
   // Medir tiempo de una función async
@@ -149,6 +152,9 @@ export const performanceUtils = {
     const start = performance.now();
     const result = await fn();
     const end = performance.now();
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`⏱️ ${name}: ${(end - start).toFixed(2)}ms`);
+    }
     return result;
   },
 
@@ -223,6 +229,7 @@ export const usePerformance = () => {
     return () => {
       const end = performance.now();
       if (performanceUtils.isDevelopment()) {
+        console.log(`🎨 ${componentName} render: ${(end - start).toFixed(2)}ms`);
       }
     };
   };
@@ -233,11 +240,13 @@ export const usePerformance = () => {
       const result = await apiCall();
       const end = performance.now();
       if (performanceUtils.isDevelopment()) {
+        console.log(`🌐 ${apiName}: ${(end - start).toFixed(2)}ms`);
       }
       return result;
     } catch (error) {
       const end = performance.now();
       if (performanceUtils.isDevelopment()) {
+        console.log(`🌐 ${apiName} (error): ${(end - start).toFixed(2)}ms`);
       }
       throw error;
     }

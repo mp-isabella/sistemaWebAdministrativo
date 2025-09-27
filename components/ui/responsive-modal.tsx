@@ -168,7 +168,7 @@ export function ResponsiveConfirmModal({
         <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
           {message}
         </p>
-        
+
         <div className={cn(
           "flex gap-3",
           isMobile ? "flex-col" : "flex-row justify-end"
@@ -238,7 +238,7 @@ export function ResponsiveFormModal({
         <div className="space-y-4 sm:space-y-6">
           {children}
         </div>
-        
+
         <div className={cn(
           "flex gap-3 pt-4 border-t border-gray-200",
           isMobile ? "flex-col" : "flex-row justify-end"

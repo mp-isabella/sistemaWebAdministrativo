@@ -17,12 +17,12 @@ export async function GET(request: NextRequest) {
     const month = searchParams.get('month')
 
     const whereClause: any = {}
-    
+
     if (year && month) {
       // Filtrar por mes y año específicos
       const startDate = new Date(parseInt(year), parseInt(month) - 1, 1)
       const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59)
-      
+
       whereClause.date = {
         gte: startDate,
         lte: endDate
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       // Filtrar por año completo
       const startDate = new Date(parseInt(year), 0, 1)
       const endDate = new Date(parseInt(year), 11, 31, 23, 59, 59)
-      
+
       whereClause.date = {
         gte: startDate,
         lte: endDate
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
       const date = new Date(transaction.date)
       const monthKey = `${date.getFullYear()}-${date.getMonth()}`
       const monthName = months[date.getMonth()] || "Mes Desconocido"
-      
+
       if (!monthlyStats.has(monthKey)) {
         monthlyStats.set(monthKey, {
           month: monthName,
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ monthlyStats: result })
 
   } catch (error) {
-    
+
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

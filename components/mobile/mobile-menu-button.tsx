@@ -22,7 +22,7 @@ export function MobileMenuButton({ isOpen, onToggle, className = "" }: MobileMen
   };
 
   return (
-    <button 
+    <button
       data-mobile-menu-button
       className={`block lg:hidden p-3 rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 hover:shadow-md active:scale-95 transition-all duration-200 ${className}`}
       onClick={handleClick}

@@ -5,7 +5,7 @@ import {
   BarChart3,
   Building2,
   Calendar,
-  // TrendingUp, 
+  // TrendingUp,
   Clock,
   DollarSign,
   ExternalLink,

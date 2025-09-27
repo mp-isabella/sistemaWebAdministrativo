@@ -86,33 +86,33 @@ export default function MobileOptimizer({
             animation-duration: 0.2s !important;
             transition-duration: 0.2s !important;
           }
-          
+
           .animate-slow {
             animation-duration: 0.3s !important;
           }
-          
+
           .transition-slow {
             transition-duration: 0.3s !important;
           }
-          
+
           /* Optimizaciones específicas para el Hero */
           .hero-background {
             background-attachment: scroll !important;
           }
-          
+
           /* Reducir sombras en móvil para mejor rendimiento */
           .shadow-2xl {
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
           }
         }
-        
+
         @media (max-width: 480px) {
           /* Optimizaciones adicionales para móviles pequeños */
           .text-6xl {
             font-size: 2.5rem !important;
             line-height: 1.1 !important;
           }
-          
+
           .text-5xl {
             font-size: 2rem !important;
             line-height: 1.2 !important;

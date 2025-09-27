@@ -597,13 +597,13 @@ export const useResponsive = () => {
     isDesktop,
     isTouchDevice: responsiveUtils.isTouchDevice(),
     orientation: responsiveUtils.getOrientation(),
-    getSpacing: (size: keyof typeof RESPONSIVE_CONFIG.SPACING) => 
+    getSpacing: (size: keyof typeof RESPONSIVE_CONFIG.SPACING) =>
       responsiveUtils.getSpacing(size, breakpoint),
-    getTypography: (size: keyof typeof RESPONSIVE_CONFIG.TYPOGRAPHY) => 
+    getTypography: (size: keyof typeof RESPONSIVE_CONFIG.TYPOGRAPHY) =>
       responsiveUtils.getTypography(size, breakpoint),
-    getBorderRadius: (size: keyof typeof RESPONSIVE_CONFIG.BORDER_RADIUS) => 
+    getBorderRadius: (size: keyof typeof RESPONSIVE_CONFIG.BORDER_RADIUS) =>
       responsiveUtils.getBorderRadius(size, breakpoint),
-    getShadow: (size: keyof typeof RESPONSIVE_CONFIG.SHADOWS) => 
+    getShadow: (size: keyof typeof RESPONSIVE_CONFIG.SHADOWS) =>
       responsiveUtils.getShadow(size, breakpoint),
     getGrid: () => responsiveUtils.getGrid(breakpoint),
     getAnimation: () => responsiveUtils.getAnimation(breakpoint),

@@ -137,7 +137,7 @@ export function CalendarSidebar({
             const isSelectedDate = isSameDay(day, selectedDate)
             // Debug: mostrar información del día actual
             if (isTodayDate) {
-              console.log('Day:', day, 'isToday:', isTodayDate)
+
             }
             return (
               <Button

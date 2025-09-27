@@ -79,7 +79,7 @@ export default function InvoiceForm({ onSubmit, onCancel, loading = false, initi
         setClients(activeClients)
       }
     } catch (error) {
-      
+
     }
   }
 
@@ -97,7 +97,7 @@ export default function InvoiceForm({ onSubmit, onCancel, loading = false, initi
         setCompanies(uniqueCompanies)
       }
     } catch (error) {
-      
+
     }
   }
 
@@ -109,7 +109,7 @@ export default function InvoiceForm({ onSubmit, onCancel, loading = false, initi
         setServices(data)
       }
     } catch (error) {
-      
+
     }
   }
 

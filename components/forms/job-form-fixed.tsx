@@ -83,11 +83,8 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
   // Hook para validación de horarios
   const { clearValidation } = useScheduleValidation()
 
-
   // Función para inicializar el formulario con datos del trabajo
   const initializeFormWithJob = useCallback((jobData: any) => {
-    console.log('🔄 Inicializando formulario con datos del trabajo:', jobData);
-
     // Manejar la fecha correctamente para evitar problemas de zona horaria
     let scheduledDate = null
     if (jobData.scheduledAt) {
@@ -120,9 +117,6 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
       ...initialFormData,
       serviceId: jobData.serviceId || ""
     };
-
-    console.log('📝 Datos del formulario inicializados:', finalFormData);
-
     setFormData(finalFormData);
 
     // Configurar el tipo de servicio
@@ -146,14 +140,12 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
   // Actualizar formulario cuando se edita un trabajo
   useEffect(() => {
     if (job) {
-      console.log('📋 Trabajo recibido para editar:', job);
       // Esperar un poco para asegurar que los datos estén cargados
       setTimeout(() => {
         initializeFormWithJob(job);
       }, 100);
     } else {
       // Si no hay trabajo, limpiar el formulario
-      console.log('🧹 Limpiando formulario para nuevo trabajo');
       setFormData({
         description: "",
         clientId: "",
@@ -260,13 +252,6 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
       });
 
       // Log para debugging
-      console.log('🔧 Técnicos filtrados para formulario:', filteredTechnicians.map((tech: any) => ({
-        id: tech.id,
-        name: tech.name,
-        role: tech.role?.name || tech.role,
-        isActive: tech.isActive
-      })));
-
       setTechnicians(filteredTechnicians);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -381,8 +366,6 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
       // Si se está creando un cliente nuevo, crearlo primero
       if (showNewClientForm) {
         try {
-          console.log('🆕 Creando cliente nuevo:', newClientData);
-
           const clientResponse = await fetch('/api/clients', {
             method: 'POST',
             headers: {
@@ -403,15 +386,11 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
 
           if (!clientResponse.ok) {
             const errorData = await clientResponse.json();
-            console.log('❌ Error del servidor:', errorData);
             throw new Error(errorData.message || errorData.error || 'Error al crear el cliente');
           }
 
           const newClient = await clientResponse.json();
           clientId = newClient.id;
-
-          console.log('✅ Cliente creado exitosamente:', newClient);
-
           // Actualizar la lista de clientes localmente
           setClients(prev => [...prev, newClient]);
 
@@ -453,8 +432,6 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
       };
 
       // Log de datos para debugging
-      console.log('📋 Datos del formulario preparados:', submitData);
-
       onSubmit(submitData);
     } catch (error) {
       console.error('Error submitting form:', error);

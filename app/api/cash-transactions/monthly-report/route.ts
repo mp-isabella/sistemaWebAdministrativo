@@ -61,14 +61,14 @@ export async function POST(request: NextRequest) {
       if (!acc[category]) {
         acc[category] = { income: 0, expense: 0, count: 0 }
       }
-      
+
       if (transaction.type === 'INCOME') {
         acc[category].income += transaction.amount
       } else {
         acc[category].expense += transaction.amount
       }
       acc[category].count += 1
-      
+
       return acc
     }, {} as Record<string, { income: number, expense: number, count: number }>)
 
@@ -78,14 +78,14 @@ export async function POST(request: NextRequest) {
       if (!acc[method]) {
         acc[method] = { income: 0, expense: 0, count: 0 }
       }
-      
+
       if (transaction.type === 'INCOME') {
         acc[method].income += transaction.amount
       } else {
         acc[method].expense += transaction.amount
       }
       acc[method].count += 1
-      
+
       return acc
     }, {} as Record<string, { income: number, expense: number, count: number }>)
 
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    
+
     return NextResponse.json({ error: 'Error generando reporte mensual' }, { status: 500 })
   }
 }
@@ -129,12 +129,12 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     })
-    
+
     const page = await browser.newPage()
-    
+
     // Set content and wait for it to load
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' })
-    
+
     // Generate PDF
     const pdfBuffer = await page.pdf({
       format: 'A4',
@@ -146,7 +146,7 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
         left: '20mm'
       }
     })
-    
+
     return Buffer.from(pdfBuffer)
   } finally {
     if (browser) {
@@ -190,51 +190,51 @@ function generateMonthlyReportContent(data: any) {
           size: A4;
            margin: 10mm;
         }
-        
+
         @media print {
-          body { 
-            margin: 0; 
+          body {
+            margin: 0;
             padding: 5px;
             font-size: 8px;
           }
-          .header { 
-            padding-bottom: 10px; 
-            margin-bottom: 15px; 
+          .header {
+            padding-bottom: 10px;
+            margin-bottom: 15px;
           }
           .company-name { font-size: 14px; }
           .title { font-size: 16px; }
           .subtitle { font-size: 10px; }
           .summary { margin-bottom: 15px; }
-          .summary-card { 
-            padding: 8px; 
-            font-size: 9px; 
+          .summary-card {
+            padding: 8px;
+            font-size: 9px;
           }
           .summary-value { font-size: 12px; }
           .summary-label { font-size: 8px; }
           .analysis-section { margin-bottom: 15px; }
-          .section-title { 
-            font-size: 12px; 
-            margin-bottom: 8px; 
-            padding: 6px; 
+          .section-title {
+            font-size: 12px;
+            margin-bottom: 8px;
+            padding: 6px;
           }
-          .analysis-table { 
-            margin-bottom: 10px; 
-            font-size: 7px; 
+          .analysis-table {
+            margin-bottom: 10px;
+            font-size: 7px;
           }
           .analysis-table th,
-          .analysis-table td { 
-            padding: 3px; 
+          .analysis-table td {
+            padding: 3px;
           }
-          .transactions-table { 
-            font-size: 6px; 
-            margin-top: 10px; 
+          .transactions-table {
+            font-size: 6px;
+            margin-top: 10px;
           }
           .transactions-table th,
-          .transactions-table td { 
-            padding: 2px; 
+          .transactions-table td {
+            padding: 2px;
           }
         }
-        
+
         body {
           font-family: 'Arial', sans-serif;
           margin: 0;
@@ -243,45 +243,45 @@ function generateMonthlyReportContent(data: any) {
           line-height: 1.3;
           font-size: 10px;
         }
-        
+
         .header {
           text-align: center;
           border-bottom: 2px solid #2563eb;
           padding-bottom: 15px;
           margin-bottom: 20px;
         }
-        
+
         .company-name {
           font-size: 16px;
           font-weight: bold;
           color: #1e40af;
           margin-bottom: 8px;
         }
-        
+
         .title {
           font-size: 18px;
           font-weight: bold;
           color: #1e40af;
           margin: 0;
         }
-        
+
         .subtitle {
           font-size: 11px;
           color: #6b7280;
           margin: 5px 0 0 0;
         }
-        
+
         .summary {
           display: table;
           width: 100%;
           margin-bottom: 20px;
           border-collapse: collapse;
         }
-        
+
         .summary-row {
           display: table-row;
         }
-        
+
         .summary-card {
           display: table-cell;
           width: 25%;
@@ -291,39 +291,39 @@ function generateMonthlyReportContent(data: any) {
           text-align: center;
           vertical-align: top;
         }
-        
+
         .summary-card.income {
           border-left: 3px solid #10b981;
         }
-        
+
         .summary-card.expense {
           border-left: 3px solid #ef4444;
         }
-        
+
         .summary-card.balance {
           border-left: 3px solid #3b82f6;
         }
-        
+
         .summary-value {
           font-size: 14px;
           font-weight: bold;
           margin: 3px 0;
         }
-        
+
         .summary-label {
           font-size: 9px;
           color: #6b7280;
           text-transform: uppercase;
         }
-        
+
         .income .summary-value { color: #10b981; }
         .expense .summary-value { color: #ef4444; }
         .balance .summary-value { color: #3b82f6; }
-        
+
         .analysis-section {
           margin-bottom: 20px;
         }
-        
+
         .section-title {
           font-size: 13px;
           font-weight: bold;
@@ -333,65 +333,65 @@ function generateMonthlyReportContent(data: any) {
           background: #eff6ff;
           border-radius: 4px;
         }
-        
+
         .analysis-table {
           width: 100%;
           border-collapse: collapse;
           margin-bottom: 15px;
           font-size: 8px;
         }
-        
+
         .analysis-table th,
         .analysis-table td {
           border: 1px solid #e5e7eb;
           padding: 4px;
           text-align: left;
         }
-        
+
         .analysis-table th {
           background: #f9fafb;
           font-weight: bold;
           color: #374151;
         }
-        
+
         .analysis-table tr:nth-child(even) {
           background: #f9fafb;
         }
-        
+
         .amount-income {
           color: #10b981;
           font-weight: bold;
         }
-        
+
         .amount-expense {
           color: #ef4444;
           font-weight: bold;
         }
-        
+
         .transactions-table {
           width: 100%;
           border-collapse: collapse;
           margin-top: 15px;
           font-size: 7px;
         }
-        
+
         .transactions-table th,
         .transactions-table td {
           border: 1px solid #e5e7eb;
           padding: 3px;
           text-align: left;
         }
-        
+
         .transactions-table th {
           background: #f9fafb;
           font-weight: bold;
           color: #374151;
         }
-        
+
         .transactions-table tr:nth-child(even) {
           background: #f9fafb;
         }
-        
+
         .page-break {
           page-break-before: always;
         }

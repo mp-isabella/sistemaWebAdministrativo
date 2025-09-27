@@ -27,17 +27,17 @@ export async function POST(request: NextRequest) {
 
     if (result.success) {
       return NextResponse.json(
-        { 
-          success: true, 
-          message: result.message 
+        {
+          success: true,
+          message: result.message
         },
         { status: 200 }
       );
     } else {
       return NextResponse.json(
-        { 
-          success: false, 
-          message: result.message 
+        {
+          success: false,
+          message: result.message
         },
         { status: 500 }
       );
@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     return NextResponse.json(
-      { 
-        success: false, 
-        message: 'Error interno del servidor' 
+      {
+        success: false,
+        message: 'Error interno del servidor'
       },
       { status: 500 }
     );

@@ -34,7 +34,7 @@ export default function CalendarPage() {
   if (status === "unauthenticated") {
     return null
   }
-  
+
   if (status === "authenticated") {
     const userRole = (session?.user as any)?.role?.toLowerCase();
     if (userRole !== "tecnico") {
@@ -52,8 +52,8 @@ export default function CalendarPage() {
             <p className="section-subtitle">Vista de calendario con estado de trabajos</p>
           </div>
           <div className="header-actions">
-            <button 
-              onClick={() => router.push('/dashboard')} 
+            <button
+              onClick={() => router.push('/dashboard')}
               className="btn-outline"
             >
               Volver al Dashboard

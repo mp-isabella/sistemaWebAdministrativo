@@ -38,7 +38,7 @@ export default function NewInvoicePage() {
         })
       }
     } catch (error) {
-      
+
       toast({
         title: "Error",
         description: "Error al crear la factura",
@@ -60,7 +60,7 @@ export default function NewInvoicePage() {
           <h1 className="text-3xl font-bold text-gray-900">Nueva Factura</h1>
           <p className="text-gray-600">Crea una nueva factura con el estilo de la empresa seleccionada</p>
         </div>
-        
+
         <InvoiceForm
           onSubmit={handleSubmit}
           onCancel={handleCancel}

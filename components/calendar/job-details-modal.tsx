@@ -47,7 +47,7 @@ export function JobDetailsModal({ job, onClose, onJobUpdate }: JobDetailsModalPr
 
   // Sincronizar el estado local cuando cambie el prop job
   useEffect(() => {
-    
+
     _setLocalJob(job)
 
     // Cargar información de pago cuando se actualiza el job
@@ -86,7 +86,7 @@ export function JobDetailsModal({ job, onClose, onJobUpdate }: JobDetailsModalPr
         }
       }
     } catch (error) {
-      
+
     } finally {
       setIsLoadingPayment(false)
     }
@@ -146,7 +146,7 @@ export function JobDetailsModal({ job, onClose, onJobUpdate }: JobDetailsModalPr
         throw new Error(errorData.error || 'Error al marcar como pagado')
       }
     } catch (error) {
-      
+
       toast({
         title: "❌ Error",
         description: error instanceof Error ? error.message : "Error al marcar como pagado",

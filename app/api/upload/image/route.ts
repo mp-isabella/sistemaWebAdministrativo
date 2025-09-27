@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       publicId: result.public_id,
     })
   } catch (error) {
-    
+
     return NextResponse.json({ error: "Error subiendo imagen" }, { status: 500 })
   }
 }

@@ -52,7 +52,6 @@ export async function POST(request: NextRequest) {
     // Validar datos
     const validation = validateClientData(body)
     if (!validation.isValid) {
-      console.log('❌ Validación falló:', validation.errors);
       return NextResponse.json({
         error: "Datos inválidos",
         details: validation.errors,

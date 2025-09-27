@@ -60,8 +60,8 @@ export async function GET(
               margin: 25mm;
               size: A4;
             }
-            body { 
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
               margin: 0;
               padding: 20px;
               color: #333;
@@ -73,9 +73,9 @@ export async function GET(
               margin: 0 auto;
               background: white;
             }
-            .header { 
-              text-align: center; 
-              margin-bottom: 30px; 
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
               border-bottom: 2px solid #1e40af;
               padding-bottom: 20px;
             }
@@ -252,7 +252,7 @@ export async function GET(
               ` : ''}
               <div class="company-name">${quote.company?.name || 'Empresa'}</div>
               <div class="company-service">${quote.company?.service || 'Servicios Profesionales'}</div>
-              
+
               <div class="company-info">
                 <div>
                   <div><strong>RUT:</strong> ${quote.company?.rut || 'N/A'}</div>
@@ -264,11 +264,11 @@ export async function GET(
                 </div>
               </div>
             </div>
-            
+
             <div class="separator"></div>
-            
+
             <div class="document-title">COTIZACIÓN</div>
-            
+
             <div class="quote-details">
               <h3>Información del Cliente</h3>
               <div class="details-grid">
@@ -329,7 +329,7 @@ export async function GET(
                   `).join('')}
                 </tbody>
               </table>
-              
+
               <div class="total-section">
                 <div class="total-box">
                   <div class="total-row">
@@ -378,7 +378,7 @@ export async function GET(
     return new NextResponse(quoteHTML, { headers })
 
   } catch (error) {
-    
+
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

@@ -1064,77 +1064,77 @@ export default function MyJobsPage() {
           <title>Informe Final - ${job.service}</title>
           <style>
             @page { margin: 2cm; }
-            body { 
-              font-family: Arial, sans-serif; 
-              margin: 0; 
-              padding: 20px; 
-              max-width: 800px; 
-              margin: 0 auto; 
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+              max-width: 800px;
+              margin: 0 auto;
               line-height: 1.6;
             }
-            .header { 
-              text-align: center; 
-              margin-bottom: 40px; 
-              border-bottom: 3px solid #007bff; 
+            .header {
+              text-align: center;
+              margin-bottom: 40px;
+              border-bottom: 3px solid #007bff;
               padding-bottom: 20px;
             }
-            .header h1 { 
-              font-size: 24px; 
-              margin-bottom: 10px; 
+            .header h1 {
+              font-size: 24px;
+              margin-bottom: 10px;
               color: #333;
             }
-            .header h2 { 
-              font-size: 18px; 
-              margin-bottom: 5px; 
+            .header h2 {
+              font-size: 18px;
+              margin-bottom: 5px;
               color: #666;
             }
-            .section { 
-              margin-bottom: 30px; 
+            .section {
+              margin-bottom: 30px;
               page-break-inside: avoid;
             }
-            .section h3 { 
-              color: #333; 
-              border-bottom: 2px solid #007bff; 
-              padding-bottom: 8px; 
+            .section h3 {
+              color: #333;
+              border-bottom: 2px solid #007bff;
+              padding-bottom: 8px;
               margin-bottom: 15px;
               font-size: 16px;
             }
-            .info-grid { 
-              display: grid; 
-              grid-template-columns: 1fr 1fr; 
-              gap: 25px; 
-              margin-bottom: 20px; 
+            .info-grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 25px;
+              margin-bottom: 20px;
             }
-            .info-item { 
-              margin-bottom: 15px; 
+            .info-item {
+              margin-bottom: 15px;
             }
-            .label { 
-              font-weight: bold; 
-              color: #555; 
+            .label {
+              font-weight: bold;
+              color: #555;
               font-size: 14px;
             }
-            .value { 
-              margin-top: 5px; 
+            .value {
+              margin-top: 5px;
               font-size: 14px;
             }
-            .observations { 
-              background: #f8f9fa; 
-              padding: 20px; 
-              border-radius: 8px; 
-              margin: 15px 0; 
+            .observations {
+              background: #f8f9fa;
+              padding: 20px;
+              border-radius: 8px;
+              margin: 15px 0;
               border-left: 4px solid #007bff;
             }
-            .signature-section { 
-              text-align: center; 
-              margin: 30px 0; 
+            .signature-section {
+              text-align: center;
+              margin: 30px 0;
               padding: 20px;
               border: 2px dashed #ddd;
               border-radius: 8px;
             }
-            .signature-img { 
-              max-width: 400px; 
+            .signature-img {
+              max-width: 400px;
               max-height: 200px;
-              border: 1px solid #ddd; 
+              border: 1px solid #ddd;
               border-radius: 4px;
             }
             .evidence-section {
@@ -1159,11 +1159,11 @@ export default function MyJobsPage() {
               border-radius: 4px;
               margin-bottom: 10px;
             }
-            .footer { 
-              margin-top: 50px; 
-              text-align: center; 
-              color: #666; 
-              font-size: 12px; 
+            .footer {
+              margin-top: 50px;
+              text-align: center;
+              color: #666;
+              font-size: 12px;
               border-top: 1px solid #eee;
               padding-top: 20px;
             }

@@ -15,7 +15,7 @@ export const useRememberMe = () => {
   useEffect(() => {
     const savedEmail = localStorage.getItem('userEmail');
     const savedRememberMe = localStorage.getItem('rememberMe') === 'true';
-    
+
     if (savedEmail && savedRememberMe) {
       setRememberMeData({
         email: savedEmail,
@@ -33,7 +33,7 @@ export const useRememberMe = () => {
       localStorage.removeItem('userEmail');
       localStorage.removeItem('rememberMe');
     }
-    
+
     setRememberMeData({ email, rememberMe });
   };
 
@@ -46,7 +46,7 @@ export const useRememberMe = () => {
 
   // Función para verificar si hay una sesión recordada
   const hasRememberedSession = () => {
-    return localStorage.getItem('rememberMe') === 'true' && 
+    return localStorage.getItem('rememberMe') === 'true' &&
            localStorage.getItem('userEmail') !== null;
   };
 

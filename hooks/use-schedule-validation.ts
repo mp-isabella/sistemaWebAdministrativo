@@ -30,7 +30,7 @@ export function useScheduleValidation() {
     }
 
     setIsValidating(true)
-    
+
     try {
       const response = await fetch('/api/jobs/validate-schedule', {
         method: 'POST',
@@ -47,14 +47,14 @@ export function useScheduleValidation() {
       })
 
       const result = await response.json()
-      
+
       if (response.ok) {
         const validationResult = {
           hasConflict: result.hasConflict,
           conflictingJobs: result.conflictingJobs || [],
           totalJobs: result.totalJobs || 0,
           maxJobs: result.maxJobs || 8,
-          message: result.hasConflict 
+          message: result.hasConflict
             ? `El técnico ya tiene ${result.totalJobs} trabajos en ese horario. Límite: ${result.maxJobs} trabajos.`
             : `Horario disponible. Trabajos actuales: ${result.totalJobs}/${result.maxJobs}`
         }
@@ -72,7 +72,7 @@ export function useScheduleValidation() {
         return errorResult
       }
     } catch (error) {
-      
+
       const errorResult = {
         hasConflict: false,
         conflictingJobs: [],

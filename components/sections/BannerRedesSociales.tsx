@@ -8,13 +8,13 @@ export default function ServicesBanner() {
 
   useEffect(() => {
     setIsMounted(true);
-    
+
     if (typeof window === 'undefined') return;
-    
+
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);

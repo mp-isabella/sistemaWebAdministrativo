@@ -22,9 +22,9 @@ export async function POST(request: NextRequest) {
     });
 
     // Generar token único para recuperación
-    const resetToken = Math.random().toString(36).substring(2, 15) + 
+    const resetToken = Math.random().toString(36).substring(2, 15) +
                       Math.random().toString(36).substring(2, 15);
-    
+
     // URL de recuperación (ajusta según tu dominio)
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}&email=${email}`;
 
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
           <p>Has solicitado restablecer tu contraseña para el Sistema Administrativo.</p>
           <p>Haz clic en el siguiente enlace para crear una nueva contraseña:</p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetUrl}" 
+            <a href="${resetUrl}"
                style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
               Restablecer Contraseña
             </a>

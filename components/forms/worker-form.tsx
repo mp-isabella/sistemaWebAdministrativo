@@ -109,7 +109,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
   // Actualizar formulario cuando cambie el worker
   useEffect(() => {
     if (worker) {
-      console.log('🔄 Inicializando formulario con datos del trabajador:', worker);
       // Modo edición - asegurar que los datos se carguen correctamente
       const newFormData = {
         name: worker.name || "",
@@ -121,11 +120,9 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
         password: "",
         confirmPassword: ""
       }
-      console.log('📝 Datos del formulario establecidos:', newFormData);
       setFormData(newFormData)
       setInitialValuesSet(false) // Resetear para permitir establecer valores iniciales
     } else {
-      console.log('🧹 Limpiando formulario para nuevo trabajador');
       // Modo creación - limpiar formulario
       setFormData({
         name: "",
@@ -145,7 +142,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
   // Asegurar que los datos del trabajador se establezcan cuando las opciones estén cargadas
   useEffect(() => {
     if (worker && companies.length > 0 && roles.length > 0 && !initialValuesSet) {
-      console.log('🔧 Estableciendo valores iniciales con opciones cargadas');
       // Establecer la empresa del trabajador directamente
       setFormData(prev => ({
         ...prev,
@@ -204,10 +200,7 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
   // Manejador de envío del formulario
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
-    console.log('📋 Validando formulario con datos:', formData);
-
     if (!validateForm()) {
-      console.log('❌ Validación falló');
       return
     }
 
@@ -217,8 +210,6 @@ export default function WorkerForm({ worker, onSubmit, onCancel, loading = false
       delete submitData.password
     }
     delete submitData.confirmPassword
-
-    console.log('✅ Datos preparados para envío:', submitData);
     onSubmit(submitData)
   }, [formData, validateForm, onSubmit, worker])
   // Función para obtener nombre legible del rol

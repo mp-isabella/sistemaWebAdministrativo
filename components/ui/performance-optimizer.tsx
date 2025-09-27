@@ -9,7 +9,7 @@ interface PerformanceOptimizerProps {
 export default function PerformanceOptimizer({ children }: PerformanceOptimizerProps) {
   useEffect(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
-    
+
     // Optimización: Preload de recursos críticos solo
     const preloadCriticalResources = () => {
       const criticalImages = [

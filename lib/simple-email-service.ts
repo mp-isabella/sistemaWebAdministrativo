@@ -94,13 +94,13 @@ Santiago: +56 9 4200 8410
           message: 'FormSubmit no funciona desde localhost. Para probar completamente, despliega el sitio a producción o usa ngrok para exponer localhost como dominio público.'
         };
       }
-      
+
       return {
         success: false,
         message: 'Lo sentimos, hubo un problema al enviar tu solicitud. Por favor, intenta nuevamente o contáctanos directamente al +56 9 4200 8410.'
       };
     }
-    
+
   } catch (error) {
     return {
       success: false,

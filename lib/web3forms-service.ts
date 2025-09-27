@@ -22,7 +22,7 @@ export const sendViaWeb3Forms = async (data: Web3FormsData): Promise<{
 }> => {
   try {
     const serviceName = serviceNames[data.servicio] || data.servicio;
-    
+
     const emailContent = `
 🔥 NUEVA COTIZACIÓN - AMÉSTICA LTDA.
 =======================================

@@ -88,7 +88,7 @@ export default function QuoteDetailPage() {
         router.push('/dashboard/quotes')
       }
     } catch (error) {
-      
+
       toast({
         title: "Error",
         description: "Error al cargar el presupuesto",
@@ -136,7 +136,7 @@ export default function QuoteDetailPage() {
         })
       }
     } catch (error) {
-      
+
       toast({
         title: "Error",
         description: "Error al descargar el PDF",
@@ -177,7 +177,7 @@ export default function QuoteDetailPage() {
         })
       }
     } catch (error) {
-      
+
       toast({
         title: "Error",
         description: "Error al actualizar el estado",
@@ -212,7 +212,7 @@ export default function QuoteDetailPage() {
         })
       }
     } catch (error) {
-      
+
       toast({
         title: "Error",
         description: "Error al eliminar el presupuesto",

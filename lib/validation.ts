@@ -25,7 +25,6 @@ export function validatePhone(phone: string): boolean {
     const cleanPhone = phone.replace(/\s/g, '').replace(/[^\d+]/g, '')
     // Acepta números de 9 dígitos que empiecen con 9 (formato chileno móvil)
     const phoneRegex = /^(\+56)?9\d{8}$/
-    console.log('🔍 Validating phone:', phone, '-> cleaned:', cleanPhone, '-> valid:', phoneRegex.test(cleanPhone))
     return phoneRegex.test(cleanPhone)
 }
 

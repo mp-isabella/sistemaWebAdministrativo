@@ -20,25 +20,25 @@ export function useMobileDetection(): MobileDetection {
     orientation: 'landscape', // Default landscape for SSR
     isTouchDevice: false,
   });
-  
+
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
-    
+
     if (typeof window === 'undefined') return;
-    
+
     const updateMobileInfo = () => {
       try {
         const width = window.innerWidth;
         const height = window.innerHeight;
-        
+
         // Detect touch device
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        
+
         // Detect orientation
         const orientation = width > height ? 'landscape' : 'portrait';
-        
+
         // Classify device
         const isMobile = width <= 768 || (width <= 1024 && isTouchDevice);
         const isTablet = width > 768 && width <= 1024 && isTouchDevice;

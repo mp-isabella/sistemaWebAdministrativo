@@ -14,8 +14,8 @@ import {
   Loader2,
   RefreshCw,
   Search,
-  // CheckCircle, 
-  // Clock, 
+  // CheckCircle,
+  // Clock,
   User,
 } from "lucide-react"
 import { useSession } from "next-auth/react"
@@ -74,7 +74,7 @@ export default function PendingPaymentsPage() {
         setJobs(data.jobs)
       }
     } catch (error) {
-      
+
       toast({
         title: "Error",
         description: "Error al cargar trabajos pendientes de pago",
@@ -147,7 +147,7 @@ export default function PendingPaymentsPage() {
         })
       }
     } catch (error) {
-      
+
       toast({
         title: "Error",
         description: "Error de conexión",

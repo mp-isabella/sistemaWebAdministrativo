@@ -50,7 +50,7 @@ export async function GET(
             }
         })
     } catch (error) {
-        
+
         return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
     }
 }
@@ -111,26 +111,26 @@ function generateWorkOrderHTML(workOrder: any) {
             body { margin: 0; }
             .no-print { display: none; }
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
             background: white;
         }
-        
+
         .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         .header {
             border-bottom: 3px solid ${colors.primary};
             padding-bottom: 20px;
@@ -139,13 +139,13 @@ function generateWorkOrderHTML(workOrder: any) {
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .logo-section {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-        
+
         .logo {
             width: 80px;
             height: 80px;
@@ -158,70 +158,70 @@ function generateWorkOrderHTML(workOrder: any) {
             font-weight: bold;
             font-size: 24px;
         }
-        
+
         .company-info h1 {
             color: ${colors.primary};
             font-size: 28px;
             margin-bottom: 5px;
         }
-        
+
         .company-info p {
             color: #666;
             font-size: 14px;
         }
-        
+
         .document-title {
             text-align: right;
         }
-        
+
         .document-title h2 {
             color: ${colors.primary};
             font-size: 24px;
             margin-bottom: 5px;
         }
-        
+
         .document-title .number {
             font-size: 18px;
             color: #666;
             font-weight: bold;
         }
-        
+
         .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
             margin-bottom: 30px;
         }
-        
+
         .info-section {
             background: ${colors.accent};
             padding: 20px;
             border-radius: 8px;
             border-left: 4px solid ${colors.primary};
         }
-        
+
         .info-section h3 {
             color: ${colors.primary};
             margin-bottom: 15px;
             font-size: 16px;
             text-transform: uppercase;
         }
-        
+
         .info-item {
             margin-bottom: 8px;
         }
-        
+
         .info-label {
             font-weight: bold;
             color: #555;
             font-size: 14px;
         }
-        
+
         .info-value {
             color: #333;
             font-size: 14px;
         }
-        
+
         .items-table {
             width: 100%;
             border-collapse: collapse;
@@ -231,7 +231,7 @@ function generateWorkOrderHTML(workOrder: any) {
             overflow: hidden;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
+
         .items-table th {
             background: ${colors.primary};
             color: white;
@@ -239,30 +239,30 @@ function generateWorkOrderHTML(workOrder: any) {
             text-align: left;
             font-weight: 600;
         }
-        
+
         .items-table td {
             padding: 12px 15px;
             border-bottom: 1px solid #eee;
         }
-        
+
         .items-table tr:nth-child(even) {
             background: #f9f9f9;
         }
-        
+
         .total-section {
             background: ${colors.accent};
             padding: 20px;
             border-radius: 8px;
             margin-top: 20px;
         }
-        
+
         .total-row {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
             font-size: 16px;
         }
-        
+
         .total-row.final {
             font-size: 20px;
             font-weight: bold;
@@ -271,7 +271,7 @@ function generateWorkOrderHTML(workOrder: any) {
             padding-top: 10px;
             margin-top: 10px;
         }
-        
+
         .notes-section {
             margin-top: 30px;
             padding: 20px;
@@ -279,12 +279,12 @@ function generateWorkOrderHTML(workOrder: any) {
             border-radius: 8px;
             border-left: 4px solid ${colors.secondary};
         }
-        
+
         .notes-section h3 {
             color: ${colors.primary};
             margin-bottom: 10px;
         }
-        
+
         .footer {
             margin-top: 40px;
             padding-top: 20px;
@@ -293,7 +293,7 @@ function generateWorkOrderHTML(workOrder: any) {
             color: #666;
             font-size: 12px;
         }
-        
+
         .status-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -302,13 +302,13 @@ function generateWorkOrderHTML(workOrder: any) {
             font-weight: bold;
             text-transform: uppercase;
         }
-        
+
         .status-draft { background: #fef3c7; color: #92400e; }
         .status-in_progress { background: #dbeafe; color: #1e40af; }
         .status-completed { background: #d1fae5; color: #059669; }
         .status-cancelled { background: #fee2e2; color: #dc2626; }
         .status-billed { background: #e0e7ff; color: #3730a3; }
-        
+
         .priority-badge {
             display: inline-block;
             padding: 2px 8px;
@@ -317,7 +317,7 @@ function generateWorkOrderHTML(workOrder: any) {
             font-weight: bold;
             text-transform: uppercase;
         }
-        
+
         .priority-low { background: #d1fae5; color: #059669; }
         .priority-medium { background: #fef3c7; color: #92400e; }
         .priority-high { background: #fee2e2; color: #dc2626; }

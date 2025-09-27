@@ -41,7 +41,7 @@ export async function GET(
 
     return NextResponse.json(workOrder)
   } catch (error) {
-    
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
@@ -165,7 +165,7 @@ export async function PUT(
 
     return NextResponse.json(workOrder)
   } catch (error) {
-    
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
@@ -202,7 +202,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: "Orden de trabajo eliminada correctamente" })
   } catch (error) {
-    
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

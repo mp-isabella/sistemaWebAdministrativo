@@ -23,7 +23,7 @@ export const useSignOut = () => {
       }
 
       // Intentar cerrar sesión con NextAuth
-      await signOut({ 
+      await signOut({
         callbackUrl: '/login',
         redirect: false // No redirigir automáticamente para manejar errores
       });
@@ -31,7 +31,7 @@ export const useSignOut = () => {
       // Si llegamos aquí, el cierre de sesión fue exitoso
       // Redirigir manualmente
       router.push('/login');
-      
+
     } catch (error) {
       // Fallback: limpiar localStorage y redirigir manualmente
       if (typeof window !== 'undefined') {

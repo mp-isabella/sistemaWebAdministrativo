@@ -31,12 +31,12 @@ interface PaymentHistoryProps {
   onPaymentDeleted?: () => void
 }
 
-export default function PaymentHistory({ 
-  jobId, 
-  totalBudget, 
-  onPaymentAdded, 
-  onPaymentUpdated, 
-  onPaymentDeleted 
+export default function PaymentHistory({
+  jobId,
+  totalBudget,
+  onPaymentAdded,
+  onPaymentUpdated,
+  onPaymentDeleted
 }: PaymentHistoryProps) {
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
@@ -70,7 +70,7 @@ export default function PaymentHistory({
         setPayments(data)
       }
     } catch (error) {
-      
+
     } finally {
       setLoading(false)
     }
@@ -202,7 +202,7 @@ export default function PaymentHistory({
         onPaymentDeleted?.()
       }
     } catch (error) {
-      
+
     }
   }
 
@@ -261,7 +261,7 @@ export default function PaymentHistory({
                   {editingPayment ? "Editar Pago" : "Agregar Nuevo Pago"}
                 </DialogTitle>
               </DialogHeader>
-              
+
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="amount" className="text-sm font-semibold text-slate-700">
@@ -315,8 +315,8 @@ export default function PaymentHistory({
                   <Label htmlFor="method" className="text-sm font-semibold text-slate-700">
                     Método de Pago
                   </Label>
-                  <Select 
-                    value={paymentForm.method} 
+                  <Select
+                    value={paymentForm.method}
                     onValueChange={(value) => setPaymentForm(prev => ({ ...prev, method: value }))}
                   >
                     <SelectTrigger className="h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-green-100 focus:border-green-500 shadow-sm font-medium">
@@ -394,7 +394,7 @@ export default function PaymentHistory({
             </div>
             <p className="text-2xl font-bold text-blue-900">${totalBudget.toLocaleString('es-CL')} CLP</p>
           </div>
-          
+
           <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
             <div className="flex items-center gap-3 mb-2">
               <CheckCircle className="h-5 w-5 text-green-600" />
@@ -402,10 +402,10 @@ export default function PaymentHistory({
             </div>
             <p className="text-2xl font-bold text-green-900">${totals.totalPaid.toLocaleString('es-CL')} CLP</p>
           </div>
-          
+
           <div className={cn(
             "rounded-xl p-4 border",
-            totals.remaining > 0 
+            totals.remaining > 0
               ? "bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200"
               : "bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200"
           )}>
@@ -437,10 +437,10 @@ export default function PaymentHistory({
             <span className="text-sm font-bold text-slate-800">{totals.percentage}%</span>
           </div>
           <div className="w-full bg-slate-200 rounded-full h-3">
-            <div 
+            <div
               className={cn(
                 "h-3 rounded-full transition-all duration-500",
-                totals.percentage === 100 
+                totals.percentage === 100
                   ? "bg-gradient-to-r from-green-500 to-emerald-500"
                   : "bg-gradient-to-r from-blue-500 to-indigo-500"
               )}
@@ -453,7 +453,7 @@ export default function PaymentHistory({
       {/* Lista de pagos */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-lg">
         <h4 className="text-lg font-bold text-slate-800 mb-4">Historial de Pagos</h4>
-        
+
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>

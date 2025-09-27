@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useSignatureCanvas } from "@/hooks/use-signature-canvas"
 import {
   Camera,
-  // CheckCircle, 
+  // CheckCircle,
   Clock,
   DollarSign,
   // Calendar,
@@ -24,7 +24,7 @@ import {
   Upload,
   User,
   Wrench,
-  // AlertCircle, 
+  // AlertCircle,
   X
 } from "lucide-react"
 import Image from "next/image"

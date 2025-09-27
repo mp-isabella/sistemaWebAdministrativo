@@ -53,7 +53,7 @@ export default function WorkOrdersPage() {
       const data = await response.json()
       setWorkOrders(data)
     } catch (error) {
-      
+
       setError("Error cargando órdenes de trabajo")
     } finally {
       setLoading(false)
@@ -68,7 +68,7 @@ export default function WorkOrdersPage() {
         setCompanies(data)
       }
     } catch (error) {
-      
+
     }
   }
 
@@ -85,7 +85,7 @@ export default function WorkOrdersPage() {
       await loadWorkOrders()
       setShowForm(false)
     } catch (error) {
-      
+
       setError("Error creando orden de trabajo")
     }
   }
@@ -104,7 +104,7 @@ export default function WorkOrdersPage() {
       setShowForm(false)
       setEditingWorkOrder(null)
     } catch (error) {
-      
+
       setError("Error actualizando orden de trabajo")
     }
   }
@@ -121,7 +121,7 @@ export default function WorkOrdersPage() {
 
       await loadWorkOrders()
     } catch (error) {
-      
+
       setError("Error eliminando orden de trabajo")
     }
   }

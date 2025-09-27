@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(mappedLiquidations)
 
   } catch (error) {
-    
+
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions as any)
-    
+
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
@@ -118,17 +118,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    
-    const { 
-      technicianId, 
-      companyId, 
-      periodStart, 
-      periodEnd, 
-      baseSalary, 
-      taxRate, 
-      notes, 
-      items, 
-      advances 
+
+    const {
+      technicianId,
+      companyId,
+      periodStart,
+      periodEnd,
+      baseSalary,
+      taxRate,
+      notes,
+      items,
+      advances
     } = body
 
     // Validaciones básicas
@@ -142,12 +142,12 @@ export async function POST(request: NextRequest) {
     // Calcular totales
     const totalEarnings = items?.filter((item: any) => item.type === 'EARNINGS')
       .reduce((sum: number, item: any) => sum + (item.total || 0), 0) || 0
-    
+
     const totalDeductions = items?.filter((item: any) => item.type !== 'EARNINGS')
       .reduce((sum: number, item: any) => sum + (item.total || 0), 0) || 0
-    
+
     const totalAdvances = advances?.reduce((sum: number, advance: any) => sum + (advance.amount || 0), 0) || 0
-    
+
     const netSalary = parseFloat(baseSalary) + totalEarnings - totalDeductions - totalAdvances
 
     const liquidation = await (prisma as any).liquidation.create({
@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(liquidation, { status: 201 })
 
   } catch (error) {
-    
+
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

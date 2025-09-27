@@ -28,7 +28,7 @@ export default function WorkersError({
           <p className="text-sm text-gray-500">
             {error.message || 'Error desconocido'}
           </p>
-          <Button 
+          <Button
             onClick={reset}
             className="bg-blue-600 hover:bg-blue-700"
           >

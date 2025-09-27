@@ -54,7 +54,7 @@ export async function GET(
       job
     })
   } catch (error) {
-    
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
@@ -129,7 +129,7 @@ export async function POST(
 
     return NextResponse.json({ quote }, { status: 201 })
   } catch (error) {
-    
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

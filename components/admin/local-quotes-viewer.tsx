@@ -44,7 +44,7 @@ export function LocalQuotesViewer() {
   };
 
   const markAsProcessed = (id: string) => {
-    const updatedQuotes = quotes.map(quote => 
+    const updatedQuotes = quotes.map(quote =>
       quote.id === id ? { ...quote, procesada: true } : quote
     );
     setQuotes(updatedQuotes);
@@ -142,8 +142,8 @@ export function LocalQuotesViewer() {
                   <div
                     key={quote.id}
                     className={`border rounded-lg p-4 ${
-                      quote.procesada 
-                        ? 'bg-gray-50 border-gray-200' 
+                      quote.procesada
+                        ? 'bg-gray-50 border-gray-200'
                         : 'bg-yellow-50 border-yellow-200'
                     }`}
                   >

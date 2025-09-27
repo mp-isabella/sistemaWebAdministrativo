@@ -282,12 +282,11 @@ export default function AgendaPage() {
 
         // Debug: Mostrar orden de trabajos cargados
         // FORZAR LOGS DE DEBUG - MÁS AGRESIVO
-        console.log('🚨🚨🚨 DEBUG FORZADO - TRABAJOS CARGADOS 🚨🚨🚨');
-        console.log('📋 Trabajos cargados desde la API (orden por fecha de creación):');
-        uniqueJobs.forEach((job: any, index: number) => {
-          console.log(`🚨 ${index + 1}. ${job.title} - Creado: ${new Date(job.createdAt).toLocaleString('es-CL', { timeZone: 'America/Santiago' })}`);
+
+        uniqueJobs.forEach((_job: any, _index: number) => {
+          // Debug info available if needed
         });
-        console.log('🚨🚨🚨 FIN DEBUG FORZADO 🚨🚨🚨');
+
         // Mostrar notificación si se detectaron duplicados
         if (mappedJobs.length !== uniqueJobs.length) {
           // Mostrar notificación visual si hay duplicados
@@ -400,13 +399,6 @@ export default function AgendaPage() {
           );
         });
 
-        console.log('🔧 Técnicos filtrados para asignación:', filteredTechnicians.map((tech: any) => ({
-          id: tech.id,
-          name: tech.name,
-          role: tech.role?.name || tech.role,
-          isActive: tech.isActive
-        })));
-
         setTechnicians(filteredTechnicians);
       } else {
         console.error('Error fetching technicians:', response.statusText);
@@ -459,20 +451,16 @@ export default function AgendaPage() {
       const timeB = dateB.getTime();
 
       // Debug: Mostrar orden de trabajos - FORZADO
-      console.log(`🚨🔄 ORDENANDO: ${a.title} (${dateA.toLocaleString()}) vs ${b.title} (${dateB.toLocaleString()})`);
 
       // Ordenar por fecha descendente (más recientes primero)
       return timeB - timeA;
     });
 
     // Debug: Mostrar orden final - FORZADO
-    console.log('🚨🚨🚨 ORDEN FINAL FORZADO 🚨🚨🚨');
-    console.log('📋 Orden final de trabajos filtrados:');
-    filtered.forEach((job, index) => {
-      const createdDate = new Date(job.createdAt || job.scheduledAt);
-      console.log(`🚨 ${index + 1}. ${job.title} - Creado: ${createdDate.toLocaleString('es-CL', { timeZone: 'America/Santiago' })}`);
+
+    filtered.forEach((_job, _index) => {
+      // Debug info available if needed
     });
-    console.log('🚨🚨🚨 FIN ORDEN FINAL 🚨🚨🚨');
 
     // Forzar actualización del estado
     setFilteredJobs([...filtered]);
@@ -734,7 +722,7 @@ export default function AgendaPage() {
 
   // Nueva función para iniciar la edición de un trabajo
   const handleEditJob = (job: Job) => {
-    console.log('✏️ Iniciando edición del trabajo:', job);
+
     setJobToEdit(job);
     setIsEditing(true);
     setShowJobForm(true);
@@ -751,7 +739,6 @@ export default function AgendaPage() {
   const handleSaveJob = async (jobData: any) => {
     try {
       // Log de datos para debugging
-      console.log('📝 Datos del trabajo a guardar:', jobData);
 
       let savedJob;
 

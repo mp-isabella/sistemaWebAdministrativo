@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    
+
     const session = await getServerSession(authOptions)
 
     if (!session) {
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

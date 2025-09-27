@@ -179,7 +179,7 @@ export default function InvoiceTemplate({ invoice, onEdit, onView }: InvoiceTemp
         })
       }
     } catch (error) {
-      
+
       toast({
         title: "Error",
         description: "Error al imprimir la factura",
@@ -203,7 +203,7 @@ export default function InvoiceTemplate({ invoice, onEdit, onView }: InvoiceTemp
         description: `Factura ${invoice.invoiceNumber} descargada`,
       })
     } catch (error) {
-      
+
       toast({
         title: "Error",
         description: "Error al descargar la factura",

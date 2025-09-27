@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
-    
+
     // Asegurar que la sesión tenga la estructura correcta
     if (session && (session as any).user) {
       return NextResponse.json({
@@ -21,10 +21,10 @@ export async function GET() {
         expires: (session as any).expires || null,
       })
     }
-    
+
     return NextResponse.json(null)
   } catch (error) {
-    
+
     return NextResponse.json(null)
   }
 }

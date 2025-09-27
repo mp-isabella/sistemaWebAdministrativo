@@ -361,7 +361,7 @@ export async function GET(
             ` : ''}
             <div class="company-name">${liquidation.company?.name || 'EMPRESA'}</div>
             <div class="company-service">${liquidation.company?.service || 'Servicios de detección y reparación de filtraciones'}</div>
-            
+
             <div class="company-info">
                 <div>
                     <div><strong>RUT:</strong> ${liquidation.company?.rut || 'N/A'}</div>
@@ -373,11 +373,11 @@ export async function GET(
                 </div>
             </div>
         </div>
-        
+
         <div class="separator"></div>
-        
+
         <div class="document-title">LIQUIDACIÓN DE SERVICIOS</div>
-        
+
         <div class="technician-details">
             <h3>Información del Técnico</h3>
             <div class="details-grid">
@@ -554,7 +554,7 @@ export async function GET(
         })
 
     } catch (error) {
-        
+
         return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
     }
 }

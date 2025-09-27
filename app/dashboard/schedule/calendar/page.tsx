@@ -855,7 +855,6 @@ export default function CalendarPage() {
     return { column, totalColumns, isPartial }
   }
 
-
   // Función para determinar si una tarjeta es muy pequeña
   const isJobCardSmall = (jobStartTime: string, jobEndTime: string, slotTime: string) => {
     const slotMinutes = timeToMinutes(slotTime)
@@ -929,7 +928,7 @@ export default function CalendarPage() {
       // Un trabajo aparece en un slot si se solapa con él
       // Esto incluye trabajos que:
       // 1. Comienzan en este slot
-      // 2. Están en progreso durante este slot  
+      // 2. Están en progreso durante este slot
       // 3. Terminan en este slot
       // 4. Comienzan antes y terminan después de este slot
       const overlaps = jobStartMinutes < (slotMinutes + 60) && jobEndMinutes > slotMinutes
@@ -3091,7 +3090,7 @@ export default function CalendarPage() {
         .calendar-mobile-container {
           position: relative;
         }
-        
+
         .calendar-mobile-overlay {
           position: fixed;
           top: 0;
@@ -3104,12 +3103,12 @@ export default function CalendarPage() {
           visibility: hidden;
           transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        
+
         .calendar-mobile-overlay.open {
           opacity: 1;
           visibility: visible;
         }
-        
+
         .calendar-mobile-sidebar {
           position: fixed;
           top: 0;
@@ -3122,11 +3121,11 @@ export default function CalendarPage() {
           overflow-y: auto;
           display: block;
         }
-        
+
         .calendar-mobile-sidebar.open {
           left: 0;
         }
-        
+
         @media (min-width: 768px) {
           .calendar-mobile-sidebar {
             position: static;
@@ -3138,46 +3137,46 @@ export default function CalendarPage() {
             transition: none;
           }
         }
-        
+
         .calendar-mobile-timeline-content {
           scrollbar-width: thin;
           scrollbar-color: #cbd5e1 #f1f5f9;
         }
-        
+
         .calendar-mobile-timeline-content::-webkit-scrollbar {
           height: 6px;
         }
-        
+
         .calendar-mobile-timeline-content::-webkit-scrollbar-track {
           background: #f1f5f9;
           border-radius: 3px;
         }
-        
+
         .calendar-mobile-timeline-content::-webkit-scrollbar-thumb {
           background: #cbd5e1;
           border-radius: 3px;
         }
-        
+
         .calendar-mobile-timeline-content::-webkit-scrollbar-thumb:hover {
           background: #94a3b8;
         }
-        
+
         /* Optimizaciones para touch en móviles */
         @media (max-width: 767px) {
           .calendar-mobile-time-slot {
             min-height: 64px;
           }
-          
+
           .calendar-mobile-time-label {
             font-size: 0.75rem;
             padding: 0.25rem;
           }
-          
+
           /* Mejorar la experiencia táctil */
           .calendar-mobile-timeline-content table {
             touch-action: pan-x;
           }
-          
+
           /* Asegurar que los elementos sean tocables */
           .calendar-mobile-timeline-content [data-job-id] {
             min-height: 32px;

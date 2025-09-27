@@ -8,11 +8,11 @@ interface SafeImageProps extends Omit<ImageProps, 'onError'> {
   alt: string;
 }
 
-const SafeImage = forwardRef<HTMLImageElement, SafeImageProps>(({ 
-  src, 
-  alt, 
+const SafeImage = forwardRef<HTMLImageElement, SafeImageProps>(({
+  src,
+  alt,
   fallbackSrc = "/placeholder.jpg",
-  ...props 
+  ...props
 }, ref) => {
   const [imgSrc, setImgSrc] = useState(src);
   const [hasError, setHasError] = useState(false);

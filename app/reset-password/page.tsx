@@ -11,21 +11,21 @@ function ResetPasswordForm() {
   const [success, setSuccess] = useState(false);
   const [token, setToken] = useState('');
   const [email, setEmail] = useState('');
-  
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
     const tokenParam = searchParams.get('token');
     const emailParam = searchParams.get('email');
-    
+
     if (tokenParam) setToken(tokenParam);
     if (emailParam) setEmail(emailParam);
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       setError('Las contraseñas no coinciden');
       return;
@@ -45,10 +45,10 @@ function ResetPasswordForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          token, 
-          email, 
-          newPassword: password 
+        body: JSON.stringify({
+          token,
+          email,
+          newPassword: password
         }),
       });
 
@@ -101,7 +101,7 @@ function ResetPasswordForm() {
             Ingresa tu nueva contraseña
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
@@ -119,7 +119,7 @@ function ResetPasswordForm() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            
+
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                 Confirmar Contraseña

@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ reports, stats })
 
   } catch (error) {
-    
+
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }
@@ -100,21 +100,21 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
     const body = await request.json()
-    const { 
-      title, 
-      type, 
-      period, 
-      year, 
-      month, 
-      startDate, 
-      endDate, 
-      companyId 
+    const {
+      title,
+      type,
+      period,
+      year,
+      month,
+      startDate,
+      endDate,
+      companyId
     } = body
 
     // Validar permisos
@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(report)
 
   } catch (error) {
-    
+
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }

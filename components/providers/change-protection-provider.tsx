@@ -93,12 +93,12 @@ export function ChangeProtectionProvider({ children }: ChangeProtectionProviderP
         try {
           const state = JSON.parse(lastSavedState);
           const timeDiff = Date.now() - state.timestamp;
-          
+
           // Si han pasado menos de 5 minutos, restaurar el estado
           if (timeDiff < 5 * 60 * 1000 && state.hasChanges) {
             setHasUnsavedChanges(true);
           }
-          
+
           // Limpiar estado antiguo
           localStorage.removeItem('lastSavedState');
         } catch (error) {

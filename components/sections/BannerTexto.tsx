@@ -17,7 +17,7 @@ const Contacto = ({ city, phone, whatsapp }: ContactProps) => (
       <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500 flex-shrink-0" />
       <span className="text-xs sm:text-sm font-semibold whitespace-nowrap">{city}:</span>
     </div>
-    
+
     {/* Botones de contacto */}
     <div className="flex gap-1 sm:gap-2 w-full sm:w-auto">
       {/* Botón de llamada */}
@@ -29,7 +29,7 @@ const Contacto = ({ city, phone, whatsapp }: ContactProps) => (
         <Phone className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
         <span className="text-xs sm:text-sm font-medium text-white">Llamar</span>
       </Link>
-      
+
       {/* Botón de WhatsApp */}
       <Link
         href={`https://wa.me/${whatsapp}`}
@@ -56,15 +56,15 @@ export default function BannerTexto() {
               ¿Necesitas ayuda? Contáctanos:
             </h2>
           </div>
-          
+
           {/* Contenedor de contactos */}
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 lg:gap-6 w-full lg:w-auto">
             {/* Santiago */}
             <Contacto city="Santiago" phone="+56942008410" whatsapp="56942008410" />
-            
+
             {/* Separador - solo visible en desktop */}
             <div className="hidden lg:block w-px h-8 bg-white/20 flex-shrink-0"></div>
-            
+
             {/* Ñuble */}
             <Contacto city="Ñuble" phone="+56996706640" whatsapp="56996706640" />
           </div>

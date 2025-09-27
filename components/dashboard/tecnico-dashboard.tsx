@@ -10,7 +10,7 @@ import {
   Calendar,
   CheckCircle,
   Clock,
-  // Camera, 
+  // Camera,
   FileText,
   Mail,
   MapPin,
@@ -156,7 +156,7 @@ export default function TecnicoDashboard() {
 
       setLoading(false)
     } catch (error) {
-      
+
       setLoading(false)
     }
   }

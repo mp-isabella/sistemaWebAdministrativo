@@ -33,7 +33,7 @@ export function SessionGuard({ children, fallback: _fallback, requireAuth = true
 
     // Si no hay sesión y requiere autenticación, redirigir
     if (status === "unauthenticated") {
-      
+
       // Usar setTimeout para evitar redirecciones inmediatas
       const timer = setTimeout(() => {
         router.replace("/login")
@@ -43,7 +43,7 @@ export function SessionGuard({ children, fallback: _fallback, requireAuth = true
 
     // Si hay sesión válida, permitir acceso
     if (status === "authenticated" && session) {
-      
+
       setIsReady(true)
       return
     }

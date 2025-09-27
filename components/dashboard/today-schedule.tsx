@@ -113,7 +113,7 @@ export function TodaySchedule({ todayJobs, isLoading = false }: TodaySchedulePro
           </h3>
           <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
         </div>
-        
+
         <div className="space-y-3 sm:space-y-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="animate-pulse">
@@ -134,7 +134,7 @@ export function TodaySchedule({ todayJobs, isLoading = false }: TodaySchedulePro
             Agenda del Día
           </h3>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
           <span className="text-xs sm:text-sm font-medium text-gray-600">
@@ -170,14 +170,14 @@ export function TodaySchedule({ todayJobs, isLoading = false }: TodaySchedulePro
                     {job.service?.name}
                   </p>
                 </div>
-                
+
                 <div className="flex items-center gap-1 sm:gap-2 ml-2 sm:ml-3 flex-shrink-0">
                   {/* Indicador de prioridad */}
                   <div
                     className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${getPriorityColor(job.priority)}`}
                     title={`Prioridad: ${getPriorityText(job.priority)}`}
                   ></div>
-                  
+
                   {/* Badge de estado */}
                   <Badge className={`${getStatusColor(job.status)} text-xs sm:text-sm`} variant="outline">
                     {getStatusText(job.status)}
@@ -244,7 +244,7 @@ export function TodaySchedule({ todayJobs, isLoading = false }: TodaySchedulePro
                     <span className="hidden sm:inline">Llamar</span>
                   </a>
                 )}
-                
+
                 {job.client?.phone && (
                   <a
                     href={`https://wa.me/${job.client.phone.replace(/\D/g, '')}`}

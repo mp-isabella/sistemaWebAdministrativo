@@ -40,13 +40,13 @@ export function useDashboardStats() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await fetch('/api/dashboard/stats');
-      
+
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       setStats(data);
     } catch (err) {
@@ -58,10 +58,10 @@ export function useDashboardStats() {
 
   useEffect(() => {
     fetchStats();
-    
+
     // Actualizar estadísticas cada 5 minutos
     const interval = setInterval(fetchStats, 5 * 60 * 1000);
-    
+
     return () => clearInterval(interval);
   }, []);
 

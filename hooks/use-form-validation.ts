@@ -102,7 +102,7 @@ export const useFormValidation = () => {
 
     // Validar todos los campos obligatorios
     const requiredFields: (keyof FormData)[] = ['nombre', 'email', 'telefono', 'region', 'comuna', 'direccion', 'servicio'];
-    
+
     requiredFields.forEach(field => {
       const error = validateField(field, formData[field]);
       if (error) {

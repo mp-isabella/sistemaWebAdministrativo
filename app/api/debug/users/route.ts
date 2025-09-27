@@ -23,9 +23,8 @@ export async function GET(_request: NextRequest) {
     })
 
     // Log detallado
-    console.log('🔍 DEBUG - Todos los usuarios en la BD:');
-    allUsers.forEach(user => {
-      console.log(`- ${user.name} (${user.email}) - Rol: ${user.role?.name} - Activo: ${user.isActive}`);
+    allUsers.forEach(_user => {
+      // Debug info available if needed
     });
 
     return NextResponse.json({

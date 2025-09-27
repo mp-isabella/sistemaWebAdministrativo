@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     //     { status: 400 }
     //   );
     // }
-    
+
     // await updateUserPassword(user.id, newPassword);
 
     // Por ahora, simulamos el éxito

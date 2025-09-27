@@ -46,8 +46,8 @@ export function usePersistentState<T>(
   const updateState = useCallback(
     (newValue: T | ((prevState: T) => T)) => {
       setState((prevState) => {
-        const nextState = typeof newValue === "function" 
-          ? (newValue as (prevState: T) => T)(prevState) 
+        const nextState = typeof newValue === "function"
+          ? (newValue as (prevState: T) => T)(prevState)
           : newValue;
 
         // Persistir en localStorage

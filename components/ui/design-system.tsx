@@ -127,7 +127,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseClasses = 'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none';
-  
+
   const variantClasses = {
     primary: 'bg-dashboard-primary text-white hover:bg-dashboard-primaryDark focus:ring-dashboard-primary',
     secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500',
@@ -135,13 +135,13 @@ export const Button: React.FC<ButtonProps> = ({
     ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
     destructive: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
   };
-  
+
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-sm',
     md: 'px-4 py-2 text-base',
     lg: 'px-6 py-3 text-lg',
   };
-  
+
   return (
     <button
       className={cn(
@@ -179,19 +179,19 @@ export const Card: React.FC<CardProps> = ({
   ...props
 }) => {
   const baseClasses = 'rounded-xl bg-white';
-  
+
   const variantClasses = {
     default: 'shadow-sm border border-gray-200',
     elevated: 'shadow-lg border border-gray-100',
     outlined: 'border-2 border-gray-200',
   };
-  
+
   const paddingClasses = {
     sm: 'p-4',
     md: 'p-6',
     lg: 'p-8',
   };
-  
+
   return (
     <div
       className={cn(
@@ -283,7 +283,7 @@ export const Badge: React.FC<BadgeProps> = ({
   ...props
 }) => {
   const baseClasses = 'inline-flex items-center rounded-full font-medium';
-  
+
   const variantClasses = {
     default: 'bg-gray-100 text-gray-800',
     success: 'bg-green-100 text-green-800',
@@ -291,13 +291,13 @@ export const Badge: React.FC<BadgeProps> = ({
     error: 'bg-red-100 text-red-800',
     info: 'bg-blue-100 text-blue-800',
   };
-  
+
   const sizeClasses = {
     sm: 'px-2 py-0.5 text-xs',
     md: 'px-2.5 py-0.5 text-sm',
     lg: 'px-3 py-1 text-base',
   };
-  
+
   return (
     <span
       className={cn(
@@ -335,7 +335,7 @@ export const Avatar: React.FC<AvatarProps> = ({
     lg: 'h-12 w-12 text-base',
     xl: 'h-16 w-16 text-lg',
   };
-  
+
   return (
     <div
       className={cn(
@@ -400,7 +400,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     left: 'right-full top-1/2 transform -translate-y-1/2 mr-2',
     right: 'left-full top-1/2 transform -translate-y-1/2 ml-2',
   };
-  
+
   return (
     <div className="relative group">
       {children}

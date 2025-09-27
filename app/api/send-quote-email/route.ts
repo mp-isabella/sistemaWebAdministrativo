@@ -27,7 +27,7 @@ const serviceNames: Record<string, string> = {
 const createEmailContent = (data: QuoteFormData) => {
   const serviceName = serviceNames[data.servicio] || data.servicio;
   const formSource = data.formType === 'hero' ? 'Formulario Principal (Hero)' : 'Formulario de Contacto';
-  
+
   return `
 🔥 NUEVA COTIZACIÓN - AMÉSTICA LTDA.
 =======================================
@@ -109,9 +109,9 @@ export async function POST(request: NextRequest) {
 
       if (response.ok) {
         return NextResponse.json(
-          { 
-            success: true, 
-            message: 'Cotización enviada exitosamente' 
+          {
+            success: true,
+            message: 'Cotización enviada exitosamente'
           },
           { status: 200 }
         );
@@ -122,9 +122,9 @@ export async function POST(request: NextRequest) {
     // Método alternativo: usar un webhook simple o servicio de notificación
     // Por simplicidad, simulamos el envío exitoso y guardamos en logs
     return NextResponse.json(
-      { 
-        success: true, 
-        message: 'Cotización procesada exitosamente' 
+      {
+        success: true,
+        message: 'Cotización procesada exitosamente'
       },
       { status: 200 }
     );

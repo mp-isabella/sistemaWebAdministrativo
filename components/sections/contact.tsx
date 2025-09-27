@@ -47,7 +47,7 @@ export default function Contact(): React.JSX.Element {
 
   // Hook para envío de correos
   const { sendQuoteEmail, isLoading: isSubmitting } = useCustomEmailService();
-  
+
   // Hook para validación de formulario
   const { errors, validateForm, validateSingleField, clearError, clearAllErrors } = useFormValidation();
 
@@ -64,12 +64,12 @@ export default function Contact(): React.JSX.Element {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
+
     // Validar el campo en tiempo real y limpiar errores
     if (errors[name as keyof typeof errors]) {
       clearError(name as keyof ValidationFormData);
     }
-    
+
     // Validar el campo si tiene valor
     if (value.trim()) {
       validateSingleField(name as keyof ValidationFormData, value);
@@ -78,12 +78,12 @@ export default function Contact(): React.JSX.Element {
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    
+
     // Validar el campo en tiempo real y limpiar errores
     if (errors[field]) {
       clearError(field);
     }
-    
+
     // Validar el campo si tiene valor
     if (value.trim()) {
       validateSingleField(field, value);
@@ -92,12 +92,12 @@ export default function Contact(): React.JSX.Element {
 
   const handleRegionChange = (value: string) => {
     setFormData((prev) => ({ ...prev, region: value, comuna: "" }));
-    
+
     // Limpiar error de región si existe
     if (errors.region) {
       clearError('region');
     }
-    
+
     // Limpiar error de comuna ya que se resetea
     if (errors.comuna) {
       clearError('comuna');
@@ -112,9 +112,9 @@ export default function Contact(): React.JSX.Element {
     // Validar el formulario antes de enviar
     const isValid = validateForm(formData);
     if (!isValid) {
-      setStatusMessage({ 
-        type: "error", 
-        text: "Por favor, corrige los errores en el formulario antes de enviar." 
+      setStatusMessage({
+        type: "error",
+        text: "Por favor, corrige los errores en el formulario antes de enviar."
       });
       setTimeout(() => setStatusMessage(null), 5000);
       return;
@@ -127,9 +127,9 @@ export default function Contact(): React.JSX.Element {
       });
 
       if (result.success) {
-        setStatusMessage({ 
-          type: "success", 
-          text: result.message 
+        setStatusMessage({
+          type: "success",
+          text: result.message
         });
 
         // Limpiar formulario después del envío exitoso
@@ -145,17 +145,17 @@ export default function Contact(): React.JSX.Element {
         });
         clearAllErrors();
       } else {
-        setStatusMessage({ 
-          type: "error", 
-          text: result.message 
+        setStatusMessage({
+          type: "error",
+          text: result.message
         });
       }
 
       setTimeout(() => setStatusMessage(null), 5000);
     } catch (error) {
-      setStatusMessage({ 
-        type: "error", 
-        text: "Error inesperado. Por favor, inténtalo nuevamente." 
+      setStatusMessage({
+        type: "error",
+        text: "Error inesperado. Por favor, inténtalo nuevamente."
       });
       setTimeout(() => setStatusMessage(null), 5000);
     }
@@ -350,8 +350,8 @@ export default function Contact(): React.JSX.Element {
                   <form onSubmit={handleSubmit} className="space-y-6 w-full">
                     {/* Alerta de errores de validación */}
                     {Object.keys(errors).length > 0 && (
-                      <ValidationAlert 
-                        errors={errors} 
+                      <ValidationAlert
+                        errors={errors}
                         onClose={clearAllErrors}
                         className="mt-2"
                       />
@@ -375,8 +375,8 @@ export default function Contact(): React.JSX.Element {
                           placeholder="Nombre completo"
                           required
                           className={`text-gray-900 ${
-                            errors.nombre 
-                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                            errors.nombre
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
                               : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
                           }`}
                         />
@@ -400,8 +400,8 @@ export default function Contact(): React.JSX.Element {
                           placeholder="correo@ejemplo.com"
                           required
                           className={`text-gray-900 ${
-                            errors.email 
-                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                            errors.email
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
                               : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
                           }`}
                         />
@@ -429,8 +429,8 @@ export default function Contact(): React.JSX.Element {
                           placeholder="+56 9 1234 5678"
                           required
                           className={`text-gray-900 ${
-                            errors.telefono 
-                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                            errors.telefono
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
                               : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
                           }`}
                         />
@@ -453,8 +453,8 @@ export default function Contact(): React.JSX.Element {
                           required
                         >
                           <SelectTrigger className={`w-full text-gray-900 bg-white ${
-                            errors.servicio 
-                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                            errors.servicio
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
                               : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
                           }`}>
                             <SelectValue placeholder="Seleccione servicio" className="text-gray-600 font-medium text-left flex-1 min-w-0 overflow-hidden text-ellipsis" />
@@ -501,8 +501,8 @@ export default function Contact(): React.JSX.Element {
                           required
                         >
                           <SelectTrigger className={`w-full text-gray-900 bg-white ${
-                            errors.region 
-                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                            errors.region
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
                               : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
                           }`}>
                             <SelectValue placeholder="Región" className="text-gray-600 font-medium text-left flex-1 min-w-0 overflow-hidden text-ellipsis" />
@@ -540,8 +540,8 @@ export default function Contact(): React.JSX.Element {
                           required
                         >
                           <SelectTrigger className={`w-full text-gray-900 bg-white ${
-                            errors.comuna 
-                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                            errors.comuna
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
                               : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
                           }`}>
                             <SelectValue placeholder="Comuna" className="text-gray-600 font-medium text-left flex-1 min-w-0 overflow-hidden text-ellipsis" />
@@ -588,8 +588,8 @@ export default function Contact(): React.JSX.Element {
                           placeholder="Calle, Número"
                           required
                           className={`text-gray-900 ${
-                            errors.direccion 
-                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                            errors.direccion
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
                               : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
                           }`}
                         />
@@ -613,8 +613,8 @@ export default function Contact(): React.JSX.Element {
                           placeholder="Explique su requerimiento"
                           rows={3}
                           className={`text-gray-900 ${
-                            errors.mensaje 
-                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                            errors.mensaje
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
                               : 'border-gray-300 focus:border-gray-400 focus:ring-gray-200'
                           }`}
                         />

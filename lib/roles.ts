@@ -87,15 +87,15 @@ export function clearPermissionCache(): void {
  */
 export function hasPermission(role: string, permission: keyof RolePermissions): boolean {
   const cacheKey = `${role.toLowerCase()}:${permission}`;
-  
+
   // Verificar cache primero
   if (permissionCache.has(cacheKey)) {
     return permissionCache.get(cacheKey)!;
   }
-  
+
   const normalizedRole = role.toLowerCase();
   let hasAccess = false;
-  
+
   // Manejar equivalencias de roles
   if (normalizedRole === 'admin' || normalizedRole === 'administrador') {
     hasAccess = ROLE_PERMISSIONS.ADMINISTRADOR[permission];
@@ -104,10 +104,10 @@ export function hasPermission(role: string, permission: keyof RolePermissions): 
   } else if (normalizedRole === 'secretaria') {
     hasAccess = ROLE_PERMISSIONS.SECRETARIA[permission];
   }
-  
+
   // Guardar en cache
   permissionCache.set(cacheKey, hasAccess);
-  
+
   return hasAccess;
 }
 
@@ -120,14 +120,14 @@ const routesCache = new Map<string, string[]>();
  */
 export function getAllowedRoutes(role: string): string[] {
   const normalizedRole = role.toLowerCase();
-  
+
   // Verificar cache primero
   if (routesCache.has(normalizedRole)) {
     return routesCache.get(normalizedRole)!;
   }
-  
+
   let permissions: RolePermissions;
-  
+
   if (normalizedRole === 'admin' || normalizedRole === 'administrador') {
     permissions = ROLE_PERMISSIONS.ADMINISTRADOR;
   } else if (normalizedRole === 'tecnico') {
@@ -139,7 +139,7 @@ export function getAllowedRoutes(role: string): string[] {
     routesCache.set(normalizedRole, defaultRoutes);
     return defaultRoutes;
   }
-  
+
   // Mapeo optimizado de permisos a rutas
   const routeMap = [
     { permission: 'canAccessCalendar', route: '/dashboard/schedule/calendar' },
@@ -153,14 +153,14 @@ export function getAllowedRoutes(role: string): string[] {
     { permission: 'canAccessAdmin', route: '/dashboard/admin' },
     { permission: 'canAccessMyJobs', route: '/dashboard/my-jobs' },
   ];
-  
+
   const routes = routeMap
     .filter(({ permission }) => permissions[permission as keyof RolePermissions])
     .map(({ route }) => route);
-  
+
   // Guardar en cache
   routesCache.set(normalizedRole, routes);
-  
+
   return routes;
 }
 
@@ -169,7 +169,7 @@ export function getAllowedRoutes(role: string): string[] {
  */
 export function getDefaultRoute(role: string): string {
   const normalizedRole = role.toLowerCase();
-  
+
   if (normalizedRole === 'admin' || normalizedRole === 'administrador') {
     return '/dashboard';
   } else if (normalizedRole === 'secretaria') {
@@ -187,9 +187,9 @@ export function getDefaultRoute(role: string): string {
  */
 export function validateAndNormalizeRole(role: string): UserRole | null {
   if (!role) return null;
-  
+
   const normalizedRole = role.toUpperCase();
-  
+
   // Mapeo de roles válidos
   const roleMap: Record<string, UserRole> = {
     'ADMINISTRADOR': 'ADMINISTRADOR',
@@ -198,7 +198,7 @@ export function validateAndNormalizeRole(role: string): UserRole | null {
     'TECNICO': 'TECNICO',
     'TÉCNICO': 'TECNICO'
   };
-  
+
   return roleMap[normalizedRole] || null;
 }
 
@@ -221,11 +221,11 @@ export function getValidRoles(): UserRole[] {
  * Función centralizada para validación de permisos
  */
 export function checkUserPermission(
-  userRole: string, 
+  userRole: string,
   permission: keyof RolePermissions
 ): boolean {
   const normalizedRole = validateAndNormalizeRole(userRole);
   if (!normalizedRole) return false;
-  
+
   return hasPermission(normalizedRole, permission);
 }

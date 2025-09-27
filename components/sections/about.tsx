@@ -49,7 +49,7 @@ const About: React.FC = () => {
   return (
     <section id="about" className="min-h-screen flex items-center py-16 bg-white relative overflow-hidden">
       {/* Elemento decorativo */}
-      <div className="absolute -top-16 -left-16 w-72 h-72 bg-extraLight rounded-full opacity-50" 
+      <div className="absolute -top-16 -left-16 w-72 h-72 bg-extraLight rounded-full opacity-50"
            style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 75%, 75% 100%, 0% 100%)' }}></div>
 
       <div className="container mx-auto px-4">
@@ -84,7 +84,7 @@ const About: React.FC = () => {
           <div className="relative border-l-2 border-dashed pl-12" style={{ borderColor: colors.extraLight }}>
             {stats.map((stat, index) => (
               <div key={index} className="flex items-start mb-12 relative group">
-                <div className="absolute -left-4 top-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out group-hover:scale-125" 
+                <div className="absolute -left-4 top-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out group-hover:scale-125"
                      style={{ backgroundColor: stat.iconColor, color: colors.white }}>
                   {stat.icon}
                 </div>

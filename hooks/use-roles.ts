@@ -6,13 +6,13 @@ import { hasPermission, getDefaultRoute, getAllowedRoutes, UserRole, RolePermiss
  */
 export function useRoles() {
   const { data: session, status } = useSession();
-  
+
   const userRole = (session?.user as any)?.role || '';
   const normalizedRole = (userRole === 'admin' || userRole === 'administrador') ? 'ADMINISTRADOR' : userRole as UserRole;
-  
+
   const isLoading = status === 'loading';
   const isAuthenticated = status === 'authenticated';
-  
+
   /**
    * Verifica si el usuario tiene un permiso específico
    */
@@ -20,21 +20,21 @@ export function useRoles() {
     if (!isAuthenticated) return false;
     return hasPermission(userRole, permission);
   };
-  
+
   /**
    * Obtiene la ruta por defecto para el rol del usuario
    */
   const getDefaultRouteForUser = (): string => {
     return getDefaultRoute(userRole);
   };
-  
+
   /**
    * Obtiene todas las rutas permitidas para el rol del usuario
    */
   const getAllowedRoutesForUser = (): string[] => {
     return getAllowedRoutes(userRole);
   };
-  
+
   /**
    * Verifica si el usuario puede acceder a una ruta específica
    */
@@ -42,56 +42,56 @@ export function useRoles() {
     const allowedRoutes = getAllowedRoutesForUser();
     return allowedRoutes.includes(route);
   };
-  
+
   /**
    * Verifica si el usuario es administrador
    */
   const isAdmin = (): boolean => {
     return normalizedRole === 'ADMINISTRADOR';
   };
-  
+
   /**
    * Verifica si el usuario es secretaria
    */
   const isSecretary = (): boolean => {
     return normalizedRole === 'SECRETARIA';
   };
-  
+
   /**
    * Verifica si el usuario es técnico
    */
   const isTechnician = (): boolean => {
     return normalizedRole === 'TECNICO';
   };
-  
+
   /**
    * Obtiene el rol normalizado del usuario
    */
   const getRole = (): UserRole => {
     return normalizedRole;
   };
-  
+
   /**
    * Obtiene el rol original del usuario (sin normalizar)
    */
   const getOriginalRole = (): string => {
     return userRole;
   };
-  
+
   return {
     // Estado
     isLoading,
     isAuthenticated,
     userRole: normalizedRole,
     originalRole: userRole,
-    
+
     // Métodos de verificación
     hasPermissionFor,
     canAccessRoute,
     isAdmin,
     isSecretary,
     isTechnician,
-    
+
     // Métodos de utilidad
     getRole,
     getOriginalRole,

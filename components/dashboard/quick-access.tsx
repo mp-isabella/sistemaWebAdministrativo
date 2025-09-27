@@ -37,7 +37,7 @@ export function QuickAccess() {
         </h3>
         <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
       </div>
-      
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {quickLinks.map((link, index) => (
           <div
@@ -55,7 +55,7 @@ export function QuickAccess() {
                 <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 line-clamp-2">
                   {link.description}
                 </p>
-                
+
                 {link.href === "#" ? (
                   <button className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-500 cursor-not-allowed opacity-50">
                     <span>Próximamente</span>
@@ -73,12 +73,12 @@ export function QuickAccess() {
                   </Link>
                 )}
               </div>
-              
+
               <div className={`${link.href === "#" ? "opacity-30" : ""} flex-shrink-0 ml-2`}>
                 <ExternalLink className={`h-4 w-4 sm:h-5 sm:w-5 ${link.textColor} opacity-60`} />
               </div>
             </div>
-            
+
             {/* Indicador de estado */}
             <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
               <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ export function QuickAccess() {
           </div>
         ))}
       </div>
-      
+
       {/* Información adicional */}
       <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
         <div className="flex items-center gap-2 sm:gap-3">

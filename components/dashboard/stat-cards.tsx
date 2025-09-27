@@ -90,11 +90,11 @@ export function StatCard({ title, value, icon, color, trend, subtitle, className
         <div className="flex-1 min-w-0">
           <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">{title}</p>
           <p className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2 break-words">{value}</p>
-          
+
           {subtitle && (
             <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2 line-clamp-2">{subtitle}</p>
           )}
-          
+
           {trend && (
             <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
               {trend.isPositive ? (
@@ -115,14 +115,14 @@ export function StatCard({ title, value, icon, color, trend, subtitle, className
             </div>
           )}
         </div>
-        
+
         <div className={`p-2 sm:p-3 md:p-4 rounded-xl ${colors.iconBg} ${colors.iconText} flex-shrink-0 ml-2`}>
           <div className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10">
             {icon}
           </div>
         </div>
       </div>
-      
+
       {/* Indicador de estado */}
       <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
         <div className="flex items-center gap-2">
@@ -180,7 +180,7 @@ export function HighlightStat({ title, value, description, icon, color, classNam
           <p className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2 break-words">{value}</p>
           <p className="text-xs sm:text-sm opacity-90 line-clamp-2">{description}</p>
         </div>
-        
+
         <div className={`p-2 sm:p-3 md:p-4 rounded-xl ${colors.iconBg} flex-shrink-0 ml-2`}>
           <div className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10">
             {icon}
@@ -207,7 +207,7 @@ export function SummaryMetric({ label, value, change, className = '' }: SummaryM
     <div className={`text-center w-full ${className}`}>
       <div className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 break-words">{value}</div>
       <div className="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2 line-clamp-2">{label}</div>
-      
+
       {change && (
         <div className="flex items-center justify-center gap-1">
           {change.isPositive ? (

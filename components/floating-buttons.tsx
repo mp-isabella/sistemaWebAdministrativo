@@ -210,8 +210,6 @@ export default function FloatingButtons() {
     }
   };
 
-
-
   // Toggle WhatsApp y cerrar otros modales
   const toggleWsp = () => {
     setShowWsp((prev) => {
@@ -387,8 +385,6 @@ export default function FloatingButtons() {
           </motion.div>
         )}
       </AnimatePresence>
-
-
 
       {/* Chatbot IA */}
       <AnimatePresence>

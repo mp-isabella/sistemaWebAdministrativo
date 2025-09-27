@@ -13,10 +13,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { 
-      transactions, 
-      summary, 
-      filters, 
+    const {
+      transactions,
+      summary,
+      filters,
       groupedData,
       title = 'Reporte de Transacciones de Caja',
       subtitle = `Generado el ${new Date().toLocaleDateString('es-CL')}`
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    
+
     return NextResponse.json({ error: 'Error generando PDF' }, { status: 500 })
   }
 }
@@ -57,12 +57,12 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     })
-    
+
     const page = await browser.newPage()
-    
+
     // Set content and wait for it to load
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' })
-    
+
     // Generate PDF
     const pdfBuffer = await page.pdf({
       format: 'A4',
@@ -74,7 +74,7 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
         left: '20mm'
       }
     })
-    
+
     return Buffer.from(pdfBuffer)
   } finally {
     if (browser) {
@@ -127,7 +127,7 @@ function generatePDFContent(data: any) {
           size: A4;
           margin: 20mm;
         }
-        
+
         body {
           font-family: 'Arial', sans-serif;
           margin: 0;
@@ -136,38 +136,38 @@ function generatePDFContent(data: any) {
           line-height: 1.6;
           font-size: 12px;
         }
-        
+
         .header {
           text-align: center;
           border-bottom: 3px solid #2563eb;
           padding-bottom: 20px;
           margin-bottom: 30px;
         }
-        
+
         .title {
           font-size: 24px;
           font-weight: bold;
           color: #1e40af;
           margin: 0;
         }
-        
+
         .subtitle {
           font-size: 14px;
           color: #6b7280;
           margin: 10px 0 0 0;
         }
-        
+
         .company-info {
           text-align: center;
           margin-bottom: 20px;
         }
-        
+
         .company-name {
           font-size: 18px;
           font-weight: bold;
           color: #1e40af;
         }
-        
+
         .filters {
           background: #f3f4f6;
           padding: 15px;
@@ -175,18 +175,18 @@ function generatePDFContent(data: any) {
           margin-bottom: 20px;
           font-size: 11px;
         }
-        
+
         .summary {
           display: table;
           width: 100%;
           margin-bottom: 30px;
           border-collapse: collapse;
         }
-        
+
         .summary-row {
           display: table-row;
         }
-        
+
         .summary-card {
           display: table-cell;
           width: 25%;
@@ -196,74 +196,74 @@ function generatePDFContent(data: any) {
           text-align: center;
           vertical-align: top;
         }
-        
+
         .summary-card.income {
           border-left: 4px solid #10b981;
         }
-        
+
         .summary-card.expense {
           border-left: 4px solid #ef4444;
         }
-        
+
         .summary-card.balance {
           border-left: 4px solid #3b82f6;
         }
-        
+
         .summary-value {
           font-size: 18px;
           font-weight: bold;
           margin: 5px 0;
         }
-        
+
         .summary-label {
           font-size: 11px;
           color: #6b7280;
           text-transform: uppercase;
         }
-        
+
         .income .summary-value { color: #10b981; }
         .expense .summary-value { color: #ef4444; }
         .balance .summary-value { color: #3b82f6; }
-        
+
         .transactions-table {
           width: 100%;
           border-collapse: collapse;
           margin-top: 20px;
           font-size: 10px;
         }
-        
+
         .transactions-table th,
         .transactions-table td {
           border: 1px solid #e5e7eb;
           padding: 6px;
           text-align: left;
         }
-        
+
         .transactions-table th {
           background: #f9fafb;
           font-weight: bold;
           color: #374151;
         }
-        
+
         .transactions-table tr:nth-child(even) {
           background: #f9fafb;
         }
-        
+
         .amount-income {
           color: #10b981;
           font-weight: bold;
         }
-        
+
         .amount-expense {
           color: #ef4444;
           font-weight: bold;
         }
-        
+
         .grouped-section {
           margin-top: 30px;
           page-break-before: always;
         }
-        
+
         .group-title {
           font-size: 16px;
           font-weight: bold;
@@ -273,7 +273,7 @@ function generatePDFContent(data: any) {
           background: #eff6ff;
           border-radius: 6px;
         }
-        
+
         .footer {
           margin-top: 40px;
           padding-top: 20px;
@@ -282,7 +282,7 @@ function generatePDFContent(data: any) {
           font-size: 10px;
           color: #6b7280;
         }
-        
+
         .page-break {
           page-break-before: always;
         }

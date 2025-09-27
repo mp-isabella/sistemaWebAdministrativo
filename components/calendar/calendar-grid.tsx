@@ -19,7 +19,6 @@ interface AppointmentPosition {
   zIndex?: number
 }
 
-
 export function CalendarGrid({ professionals, appointments, onJobSelect }: CalendarGridProps) {
   const [, setCurrentTime] = useState(new Date())
 
@@ -109,7 +108,6 @@ export function CalendarGrid({ professionals, appointments, onJobSelect }: Calen
 
   const currentTimePosition = getCurrentTimePosition()
 
-
   return (
     <div className="w-full h-full bg-white overflow-hidden">
       <div className="w-full h-full">
@@ -188,7 +186,6 @@ export function CalendarGrid({ professionals, appointments, onJobSelect }: Calen
                   return appointments.map((appointment, index) => {
                     const position = getMultiJobPosition(appointments, index, appointments.length)
                     if (!position) return null
-
 
                     // Determinar clases CSS basadas en el estado del trabajo
                     const getJobCardClasses = (status: string | undefined, isUnassigned: boolean) => {

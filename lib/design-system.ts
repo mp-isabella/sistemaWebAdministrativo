@@ -163,11 +163,11 @@ export const DesignSystem = {
 export const TailwindClasses = {
   // Contenedores principales
   container: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8',
-  
+
   // Cards
   card: 'bg-white rounded-lg shadow-md border border-gray-200 p-6',
   cardHover: 'bg-white rounded-lg shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow duration-300',
-  
+
   // Botones
   button: {
     primary: 'bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200',
@@ -177,10 +177,10 @@ export const TailwindClasses = {
     error: 'bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200',
     outline: 'border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200',
   },
-  
+
   // Inputs
   input: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200',
-  
+
   // Badges
   badge: {
     primary: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800',
@@ -189,24 +189,24 @@ export const TailwindClasses = {
     error: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800',
     secondary: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800',
   },
-  
+
   // Layout
   pageHeader: 'bg-white border-b border-gray-200 px-6 py-4',
   pageTitle: 'text-2xl font-bold text-gray-900',
   pageSubtitle: 'text-sm text-gray-600 mt-1',
-  
+
   // Sidebar
   sidebar: 'w-72 bg-gray-900 text-white',
   sidebarItem: 'flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors duration-200',
   sidebarItemActive: 'flex items-center px-4 py-3 text-white bg-blue-600 rounded-lg',
-  
+
   // Tablas
   table: 'min-w-full divide-y divide-gray-200',
   tableHeader: 'bg-gray-50',
   tableHeaderCell: 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider',
   tableRow: 'bg-white hover:bg-gray-50 transition-colors duration-200',
   tableCell: 'px-6 py-4 whitespace-nowrap text-sm text-gray-900',
-  
+
   // Estados
   loading: 'animate-pulse bg-gray-200 rounded',
   empty: 'text-center py-12 text-gray-500',

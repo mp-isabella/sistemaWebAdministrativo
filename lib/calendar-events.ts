@@ -7,7 +7,7 @@ export const CalendarEvents = {
         detail: jobData
       })
       window.dispatchEvent(event)
-      
+
     }
   },
 
@@ -18,7 +18,7 @@ export const CalendarEvents = {
         detail: jobData
       })
       window.dispatchEvent(event)
-      
+
     }
   },
 
@@ -29,7 +29,7 @@ export const CalendarEvents = {
         detail: { jobId }
       })
       window.dispatchEvent(event)
-      
+
     }
   },
 
@@ -38,7 +38,7 @@ export const CalendarEvents = {
     if (typeof window !== 'undefined') {
       const event = new CustomEvent('refreshCalendar')
       window.dispatchEvent(event)
-      
+
     }
   },
 
@@ -49,7 +49,7 @@ export const CalendarEvents = {
         detail: workerData
       })
       window.dispatchEvent(event)
-      
+
     }
   },
 
@@ -60,7 +60,7 @@ export const CalendarEvents = {
         detail: workerData
       })
       window.dispatchEvent(event)
-      
+
     }
   },
 
@@ -71,7 +71,7 @@ export const CalendarEvents = {
         detail: { workerId }
       })
       window.dispatchEvent(event)
-      
+
     }
   }
 }

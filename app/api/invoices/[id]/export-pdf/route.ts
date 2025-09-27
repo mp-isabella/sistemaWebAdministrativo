@@ -380,7 +380,7 @@ export async function GET(
           <!-- Contenido Principal -->
           <div class="content-section">
             <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 20px;">Detalle de Servicios</h3>
-            
+
             <table class="table">
               <thead>
                 <tr>
@@ -456,7 +456,7 @@ export async function GET(
     })
 
   } catch (error) {
-    
+
     return NextResponse.json({
       error: "Error interno del servidor"
     }, { status: 500 })

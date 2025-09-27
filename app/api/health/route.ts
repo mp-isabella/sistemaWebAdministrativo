@@ -1,16 +1,31 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
-    // Verificar conexión a la base de datos
-    await prisma.$queryRaw`SELECT 1`
+    // Verificar conexión a la base de datos con manejo de errores
+    try {
+      await prisma.$queryRaw`SELECT 1`
 
-    return NextResponse.json({
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      database: 'connected'
-    })
+      return NextResponse.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        database: 'connected'
+      })
+    } catch (dbError) {
+      // Si hay error de base de datos, devolver estado parcial
+      console.warn('Database connection issue:', dbError)
+
+      return NextResponse.json({
+        status: 'partial',
+        timestamp: new Date().toISOString(),
+        database: 'disconnected',
+        message: 'Database connection failed but service is running'
+      })
+    }
   } catch (error) {
     console.error('Health check failed:', error)
     return NextResponse.json(

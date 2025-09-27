@@ -374,8 +374,6 @@ export default function WorkersPage() {
   // Función para manejar envío del formulario
   const handleFormSubmit = useCallback(async (formData: any) => {
     try {
-      console.log('🔄 Enviando datos del formulario:', formData);
-      console.log('👤 Trabajador siendo editado:', editingWorker);
 
       setLoading(true);
       setError("");
@@ -386,15 +384,10 @@ export default function WorkersPage() {
 
       const method = editingWorker ? 'PUT' : 'POST';
 
-      console.log('🌐 URL:', url);
-      console.log('📡 Método:', method);
-
       const requestBody = {
         ...formData,
         isActive: formData.status === 'active'
       };
-
-      console.log('📤 Datos enviados a la API:', requestBody);
 
       const response = await fetch(url, {
         method,
@@ -404,8 +397,6 @@ export default function WorkersPage() {
         body: JSON.stringify(requestBody),
       });
 
-      console.log('📥 Respuesta de la API:', response.status, response.statusText);
-
       if (!response.ok) {
         const errorData = await response.json();
         console.error('❌ Error de la API:', errorData);
@@ -413,7 +404,6 @@ export default function WorkersPage() {
       }
 
       const result = await response.json();
-      console.log('✅ Resultado de la API:', result);
 
       // Transformar el resultado para que sea compatible con la interfaz Worker
       const transformedResult = {

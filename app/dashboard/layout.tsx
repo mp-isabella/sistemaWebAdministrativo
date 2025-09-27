@@ -46,7 +46,6 @@ import './styles/responsive-optimizations.css';
 import './styles/schedule-mobile-optimizations.css';
 import './styles/user-dropdown-fix.css';
 
-
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -72,12 +71,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     };
   }, [userMenuOpen]);
 
-
   const isCalendar = pathname === "/dashboard/schedule/calendar";
-
-
-
-
 
   // Always call useNotifications to maintain hook order consistency
   const userRole = (session?.user as any)?.role?.toLowerCase() ?? "";
@@ -202,7 +196,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <X className="h-5 w-5" />
             </button>
           </div>
-
 
           {/* Navigation */}
           <nav className="p-3 sm:p-4 lg:p-5 space-y-1">
@@ -359,7 +352,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </header>
 
-
           {/* Main Content */}
           <main className={`flex-1 mobile-content ${isCalendar ? 'p-0' : 'p-1 sm:p-2 lg:p-4 xl:p-6'}`}>
             <div className={isCalendar ? 'h-full' : 'w-full max-w-none'}>
@@ -388,26 +380,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           color: #cbd5e1 !important;
           transition: all 0.2s ease-in-out !important;
         }
-        
+
         .dashboard-sidebar nav a:hover {
           background-color: rgba(71, 85, 105, 0.5) !important;
           color: white !important;
           transform: scale(1.02) !important;
         }
-        
+
         /* Estilos específicos para botones inactivos */
         .sidebar-inactive-item {
           background-color: transparent !important;
           color: #cbd5e1 !important;
         }
-        
+
         /* Estilos específicos para botones activos */
         .sidebar-active-item {
           background-color: rgba(71, 85, 105, 0.7) !important;
           background-image: none !important;
           color: white !important;
         }
-        
+
         /* Forzar estilos para botones activos - más específico */
         .dashboard-sidebar nav a[class*="bg-slate-700"],
         .dashboard-sidebar nav a[class*="bg-gradient-to-r"],
@@ -417,65 +409,65 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           background-image: none !important;
           color: white !important;
         }
-        
+
         /* Forzar estilos para cualquier fondo azul */
         .dashboard-sidebar nav a[style*="background"] {
           background-color: rgba(71, 85, 105, 0.7) !important;
           background-image: none !important;
         }
-        
+
         /* Asegurar que los iconos mantengan sus colores */
         .dashboard-sidebar nav a .text-yellow-500 {
           color: #eab308 !important;
         }
-        
+
         .dashboard-sidebar nav a .text-purple-500 {
           color: #a855f7 !important;
         }
-        
+
         .dashboard-sidebar nav a .text-green-500 {
           color: #22c55e !important;
         }
-        
+
         .dashboard-sidebar nav a .text-indigo-500 {
           color: #6366f1 !important;
         }
-        
+
         .dashboard-sidebar nav a .text-orange-500 {
           color: #f97316 !important;
         }
-        
+
         .dashboard-sidebar nav a .text-red-500 {
           color: #ef4444 !important;
         }
-        
+
         .dashboard-sidebar nav a .text-white {
           color: white !important;
         }
-        
+
         /* Estilos específicos para móviles */
         @media (max-width: 768px) {
           .dashboard-sidebar {
             transform: translateX(-100%);
             transition: transform 0.3s ease-in-out;
           }
-          
+
           .dashboard-sidebar.open {
             transform: translateX(0);
           }
-          
+
           /* Forzar estilos en móviles - máxima especificidad */
           .dashboard-sidebar nav a.sidebar-active-item {
             background-color: rgba(71, 85, 105, 0.7) !important;
             background-image: none !important;
             color: white !important;
           }
-          
+
           .dashboard-sidebar nav a.sidebar-inactive-item {
             background-color: transparent !important;
             color: #cbd5e1 !important;
           }
-          
+
           /* Forzar estilos para cualquier fondo azul en móviles */
           .dashboard-sidebar nav a[class*="bg-gradient-to-r"],
           .dashboard-sidebar nav a[class*="from-blue-600"],
@@ -486,26 +478,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             color: white !important;
           }
         }
-        
+
         @media (min-width: 769px) {
           .dashboard-sidebar {
             transform: translateX(0);
             position: static;
           }
-          
+
           /* Forzar estilos en desktop */
           .dashboard-sidebar nav a.sidebar-active-item {
             background-color: rgba(71, 85, 105, 0.7) !important;
             background-image: none !important;
             color: white !important;
           }
-          
+
           .dashboard-sidebar nav a.sidebar-inactive-item {
             background-color: transparent !important;
             color: #cbd5e1 !important;
           }
         }
-        
+
         /* Estilos adicionales con máxima especificidad para móviles */
         @media (max-width: 768px) {
           .dashboard-sidebar nav a[href="/dashboard/schedule/calendar"] {
@@ -513,13 +505,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             background-image: none !important;
             color: white !important;
           }
-          
+
           .dashboard-sidebar nav a:not([href="/dashboard/schedule/calendar"]) {
             background-color: transparent !important;
             color: #cbd5e1 !important;
           }
         }
-        
+
         /* Estilos adicionales con máxima especificidad para desktop */
         @media (min-width: 769px) {
           .dashboard-sidebar nav a[href="/dashboard/schedule/calendar"] {
@@ -527,7 +519,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             background-image: none !important;
             color: white !important;
           }
-          
+
           .dashboard-sidebar nav a:not([href="/dashboard/schedule/calendar"]) {
             background-color: transparent !important;
             color: #cbd5e1 !important;

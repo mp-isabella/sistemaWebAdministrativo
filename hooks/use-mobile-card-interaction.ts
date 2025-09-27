@@ -21,14 +21,14 @@ export function useMobileCardInteraction(options: UseMobileCardInteractionOption
   // Detección móvil segura
   useEffect(() => {
     setIsMounted(true);
-    
+
     if (typeof window === 'undefined') return;
-    
+
     const checkMobile = () => {
       const isMobileDevice = window.innerWidth <= 768;
       setIsMobile(isMobileDevice);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -37,22 +37,22 @@ export function useMobileCardInteraction(options: UseMobileCardInteractionOption
   // Función para manejar clicks/taps de manera segura
   const handleCardInteraction = useCallback((callback: () => void) => {
     if (!isMounted) return;
-    
+
     const now = Date.now();
-    
+
     // Prevenir doble tap en móvil
     if (preventDoubleTap && isMobile) {
       if (now - lastTapTime < tapDelay || isProcessing) {
         return;
       }
     }
-    
+
     setLastTapTime(now);
     setIsProcessing(true);
-    
+
     // Ejecutar callback
     callback();
-    
+
     // Resetear estado después del delay
     setTimeout(() => {
       setIsProcessing(false);
@@ -68,7 +68,7 @@ export function useMobileCardInteraction(options: UseMobileCardInteractionOption
   // Función para manejar modal
   const handleModal = useCallback((isOpen: boolean) => {
     if (typeof document === 'undefined') return;
-    
+
     if (isOpen) {
       // Prevenir scroll cuando el modal está abierto
       document.body.style.overflow = 'hidden';

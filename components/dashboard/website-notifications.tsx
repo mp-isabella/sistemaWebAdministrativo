@@ -13,7 +13,7 @@ import {
   Mail,
   MapPin,
   Phone,
-  // X, 
+  // X,
   Trash2,
   User
 } from 'lucide-react';

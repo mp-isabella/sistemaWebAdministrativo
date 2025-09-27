@@ -59,7 +59,7 @@ export async function GET(
     return NextResponse.json(report)
 
   } catch (error) {
-    
+
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }
@@ -121,7 +121,7 @@ export async function PUT(
     return NextResponse.json(report)
 
   } catch (error) {
-    
+
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }
@@ -155,7 +155,7 @@ export async function DELETE(
     return NextResponse.json({ success: true })
 
   } catch (error) {
-    
+
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }

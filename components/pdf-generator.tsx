@@ -291,7 +291,7 @@ export const generateLiquidationPDF = (liquidationData: any, companyConfig: any)
       doc.addImage(companyConfig.logo, 'PNG', margin, yPosition, logoWidth, logoHeight)
       yPosition += logoHeight + 15
     } catch (error) {
-      
+
     }
   }
 
@@ -527,7 +527,7 @@ export const generateQuotePDF = (quoteData: any, companyConfig: any) => {
       doc.addImage(companyConfig.logo, 'PNG', margin, yPosition, logoWidth, logoHeight)
       yPosition += logoHeight + 15
     } catch (error) {
-      
+
     }
   }
 

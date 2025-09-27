@@ -32,7 +32,7 @@ export async function GET(_request: NextRequest) {
     })
 
   } catch (error) {
-    
+
     return NextResponse.json({
       success: false,
       error: "Error interno del servidor",

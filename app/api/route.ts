@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ workers, stats })
   } catch (error) {
-    
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ worker })
   } catch (error) {
-    
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
