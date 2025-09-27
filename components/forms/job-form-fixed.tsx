@@ -30,7 +30,7 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
     clientId: "",
     serviceName: "",
     serviceId: "",
-    companyId: "",
+    companyId: "none",
     assignedToId: "tecnico-generico",
     scheduledAt: null as Date | null,
     startTime: "",
@@ -146,7 +146,7 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
         clientId: "",
         serviceName: "",
         serviceId: "",
-        companyId: "",
+        companyId: "none",
         assignedToId: "tecnico-generico",
         scheduledAt: null,
         startTime: "",
@@ -251,8 +251,12 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
       // Log para debugging
       setTechnicians(filteredTechnicians);
 
-      // Procesar empresas
-      setAvailableCompanies(companiesData || []);
+      // Procesar empresas - agregar opción "Sin empresa" al inicio
+      const companiesWithNone = [
+        { id: "none", name: "Sin empresa" },
+        ...(companiesData || [])
+      ];
+      setAvailableCompanies(companiesWithNone);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -419,7 +423,7 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
       }
 
       // Validar que todos los campos requeridos estén presentes
-      if (!formData.companyId) {
+      if (!formData.companyId || formData.companyId === "") {
         setErrors({ companyId: "Debe seleccionar una empresa" });
         return;
       }
@@ -767,7 +771,7 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
                     {availableCompanies.map((company) => (
                       <SelectItem key={company.id} value={company.id} className="py-2">
                         <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${company.id === 'sin-empresa' ? 'bg-gray-400' : 'bg-blue-500'}`}></div>
+                          <div className={`w-2 h-2 rounded-full ${company.id === 'none' ? 'bg-gray-400' : 'bg-blue-500'}`}></div>
                           <span>{company.name}</span>
                         </div>
                       </SelectItem>
