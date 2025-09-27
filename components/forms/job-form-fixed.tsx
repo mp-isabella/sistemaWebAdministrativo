@@ -30,7 +30,7 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
     clientId: "",
     serviceName: "",
     serviceId: "",
-    companyId: "sin-empresa",
+    companyId: "",
     assignedToId: "tecnico-generico",
     scheduledAt: null as Date | null,
     startTime: "",
