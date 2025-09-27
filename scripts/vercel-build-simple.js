@@ -33,6 +33,15 @@ try {
 
     console.log('✅ Build completed successfully');
 
+    // 4. Intentar configurar base de datos automáticamente
+    console.log('🔧 Attempting database setup...');
+    try {
+        const { execSync } = require('child_process');
+        execSync('node scripts/auto-setup-vercel.js', { stdio: 'inherit' });
+    } catch (error) {
+        console.log('⚠️ Auto-setup failed, manual setup required');
+    }
+
 } catch (error) {
     console.error('❌ Build failed:', error.message);
     process.exit(1);
