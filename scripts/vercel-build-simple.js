@@ -33,13 +33,13 @@ try {
 
     console.log('✅ Build completed successfully');
 
-    // 4. Intentar configurar base de datos automáticamente
-    console.log('🔧 Attempting database setup...');
+    // 4. Configurar base de datos después del build
+    console.log('🔧 Setting up database after build...');
     try {
         const { execSync } = require('child_process');
-        execSync('node scripts/auto-setup-vercel.js', { stdio: 'inherit' });
+        execSync('node scripts/vercel-post-deploy.js', { stdio: 'inherit' });
     } catch (error) {
-        console.log('⚠️ Auto-setup failed, manual setup required');
+        console.log('⚠️ Post-deploy setup failed, manual setup required');
     }
 
 } catch (error) {
