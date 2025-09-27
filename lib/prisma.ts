@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import { isDatabaseConfigured } from './database-config';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
@@ -7,9 +6,10 @@ const globalForPrisma = globalThis as unknown as {
 
 // Configuración optimizada para evitar conflictos de prepared statements
 const createPrismaClient = () => {
-  // Verificar si estamos en build time
+  // Verificar si estamos en build time (solo durante el proceso de build)
   const isBuildTime = process.env.NODE_ENV === 'production' &&
-    process.env.SKIP_ENV_VALIDATION === 'true';
+    process.env.SKIP_ENV_VALIDATION === 'true' &&
+    !process.env.DATABASE_URL; // Solo usar dummy si no hay DATABASE_URL
 
   if (isBuildTime) {
     console.log('⚠️ Build time detected - using dummy Prisma client');
@@ -22,29 +22,16 @@ const createPrismaClient = () => {
     });
   }
 
-  // Verificar si la base de datos está configurada
-  if (!isDatabaseConfigured()) {
-    console.error('❌ Base de datos no configurada');
-    throw new Error(`
-      ❌ DATABASE_URL no configurada
-      
-      Para solucionarlo en Vercel:
-      1. Ve a Vercel Dashboard → Tu proyecto → Settings → Environment Variables
-      2. Agrega: DATABASE_URL = [tu-url-de-postgresql]
-      3. Redeploya la aplicación
-      
-      Opciones de base de datos:
-      - Vercel PostgreSQL (gratuito)
-      - Supabase (gratuito) 
-      - Railway (gratuito)
-    `);
-  }
+  // En producción, usar siempre la URL de Supabase si está disponible
+  const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres.rwsqkirgxsxrpjepjhtr:amesticaportal@aws-1-us-east-2.pooler.supabase.com:6543/postgres';
+
+  console.log('🔗 Using database URL:', databaseUrl.includes('supabase') ? 'Supabase' : 'Custom');
 
   return new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     datasources: {
       db: {
-        url: process.env.DATABASE_URL || 'postgresql://postgres.rwsqkirgxsxrpjepjhtr:amesticaportal@aws-1-us-east-2.pooler.supabase.com:6543/postgres'
+        url: databaseUrl
       }
     }
   })
