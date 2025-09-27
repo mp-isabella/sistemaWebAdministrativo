@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth/next'
 import { prisma } from '@/lib/prisma'
 import puppeteer from 'puppeteer'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession()

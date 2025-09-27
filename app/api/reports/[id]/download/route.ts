@@ -2,6 +2,9 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from "next-auth/next"
 import { NextRequest, NextResponse } from 'next/server'
+
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
 // import { generatePDF } from '@/lib/pdf-generator'
 
 export async function GET(

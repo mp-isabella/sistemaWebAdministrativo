@@ -2,6 +2,9 @@ import { authOptions } from '@/lib/auth';
 import { getServerSession } from 'next-auth/next';
 import { NextRequest, NextResponse } from 'next/server';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 // PUT - Marcar notificación como leída
 export async function PUT(
   _request: NextRequest,

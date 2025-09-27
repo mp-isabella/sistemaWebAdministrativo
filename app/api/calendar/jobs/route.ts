@@ -1,1 +1,55 @@
-import { authOptions } from '@/lib/auth'import { prisma } from '@/lib/prisma'import { getServerSession } from 'next-auth/next'import { NextRequest, NextResponse } from 'next/server'export async function GET(request: NextRequest) {  try {    const session = await getServerSession(authOptions)    if (!session || !session.user) {      return NextResponse.json({ error: "No autorizado" }, { status: 401 })    }    const { searchParams } = new URL(request.url)    const technicianId = searchParams.get("technicianId")    const startDate = searchParams.get("startDate")    const endDate = searchParams.get("endDate")    const where: any = {}    // Filtros por rol    if ((session.user as any).role.toLowerCase() === "tecnico") {      where.technicianId = (session.user as any).id    }    if (technicianId) {      where.technicianId = technicianId    }    if (startDate && endDate) {      where.scheduledAt = {        gte: new Date(startDate),        lte: new Date(endDate)      }    }    const jobs = await prisma.job.findMany({      where,      include: {        client: true,        service: true,        technician: true,        company: true,        createdBy: true      },      orderBy: { createdAt: "desc" }    })    // Devolver todos los datos del job con sus relaciones    return NextResponse.json({      success: true,      data: jobs    })  } catch (error) {    console.error('Error fetching calendar jobs:', error)    return NextResponse.json(      { error: 'Error interno del servidor' },      { status: 500 }    )  }}
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { getServerSession } from 'next-auth/next'
+import { NextRequest, NextResponse } from 'next/server'
+
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+    }
+    const { searchParams } = new URL(request.url)
+    const technicianId = searchParams.get("technicianId")
+    const startDate = searchParams.get("startDate")
+    const endDate = searchParams.get("endDate")
+    const where: any = {}
+    // Filtros por rol
+    if ((session.user as any).role.toLowerCase() === "tecnico") {
+      where.technicianId = (session.user as any).id
+    }
+    if (technicianId) {
+      where.technicianId = technicianId
+    }
+    if (startDate && endDate) {
+      where.scheduledAt = {
+        gte: new Date(startDate),
+        lte: new Date(endDate)
+      }
+    }
+    const jobs = await prisma.job.findMany({
+      where,
+      include: {
+        client: true,
+        service: true,
+        technician: true,
+        company: true,
+        createdBy: true
+      },
+      orderBy: { createdAt: "desc" }
+    })
+    // Devolver todos los datos del job con sus relaciones
+    return NextResponse.json({
+      success: true,
+      data: jobs
+    })
+  } catch (error) {
+    console.error('Error fetching calendar jobs:', error)
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    )
+  }
+}

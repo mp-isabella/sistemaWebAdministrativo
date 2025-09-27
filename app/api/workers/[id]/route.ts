@@ -4,6 +4,9 @@ import bcrypt from "bcryptjs"
 import { getServerSession } from "next-auth/next"
 import { NextRequest, NextResponse } from "next/server"
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)

@@ -14,7 +14,7 @@ async function testDatabaseConnection() {
         await prisma.$connect();
         console.log('✅ Database connection successful');
 
-        // Test if tables exist
+        // Test if tables exist (PostgreSQL compatible)
         const tables = await prisma.$queryRaw`
             SELECT table_name 
             FROM information_schema.tables 

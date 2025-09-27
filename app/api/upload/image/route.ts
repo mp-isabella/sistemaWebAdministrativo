@@ -3,6 +3,9 @@ import { v2 as cloudinary } from "cloudinary"
 import { getServerSession } from "next-auth/next"
 import { type NextRequest, NextResponse } from "next/server"
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 // Configurar Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || '',

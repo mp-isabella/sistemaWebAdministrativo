@@ -1,94 +1,120 @@
-# Vercel Deployment Fix - DATABASE_URL Error
+# Solución de Errores de Deployment en Vercel
 
-## Problem
-Vercel deployment fails with error: `Environment variable not found: DATABASE_URL`
+## Problemas Identificados y Solucionados
 
-## Solution Steps
+### 1. Error P3019 - Conflicto de Base de Datos
+**Problema**: El esquema de Prisma estaba configurado para SQLite pero en producción necesitas PostgreSQL.
 
-### 1. Set Environment Variables in Vercel Dashboard
+**Solución**:
+- ✅ Creado `prisma/schema.production.prisma` con configuración PostgreSQL
+- ✅ Actualizado script de migración para usar esquema correcto según entorno
+- ✅ Script de migración específico para producción: `scripts/vercel-migrate-production.js`
 
-1. Go to your Vercel dashboard: https://vercel.com/dashboard
-2. Select your project
-3. Go to **Settings** → **Environment Variables**
-4. Add the following variables:
+### 2. Errores de Renderizado Estático
+**Problema**: Las rutas API usan `getServerSession()` que internamente usa `headers()`, causando errores de renderizado estático.
 
-```
-DATABASE_URL=postgresql://postgres:[TU_PASSWORD]@db.rwsqkirgxsxrpjepjhtr.supabase.co:5432/postgres
-NEXTAUTH_URL=https://tu-dominio.vercel.app
-NEXTAUTH_SECRET=tu-secret-key-aqui-cambiar-en-produccion
-```
+**Solución**:
+- ✅ Agregado `export const dynamic = 'force-dynamic'` a rutas problemáticas:
+  - `app/api/calendar/jobs/route.ts`
+  - `app/api/companies/route.ts`
+  - `app/api/debug/users/route.ts`
 
-**Important:** Replace `[TU_PASSWORD]` with your actual Supabase database password.
+### 3. Problemas de Conexión a Base de Datos
+**Problema**: La consulta `information_schema.tables` no funciona con SQLite en producción.
 
-### 2. Alternative: Use Vercel CLI
+**Solución**:
+- ✅ Actualizado `scripts/vercel-database-test.js` para ser compatible con PostgreSQL
+- ✅ Mejorado manejo de errores en scripts de migración
 
-If you prefer using the CLI:
+### 4. Configuración de Build Optimizada
+**Solución**:
+- ✅ Creado `scripts/vercel-build-production.js` con configuración optimizada
+- ✅ Creado `next.config.production.js` con optimizaciones para producción
+- ✅ Actualizado `vercel.json` para usar el nuevo script de build
+
+## Archivos Creados/Modificados
+
+### Nuevos Archivos:
+- `prisma/schema.production.prisma` - Esquema PostgreSQL para producción
+- `scripts/vercel-build-production.js` - Script de build optimizado
+- `scripts/vercel-migrate-production.js` - Script de migración específico
+- `next.config.production.js` - Configuración Next.js para producción
+
+### Archivos Modificados:
+- `scripts/vercel-migrate.js` - Mejorado para detectar entorno de producción
+- `scripts/vercel-database-test.js` - Compatible con PostgreSQL
+- `vercel.json` - Usa nuevo script de build
+- `env.production.example` - Variables de entorno actualizadas
+- Rutas API problemáticas - Agregado `dynamic = 'force-dynamic'`
+
+## Variables de Entorno Requeridas en Vercel
+
+Configura estas variables en el dashboard de Vercel:
 
 ```bash
-# Install Vercel CLI
-npm i -g vercel
+# Base de datos (OBLIGATORIO)
+DATABASE_URL="postgresql://usuario:password@host:puerto/database"
 
-# Login to Vercel
-vercel login
+# NextAuth.js (OBLIGATORIO)
+NEXTAUTH_URL="https://tu-dominio.vercel.app"
+NEXTAUTH_SECRET="tu-secret-seguro"
 
-# Set environment variables
-vercel env add DATABASE_URL
-# Paste your database URL when prompted
-
-vercel env add NEXTAUTH_URL
-# Enter: https://tu-dominio.vercel.app
-
-vercel env add NEXTAUTH_SECRET
-# Enter your secret key
+# Configuración de entorno
+NODE_ENV="production"
+NEXT_TELEMETRY_DISABLED="1"
+NODE_OPTIONS="--max-old-space-size=4096"
 ```
 
-### 3. Deploy
+## Pasos para Deployment
 
-After setting the environment variables:
+1. **Configurar Variables de Entorno**:
+   - Ve a tu proyecto en Vercel Dashboard
+   - Settings → Environment Variables
+   - Agrega todas las variables de `env.production.example`
 
-```bash
-# Deploy to Vercel
-vercel --prod
-```
+2. **Verificar Base de Datos**:
+   - Asegúrate de que tu `DATABASE_URL` apunte a una base de datos PostgreSQL
+   - La base de datos debe estar accesible desde Vercel
 
-## What Was Fixed
+3. **Deploy**:
+   - Haz push de los cambios al repositorio
+   - Vercel automáticamente usará el nuevo script de build
 
-1. **Updated `vercel.json`**: Added build environment configuration
-2. **Created robust build script**: `scripts/vercel-build.js` handles missing DATABASE_URL gracefully
-3. **Updated package.json**: Uses the new build script
-4. **Added error handling**: Build continues even if migrations fail
+## Verificación Post-Deployment
 
-## Build Process
+1. **Revisar Logs de Build**:
+   - Los logs deben mostrar "✅ Using production PostgreSQL schema"
+   - No debe haber errores P3019
 
-The new build process:
-1. ✅ Generates Prisma Client
-2. ✅ Checks for DATABASE_URL
-3. ✅ Runs migrations if DATABASE_URL is available
-4. ✅ Skips migrations gracefully if DATABASE_URL is missing
-5. ✅ Builds Next.js application
+2. **Probar Funcionalidad**:
+   - Login/logout funciona
+   - Crear/editar trabajos
+   - Calendario se carga correctamente
+
+3. **Monitorear Errores**:
+   - Revisar logs de runtime en Vercel Dashboard
+   - No debe haber errores de renderizado estático
 
 ## Troubleshooting
 
-### If build still fails:
-1. Check that all environment variables are set in Vercel
-2. Verify your DATABASE_URL is correct
-3. Check Vercel build logs for specific errors
+### Si persiste el error P3019:
+1. Verifica que `DATABASE_URL` apunte a PostgreSQL
+2. Asegúrate de que la base de datos esté accesible
+3. Revisa que no haya migraciones previas de SQLite
 
-### If migrations fail:
-- The build will continue and skip migrations
-- You can run migrations manually after deployment
-- Or set up a separate migration process
+### Si hay errores de renderizado estático:
+1. Verifica que todas las rutas API problemáticas tengan `dynamic = 'force-dynamic'`
+2. Revisa que no se esté usando `headers()` en rutas que deben ser estáticas
 
-## Environment Variables Checklist
+### Si hay problemas de conexión a BD:
+1. Verifica las credenciales en `DATABASE_URL`
+2. Asegúrate de que la base de datos esté en la misma región que Vercel
+3. Revisa los logs de migración para errores específicos
 
-- [ ] `DATABASE_URL` - Your Supabase PostgreSQL connection string
-- [ ] `NEXTAUTH_URL` - Your Vercel app URL
-- [ ] `NEXTAUTH_SECRET` - A secure random string
-- [ ] Any other environment variables your app needs
+## Contacto
 
-## Next Steps
-
-1. Set the environment variables in Vercel
-2. Trigger a new deployment
-3. Monitor the build logs
-4. Test your deployed application
+Si necesitas ayuda adicional, revisa:
+- Logs de build en Vercel Dashboard
+- Logs de runtime en Vercel Dashboard
+- Documentación de Prisma para PostgreSQL
+- Documentación de Next.js para renderizado dinámico

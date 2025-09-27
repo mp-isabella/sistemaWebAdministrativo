@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth/next"
 import { NextRequest, NextResponse } from "next/server"
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 interface InvoiceItem {
   description: string
   quantity: number

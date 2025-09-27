@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node scripts/vercel-build-optimized.js",
+  "buildCommand": "node scripts/vercel-build-production.js",
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": [

@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '@/lib/auth';
 import { getServerSession } from 'next-auth/next';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 // GET - Obtener todas las notificaciones del sitio web
 export async function GET(_request: NextRequest) {
   try {

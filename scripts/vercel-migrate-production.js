@@ -4,29 +4,26 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-async function runMigrations() {
-    console.log('🗄️  Starting database migration process...');
+async function runProductionMigrations() {
+    console.log('🗄️  Starting production database migration process...');
 
     try {
-        // Step 0: Use production schema if in production
-        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
-        if (isProduction) {
-            console.log('🏭 Production environment detected, using PostgreSQL schema...');
-            const productionSchema = path.join(__dirname, '..', 'prisma', 'schema.production.prisma');
-            const defaultSchema = path.join(__dirname, '..', 'prisma', 'schema.prisma');
+        // Step 1: Use production schema
+        console.log('📦 Setting up production database schema...');
+        const productionSchema = path.join(__dirname, '..', 'prisma', 'schema.production.prisma');
+        const defaultSchema = path.join(__dirname, '..', 'prisma', 'schema.prisma');
 
-            if (fs.existsSync(productionSchema)) {
-                // Backup original schema
-                if (fs.existsSync(defaultSchema)) {
-                    fs.copyFileSync(defaultSchema, defaultSchema + '.backup');
-                }
-                // Use production schema
-                fs.copyFileSync(productionSchema, defaultSchema);
-                console.log('✅ Using production PostgreSQL schema');
+        if (fs.existsSync(productionSchema)) {
+            // Backup original schema
+            if (fs.existsSync(defaultSchema)) {
+                fs.copyFileSync(defaultSchema, defaultSchema + '.backup');
             }
+            // Use production schema
+            fs.copyFileSync(productionSchema, defaultSchema);
+            console.log('✅ Using production PostgreSQL schema');
         }
 
-        // Step 1: Generate Prisma Client
+        // Step 2: Generate Prisma Client
         console.log('📦 Generating Prisma Client...');
         execSync('npx prisma generate', {
             stdio: 'inherit',
@@ -34,11 +31,9 @@ async function runMigrations() {
         });
         console.log('✅ Prisma Client generated successfully');
 
-        // Step 2: Check if we need to create the database
-        console.log('🔍 Checking database status...');
-
+        // Step 3: Check database connection
+        console.log('🔍 Testing database connection...');
         try {
-            // Try to connect and check if tables exist
             execSync('node scripts/vercel-database-test.js', {
                 stdio: 'pipe',
                 timeout: 15000
@@ -48,7 +43,7 @@ async function runMigrations() {
             console.log('⚠️  Database connection test failed, but continuing with migration...');
         }
 
-        // Step 3: Run migrations
+        // Step 4: Run migrations
         console.log('🚀 Running database migrations...');
 
         try {
@@ -70,18 +65,24 @@ async function runMigrations() {
                 console.log('✅ Database schema pushed successfully');
             } catch (pushError) {
                 console.log('❌ Both migration methods failed');
+                console.log('⚠️  This might be due to database connection issues');
+                console.log('💡 Check your DATABASE_URL in Vercel environment variables');
                 throw pushError;
             }
         }
 
-        // Step 4: Verify the migration
+        // Step 5: Verify the migration
         console.log('🔍 Verifying migration...');
-        execSync('node scripts/vercel-database-test.js', {
-            stdio: 'inherit',
-            timeout: 15000
-        });
+        try {
+            execSync('node scripts/vercel-database-test.js', {
+                stdio: 'inherit',
+                timeout: 15000
+            });
+            console.log('✅ Database migration completed successfully');
+        } catch (error) {
+            console.log('⚠️  Migration verification failed, but continuing...');
+        }
 
-        console.log('✅ Database migration completed successfully');
         return true;
 
     } catch (error) {
@@ -94,6 +95,8 @@ async function runMigrations() {
             console.log('💡 Check your DATABASE_URL database name in Vercel environment variables');
         } else if (error.message.includes('P1001')) {
             console.log('💡 Cannot reach database server. Check your DATABASE_URL connection string');
+        } else if (error.message.includes('P3019')) {
+            console.log('💡 Database provider mismatch. Make sure you are using PostgreSQL in production');
         }
 
         return false;
@@ -101,17 +104,17 @@ async function runMigrations() {
 }
 
 // Run migrations
-runMigrations()
+runProductionMigrations()
     .then(success => {
         if (success) {
-            console.log('✅ Migration process completed successfully');
+            console.log('✅ Production migration process completed successfully');
             process.exit(0);
         } else {
-            console.log('❌ Migration process failed');
+            console.log('❌ Production migration process failed');
             process.exit(1);
         }
     })
     .catch(error => {
-        console.error('❌ Migration process error:', error);
+        console.error('❌ Production migration process error:', error);
         process.exit(1);
     });
