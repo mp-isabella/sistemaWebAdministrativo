@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { safeCleanupDuplicates } from "@/lib/dom-utils"
-import { Building, Calendar, CheckCircle, ChevronLeft, ChevronRight, Clock, Edit, Filter, Menu, MessageCircle, Phone, Plus, RefreshCw, User, Wrench, X } from "lucide-react"
+import { AlertCircle, Building, Calendar, CheckCircle, ChevronLeft, ChevronRight, Clock, Edit, Filter, Menu, MessageCircle, Phone, Plus, RefreshCw, User, Wrench, X } from "lucide-react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -565,8 +565,18 @@ export default function CalendarPage() {
     }
 
     // Filtrar por trabajador (solo para administradores y secretarias)
-    if (canViewAllJobs() && selectedTechnicianFilter !== "todos" && job.technician?.id !== selectedTechnicianFilter) {
-      return false
+    if (canViewAllJobs() && selectedTechnicianFilter !== "todos") {
+      // Si se selecciona "sin-asignar", mostrar solo trabajos sin técnico
+      if (selectedTechnicianFilter === "sin-asignar") {
+        if (job.technician && job.technician.id) {
+          return false
+        }
+      } else {
+        // Si se selecciona un técnico específico, mostrar solo sus trabajos
+        if (job.technician?.id !== selectedTechnicianFilter) {
+          return false
+        }
+      }
     }
 
     // Filtrar por estado
@@ -1691,6 +1701,15 @@ export default function CalendarPage() {
                 <SelectContent className="bg-white border border-slate-200 shadow-lg">
                   <SelectItem value="todos" className="hover:bg-blue-50 focus:bg-blue-50">
                     <span className="font-medium text-blue-600">👥 Todos los trabajadores</span>
+                  </SelectItem>
+                  <SelectItem value="sin-asignar" className="hover:bg-orange-50 focus:bg-orange-50">
+                    <span className="flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 text-orange-500" />
+                      <div className="flex flex-col">
+                        <span className="font-medium text-orange-600">Sin asignar</span>
+                        <span className="text-xs text-orange-500">Trabajos sin técnico</span>
+                      </div>
+                    </span>
                   </SelectItem>
                   {getActiveTechnicians().map(tech => (
                     <SelectItem key={tech.id} value={tech.id} className="hover:bg-slate-50 focus:bg-slate-50">
