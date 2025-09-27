@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { getDatabaseConfig, isDatabaseConfigured } from './database-config';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
@@ -21,11 +22,31 @@ const createPrismaClient = () => {
     });
   }
 
+  // Verificar si la base de datos está configurada
+  if (!isDatabaseConfigured()) {
+    console.error('❌ Base de datos no configurada');
+    throw new Error(`
+      ❌ DATABASE_URL no configurada
+      
+      Para solucionarlo en Vercel:
+      1. Ve a Vercel Dashboard → Tu proyecto → Settings → Environment Variables
+      2. Agrega: DATABASE_URL = [tu-url-de-postgresql]
+      3. Redeploya la aplicación
+      
+      Opciones de base de datos:
+      - Vercel PostgreSQL (gratuito)
+      - Supabase (gratuito) 
+      - Railway (gratuito)
+    `);
+  }
+
+  const config = getDatabaseConfig();
+
   return new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     datasources: {
       db: {
-        url: process.env.DATABASE_URL!
+        url: config.url
       }
     }
   })
