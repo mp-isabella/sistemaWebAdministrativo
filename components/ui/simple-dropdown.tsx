@@ -46,6 +46,7 @@ export function SimpleDropdown({
                 type="button"
                 role="combobox"
                 aria-expanded={open}
+                aria-controls="simple-listbox"
                 onClick={() => setOpen(!open)}
                 disabled={disabled}
                 style={{

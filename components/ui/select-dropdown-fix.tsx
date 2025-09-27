@@ -49,6 +49,7 @@ export function SelectDropdownFix({
                 type="button"
                 role="combobox"
                 aria-expanded={open}
+                aria-controls="select-listbox"
                 onClick={() => setOpen(!open)}
                 className={cn(
                     "select-dropdown-trigger w-full justify-between text-left font-normal h-14 text-base border-2 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 shadow-sm font-medium",

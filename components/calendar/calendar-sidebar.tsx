@@ -32,7 +32,7 @@ export function CalendarSidebar({
   onClose
 }: CalendarSidebarProps) {
   // Debug: verificar fecha actual
-  const today = new Date()
+  // const today = new Date()
   // Función personalizada para detectar el día de hoy usando zona horaria de Chile
   const isTodayCustom = (date: Date) => {
     // Obtener la fecha actual en Chile
@@ -137,7 +137,7 @@ export function CalendarSidebar({
             const isSelectedDate = isSameDay(day, selectedDate)
             // Debug: mostrar información del día actual
             if (isTodayDate) {
-              , 'isToday:', isTodayDate)
+              console.log('Day:', day, 'isToday:', isTodayDate)
             }
             return (
               <Button

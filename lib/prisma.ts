@@ -11,7 +11,7 @@ if (process.env.NODE_ENV === 'production') {
     log: ['error'],
     datasources: {
       db: {
-        url: process.env.DATABASE_URL
+        url: process.env.DATABASE_URL!
       }
     }
   })
