@@ -18,6 +18,7 @@
     "pre-commit": "npm run check-all",
     "db:seed": "node scripts/seed.js",
     "db:push": "prisma db push",
+    "setup": "node scripts/quick-setup.js",
     "db:generate": "prisma generate",
     "db:deploy": "prisma db push --accept-data-loss",
     "setup:prod": "node scripts/setup-production.js",

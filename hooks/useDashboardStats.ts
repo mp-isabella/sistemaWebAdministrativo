@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface DashboardStats {
   overview: {
@@ -36,37 +36,54 @@ export function useDashboardStats() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch('/api/dashboard/stats');
-
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setStats(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Dashboard estático sin consultas a la base de datos
+  const getEmptyStats = (): DashboardStats => ({
+    overview: {
+      totalJobs: 0,
+      activeJobs: 0,
+      completedJobs: 0,
+      totalClients: 0,
+      totalWorkers: 0,
+      totalQuotes: 0,
+      totalReports: 0,
+      totalRevenue: "$0"
+    },
+    today: {
+      count: 0,
+      jobs: []
+    },
+    status: {
+      pending: 0,
+      inProgress: 0,
+      completed: 0,
+      cancelled: 0
+    },
+    trends: {
+      jobsTrend: 0,
+      isPositive: false
+    },
+    recentActivity: [],
+    lastUpdated: new Date().toISOString()
+  });
 
   useEffect(() => {
-    fetchStats();
+    // Simular carga rápida y mostrar datos vacíos
+    const timer = setTimeout(() => {
+      setStats(getEmptyStats());
+      setLoading(false);
+      setError(null);
+    }, 500);
 
-    // Actualizar estadísticas cada 5 minutos
-    const interval = setInterval(fetchStats, 5 * 60 * 1000);
-
-    return () => clearInterval(interval);
+    return () => clearTimeout(timer);
   }, []);
 
   const retry = () => {
-    fetchStats();
+    setLoading(true);
+    setTimeout(() => {
+      setStats(getEmptyStats());
+      setLoading(false);
+      setError(null);
+    }, 500);
   };
 
   return {
@@ -74,6 +91,6 @@ export function useDashboardStats() {
     loading,
     error,
     retry,
-    refetch: fetchStats
+    refetch: retry
   };
 }

@@ -82,6 +82,9 @@ const nextConfig = {
 
     // Mejorar el rendimiento de las imágenes
     scrollRestoration: true,
+
+    // Optimizar conexiones de base de datos
+    serverComponentsExternalPackages: ['@prisma/client'],
   },
 
   // Configuración de headers para mejor caching de imágenes

@@ -1,7 +1,7 @@
 "use client";
 
-import SimpleDashboard from "@/components/dashboard/simple-dashboard";
+import EmptyDashboard from "@/components/dashboard/empty-dashboard";
 
 export default function DashboardPage() {
-  return <SimpleDashboard />;
+  return <EmptyDashboard />;
 }
