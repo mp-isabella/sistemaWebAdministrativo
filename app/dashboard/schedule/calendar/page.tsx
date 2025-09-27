@@ -1618,6 +1618,12 @@ export default function CalendarPage() {
 
   return (
     <div className="calendar-mobile-container flex flex-col lg:flex-row min-h-screen">
+      {/* Debug Info - Visible en producción para verificar */}
+      <div className="bg-red-100 border-l-4 border-red-500 p-2 m-2 text-xs">
+        🔍 DEBUG: Usuario: {userRole} | CanViewAllJobs: {canViewAllJobs() ? 'SÍ' : 'NO'} | 
+        Timestamp: {new Date().toLocaleTimeString()}
+      </div>
+      
       {/* Overlay para cerrar menú móvil */}
       {isMobileMenuOpen && (
         <div
