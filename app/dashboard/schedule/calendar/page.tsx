@@ -75,7 +75,9 @@ export default function CalendarPage() {
   // Funciones para verificar permisos según el rol
 
   const canViewAllJobs = () => {
-    return ['administrador', 'secretaria'].includes(userRole)
+    const canView = ['administrador', 'secretaria'].includes(userRole)
+    console.log('🔍 Debug canViewAllJobs:', { userRole, canView })
+    return canView
   }
 
   const canEditJobs = (jobId?: string) => {
@@ -2181,6 +2183,7 @@ export default function CalendarPage() {
                   </th>
                   {canViewAllJobs() && (
                     <th className="p-2 md:p-3 text-center text-xs md:text-sm font-semibold text-slate-700 border-r border-slate-200 bg-orange-50 min-w-20">
+                      {console.log('🔍 Debug: Renderizando columna Sin Asignar')}
                       {/* Vista desktop */}
                       <div className="hidden md:block">
                         Sin Asignar
