@@ -418,6 +418,17 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
         }
       }
 
+      // Validar que todos los campos requeridos estén presentes
+      if (!formData.companyId) {
+        setErrors({ companyId: "Debe seleccionar una empresa" });
+        return;
+      }
+
+      if (!formData.serviceId && !formData.serviceName) {
+        setErrors({ serviceId: "Debe seleccionar un servicio" });
+        return;
+      }
+
       // Preparar datos para envío
       const submitData = {
         ...formData,
@@ -425,9 +436,7 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
         title: formData.serviceName, // Usar el nombre del servicio como título
         technicianId: formData.assignedToId !== "tecnico-generico" ? formData.assignedToId : null,
         totalBudget: formData.totalBudget ? Number(formData.totalBudget) : null,
-        // Asegurar que companyId esté presente
-        companyId: formData.companyId || "sin-empresa",
-        // Asegurar que scheduledAt se envíe correctamente
+        companyId: formData.companyId,
         scheduledAt: formData.scheduledAt ? formData.scheduledAt.toISOString() : null,
       };
 
