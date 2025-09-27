@@ -1,7 +1,7 @@
 import { setupVercelDatabase } from "@/scripts/setup-vercel-database";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
     try {
         console.log('🚀 Iniciando configuración de base de datos en Vercel...');
 
