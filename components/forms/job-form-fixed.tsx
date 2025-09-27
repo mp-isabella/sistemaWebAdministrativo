@@ -54,13 +54,8 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
     "Video inspección de ductos"
   ], [])
 
-  // Empresas disponibles
-  const availableCompanies = useMemo(() => [
-    { id: "sin-empresa", name: "Sin empresa" },
-    { id: "company-amestica-001", name: "Amestica Ltda" },
-    { id: "company-multifugas-001", name: "Multifugas" },
-    { id: "company-servifugas-001", name: "Servifugas" }
-  ], [])
+  // Estado para empresas cargadas desde la base de datos
+  const [availableCompanies, setAvailableCompanies] = useState<any[]>([])
 
   // Estado para el formulario de cliente nuevo
   const [showNewClientForm, setShowNewClientForm] = useState(false)
@@ -171,13 +166,15 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
 
     try {
       // Cargar en paralelo para mayor velocidad
-      const [clientsRes, techniciansRes] = await Promise.all([
+      const [clientsRes, techniciansRes, companiesRes] = await Promise.all([
         fetch("/api/clients").catch(() => ({ ok: false, json: () => Promise.resolve([]) })),
-        fetch("/api/workers/technicians").catch(() => ({ ok: false, json: () => Promise.resolve([]) }))
+        fetch("/api/workers/technicians").catch(() => ({ ok: false, json: () => Promise.resolve([]) })),
+        fetch("/api/companies").catch(() => ({ ok: false, json: () => Promise.resolve([]) }))
       ])
 
       const clientsData = await clientsRes.json()
       const techniciansData = await techniciansRes.json()
+      const companiesData = await companiesRes.json()
 
       // Filtrar solo clientes activos para agendamiento
       const activeClients = (clientsData || []).filter((client: any) => client.status === 'active');
@@ -253,6 +250,9 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
 
       // Log para debugging
       setTechnicians(filteredTechnicians);
+
+      // Procesar empresas
+      setAvailableCompanies(companiesData || []);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
