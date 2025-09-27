@@ -30,8 +30,8 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
     clientId: "",
     serviceName: "",
     serviceId: "",
-    companyId: "none",
-    assignedToId: "tecnico-generico",
+    companyId: "",
+    assignedToId: "sin-asignar",
     scheduledAt: null as Date | null,
     startTime: "",
     endTime: "",
@@ -146,8 +146,8 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
         clientId: "",
         serviceName: "",
         serviceId: "",
-        companyId: "none",
-        assignedToId: "tecnico-generico",
+        companyId: "",
+        assignedToId: "sin-asignar",
         scheduledAt: null,
         startTime: "",
         endTime: "",
@@ -248,8 +248,14 @@ export default function JobForm({ job, onSubmit, onCancel, loading = false }: Jo
         );
       });
 
+      // Agregar opción "Sin asignar" al inicio de la lista de técnicos
+      const techniciansWithNone = [
+        { id: "sin-asignar", name: "Sin asignar", role: { name: "SIN_ASIGNAR" } },
+        ...filteredTechnicians
+      ];
+
       // Log para debugging
-      setTechnicians(filteredTechnicians);
+      setTechnicians(techniciansWithNone);
 
       // Procesar empresas - agregar opción "Sin empresa" al inicio
       const companiesWithNone = [
