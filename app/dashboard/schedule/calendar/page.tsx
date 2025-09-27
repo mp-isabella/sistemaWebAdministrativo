@@ -2183,7 +2183,6 @@ export default function CalendarPage() {
                   </th>
                   {canViewAllJobs() && (
                     <th className="p-2 md:p-3 text-center text-xs md:text-sm font-semibold text-slate-700 border-r border-slate-200 bg-orange-50 min-w-20">
-                      {console.log('🔍 Debug: Renderizando columna Sin Asignar')}
                       {/* Vista desktop */}
                       <div className="hidden md:block">
                         Sin Asignar
