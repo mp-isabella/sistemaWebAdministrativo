@@ -6,6 +6,21 @@ const globalForPrisma = globalThis as unknown as {
 
 // Configuración optimizada para evitar conflictos de prepared statements
 const createPrismaClient = () => {
+  // Verificar si estamos en build time
+  const isBuildTime = process.env.NODE_ENV === 'production' && 
+                     process.env.SKIP_ENV_VALIDATION === 'true';
+  
+  if (isBuildTime) {
+    console.log('⚠️ Build time detected - using dummy Prisma client');
+    return new PrismaClient({
+      datasources: {
+        db: {
+          url: 'postgresql://dummy:dummy@localhost:5432/dummy'
+        }
+      }
+    });
+  }
+  
   return new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     datasources: {
