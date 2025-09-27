@@ -21,8 +21,15 @@ export const authOptions: NextAuthOptions = {
         const email = credentials.email.trim().toLowerCase();
 
         try {
-          // Verificar conexión a la base de datos
-          await prisma.$connect();
+          // Verificar conexión a la base de datos con manejo de errores mejorado
+          try {
+            await prisma.$connect();
+          } catch (connectError) {
+            console.error('❌ Error de conexión a la base de datos:', connectError);
+            // Intentar reconectar
+            await prisma.$disconnect();
+            await prisma.$connect();
+          }
 
           const user = await prisma.user.findUnique({
             where: { email },

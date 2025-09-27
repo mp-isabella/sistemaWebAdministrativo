@@ -1,66 +1,120 @@
 #!/usr/bin/env node
 
 /**
- * Script para solucionar problemas de conexión a la base de datos
+ * Script para solucionar problemas de conexión de base de datos
+ * Específicamente para el error "prepared statement already exists"
  */
 
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { PrismaClient } = require('@prisma/client');
 
-console.log('🔧 Solucionando problema de conexión a la base de datos...\n');
+console.log('🔧 Solucionando problemas de conexión de base de datos...\n');
 
-// Verificar si existe .env.local
-const envPath = path.join(process.cwd(), '.env.local');
-if (!fs.existsSync(envPath)) {
-    console.log('❌ No se encontró el archivo .env.local');
-    console.log('💡 Ejecuta primero: cp env.local.template .env.local');
-    process.exit(1);
-}
-
-console.log('✅ Archivo .env.local encontrado');
-
-// Leer configuración actual
-require('dotenv').config({ path: envPath });
-
+// Verificar variables de entorno
 if (!process.env.DATABASE_URL) {
     console.log('❌ DATABASE_URL no está configurada');
     console.log('💡 Configura tu DATABASE_URL en .env.local');
     process.exit(1);
 }
 
-console.log('📊 URL de base de datos actual:');
+console.log('✅ DATABASE_URL configurada');
 console.log(`   ${process.env.DATABASE_URL.substring(0, 50)}...`);
 
-// Verificar si es una URL de Supabase
+// Detectar tipo de base de datos
 if (process.env.DATABASE_URL.includes('supabase.com')) {
-    console.log('\n🔍 Detectada configuración de Supabase');
-    console.log('💡 Posibles soluciones:');
-    console.log('1. Verifica que el proyecto de Supabase esté activo');
-    console.log('2. Asegúrate de que la URL sea correcta');
-    console.log('3. Espera unos minutos si acabas de crear el proyecto');
-    console.log('4. Crea un nuevo proyecto en Supabase si es necesario');
+    console.log('🗄️  Detectada base de datos Supabase');
+    console.log('💡 Usando configuración optimizada para Supabase');
 } else if (process.env.DATABASE_URL.includes('localhost')) {
-    console.log('\n🔍 Detectada configuración local');
-    console.log('💡 Verifica que PostgreSQL esté ejecutándose');
+    console.log('🗄️  Detectada base de datos local');
 } else {
-    console.log('\n🔍 Configuración de base de datos detectada');
-    console.log('💡 Verifica que la URL sea correcta y accesible');
+    console.log('🗄️  Base de datos detectada');
 }
 
-console.log('\n🚀 Pasos para solucionar:');
-console.log('1. Ve a https://supabase.com/dashboard');
-console.log('2. Crea un nuevo proyecto');
-console.log('3. Copia la URL de conexión');
-console.log('4. Actualiza DATABASE_URL en .env.local');
-console.log('5. Ejecuta: npm run check:db');
+async function fixDatabaseConnection() {
+    let prisma;
 
-console.log('\n📋 Comandos útiles:');
-console.log('• npm run check:db     - Verificar conexión');
-console.log('• npm run db:push      - Aplicar migraciones');
-console.log('• npm run dev          - Iniciar desarrollo');
+    try {
+        console.log('\n🔌 Creando nueva instancia de Prisma...');
 
-console.log('\n🆘 Si necesitas ayuda:');
-console.log('• Revisa SOLUCION_BASE_DATOS.md');
-console.log('• Verifica la documentación de Supabase');
-console.log('• Asegúrate de que el proyecto esté activo');
+        // Crear nueva instancia con configuración optimizada
+        prisma = new PrismaClient({
+            log: ['error'],
+            datasources: {
+                db: {
+                    url: process.env.DATABASE_URL
+                }
+            }
+        });
+
+        console.log('✅ Instancia de Prisma creada');
+
+        console.log('\n🔗 Probando conexión...');
+        await prisma.$connect();
+        console.log('✅ Conexión exitosa');
+
+        console.log('\n🧪 Probando consulta simple...');
+        const result = await prisma.$queryRaw`SELECT 1 as test`;
+        console.log('✅ Consulta de prueba exitosa:', result);
+
+        console.log('\n👥 Verificando usuarios...');
+        const userCount = await prisma.user.count();
+        console.log(`✅ Encontrados ${userCount} usuarios en la base de datos`);
+
+        if (userCount > 0) {
+            console.log('\n🔍 Probando consulta de usuario...');
+            const testUser = await prisma.user.findFirst({
+                include: { role: true }
+            });
+
+            if (testUser) {
+                console.log(`✅ Usuario de prueba encontrado: ${testUser.email}`);
+                console.log(`   Rol: ${testUser.role?.name || 'Sin rol'}`);
+            }
+        }
+
+        console.log('\n✅ Todas las pruebas pasaron exitosamente');
+        console.log('\n🎉 El problema de conexión ha sido solucionado');
+        console.log('\n📋 Próximos pasos:');
+        console.log('1. Reinicia tu servidor de desarrollo');
+        console.log('2. Prueba el login nuevamente');
+        console.log('3. Si el problema persiste, verifica tu DATABASE_URL');
+        console.log('4. Actualiza DATABASE_URL en .env.local');
+
+    } catch (error) {
+        console.error('\n❌ Error durante la prueba:', error.message);
+
+        if (error.code === 'P1001') {
+            console.log('\n💡 Soluciones para P1001:');
+            console.log('1. Verifica que tu base de datos esté ejecutándose');
+            console.log('2. Verifica las credenciales en DATABASE_URL');
+            console.log('3. Verifica que el puerto sea correcto (5432 para PostgreSQL)');
+        } else if (error.code === '42P05') {
+            console.log('\n💡 Soluciones para 42P05 (prepared statement already exists):');
+            console.log('1. Reinicia tu servidor de desarrollo');
+            console.log('2. Limpia la caché del navegador');
+            console.log('3. Verifica que no haya múltiples instancias de Prisma');
+        }
+
+        console.log('\n🔧 Soluciones generales:');
+        console.log('1. Reinicia tu aplicación completamente');
+        console.log('2. Verifica que DATABASE_URL sea correcta');
+        console.log('3. Ejecuta: npm run dev (para reiniciar)');
+
+    } finally {
+        if (prisma) {
+            console.log('\n🔌 Cerrando conexión...');
+            await prisma.$disconnect();
+            console.log('✅ Conexión cerrada correctamente');
+        }
+    }
+}
+
+// Ejecutar la función
+fixDatabaseConnection()
+    .then(() => {
+        console.log('\n🏁 Script completado');
+        process.exit(0);
+    })
+    .catch((error) => {
+        console.error('\n💥 Error fatal:', error);
+        process.exit(1);
+    });

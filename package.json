@@ -30,6 +30,8 @@
     "setup:local-simple": "node scripts/setup-local-simple.js",
     "check:db": "node scripts/check-database-connection.js",
     "fix:db": "node scripts/fix-database-connection.js",
+    "clear:connections": "node scripts/clear-database-connections.js",
+    "verify:login-fix": "node scripts/verify-login-fix.js",
     "reset:db": "node scripts/reset-database.js",
     "create:tables": "node scripts/create-tables-manual.js",
     "create:admin": "node scripts/create-admin-user.js",

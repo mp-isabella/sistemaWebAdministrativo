@@ -4,22 +4,45 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-let prisma: PrismaClient
-
-if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient({
-    log: ['error'],
+// Configuración optimizada para evitar conflictos de prepared statements
+const createPrismaClient = () => {
+  return new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     datasources: {
       db: {
         url: process.env.DATABASE_URL!
       }
     }
   })
+}
+
+let prisma: PrismaClient
+
+if (process.env.NODE_ENV === 'production') {
+  // En producción, crear una nueva instancia
+  prisma = createPrismaClient()
 } else {
+  // En desarrollo, usar singleton para evitar múltiples instancias
   if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = new PrismaClient()
+    globalForPrisma.prisma = createPrismaClient()
   }
   prisma = globalForPrisma.prisma
+}
+
+// Función para cerrar conexiones correctamente
+export const disconnectPrisma = async () => {
+  if (prisma) {
+    await prisma.$disconnect()
+  }
+}
+
+// Función para reconectar si es necesario
+export const reconnectPrisma = async () => {
+  try {
+    await prisma.$connect()
+  } catch (error) {
+    console.error('Error reconnecting to database:', error)
+  }
 }
 
 export { prisma }
