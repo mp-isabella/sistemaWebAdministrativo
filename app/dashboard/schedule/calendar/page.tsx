@@ -72,6 +72,14 @@ export default function CalendarPage() {
   const currentUser = session?.user as any
   const userRole = currentUser?.role?.toLowerCase() || 'tecnico'
 
+  // Debug del usuario y rol
+  console.log('🔍 Debug Usuario:', {
+    currentUser,
+    userRole,
+    session: session?.user,
+    canViewAllJobs: ['administrador', 'secretaria'].includes(userRole)
+  })
+
   // Funciones para verificar permisos según el rol
 
   const canViewAllJobs = () => {
