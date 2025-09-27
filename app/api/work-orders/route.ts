@@ -1,5 +1,6 @@
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { hasRolePermission } from "@/lib/role-normalizer"
 import { getServerSession } from "next-auth/next"
 import { NextRequest, NextResponse } from "next/server"
 
@@ -79,8 +80,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    // Permitir que admin, secretaria y técnicos creen órdenes de trabajo
-    if (!["admin", "secretaria", "tecnico"].includes((session.user as any).role.toLowerCase())) {
+    // Verificar permisos usando el sistema unificado
+    const userRole = (session.user as any).role;
+    if (!hasRolePermission(userRole, 'create', 'work-orders')) {
       return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
     }
 

@@ -1,5 +1,6 @@
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { hasRolePermission } from "@/lib/role-normalizer"
 import bcrypt from "bcryptjs"
 import { getServerSession } from "next-auth/next"
 import { NextRequest, NextResponse } from "next/server"
@@ -75,9 +76,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    // Solo administrador puede crear trabajadores
-    const userRole = (session.user as any).role?.toLowerCase();
-    if (!['admin', 'administrador'].includes(userRole)) {
+    // Verificar permisos usando el sistema unificado
+    const userRole = (session.user as any).role;
+    if (!hasRolePermission(userRole, 'create', 'workers')) {
       return NextResponse.json({ error: "Solo administradores pueden crear trabajadores" }, { status: 403 })
     }
 

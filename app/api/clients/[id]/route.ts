@@ -1,5 +1,6 @@
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { canUserPerformAction } from '@/lib/role-utils'
 import { getServerSession } from "next-auth/next"
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -75,9 +76,9 @@ export async function PUT(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    // Verificar permisos (admin o secretaria)
+    // Verificar permisos usando el sistema unificado
     const userRole = (session.user as any).role;
-    if (!['admin', 'administrador', 'ADMINISTRADOR', 'secretaria', 'SECRETARIA'].includes(userRole)) {
+    if (!canUserPerformAction(userRole, 'update', 'clients')) {
       return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
     }
 
@@ -172,9 +173,9 @@ export async function PATCH(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    // Verificar permisos (admin o secretaria)
+    // Verificar permisos usando el sistema unificado
     const userRole = (session.user as any).role;
-    if (!['admin', 'administrador', 'ADMINISTRADOR', 'secretaria', 'SECRETARIA'].includes(userRole)) {
+    if (!canUserPerformAction(userRole, 'update', 'clients')) {
       return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
     }
 
