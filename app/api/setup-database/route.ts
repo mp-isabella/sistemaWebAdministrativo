@@ -1,11 +1,18 @@
-import { setupVercelDatabase } from "@/scripts/setup-vercel-database";
+import { execSync } from 'child_process';
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(_request: NextRequest) {
     try {
-        console.log('🚀 Iniciando configuración de base de datos en Vercel...');
+        console.log('🚀 Iniciando configuración de base de datos...');
 
-        await setupVercelDatabase();
+        // Ejecutar script de configuración
+        execSync('node scripts/setup-database-simple.js', {
+            stdio: 'inherit',
+            env: {
+                ...process.env,
+                DATABASE_URL: process.env.DATABASE_URL || 'postgresql://postgres.rwsqkirgxsxrpjepjhtr:amesticaportal@aws-1-us-east-2.pooler.supabase.com:6543/postgres'
+            }
+        });
 
         return NextResponse.json({
             success: true,
