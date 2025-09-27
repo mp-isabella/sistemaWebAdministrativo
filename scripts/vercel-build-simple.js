@@ -37,7 +37,7 @@ try {
     console.log('🔧 Setting up database directly...');
     try {
         const { execSync } = require('child_process');
-        execSync('node scripts/setup-database-simple.js', {
+        execSync('node scripts/setup-database-final.js', {
             stdio: 'inherit',
             env: {
                 ...process.env,

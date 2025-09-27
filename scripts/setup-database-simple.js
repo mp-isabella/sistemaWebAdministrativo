@@ -5,10 +5,15 @@ const { PrismaClient } = require('@prisma/client');
 console.log('🚀 Configurando base de datos...');
 
 async function setupDatabase() {
+    // Forzar uso de URL real de Supabase
+    const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres.rwsqkirgxsxrpjepjhtr:amesticaportal@aws-1-us-east-2.pooler.supabase.com:6543/postgres';
+
+    console.log('🔗 Using database URL:', databaseUrl.includes('supabase') ? 'Supabase' : 'Custom');
+
     const prisma = new PrismaClient({
         datasources: {
             db: {
-                url: process.env.DATABASE_URL || 'postgresql://postgres.rwsqkirgxsxrpjepjhtr:amesticaportal@aws-1-us-east-2.pooler.supabase.com:6543/postgres'
+                url: databaseUrl
             }
         }
     });
@@ -17,66 +22,61 @@ async function setupDatabase() {
         console.log('📋 Creando roles...');
 
         // Crear roles
-        await prisma.role.upsert({
-            where: { name: 'administrador' },
-            update: {},
-            create: { name: 'administrador' }
-        });
+        let adminRole = await prisma.role.findFirst({ where: { name: 'administrador' } });
+        if (!adminRole) {
+            adminRole = await prisma.role.create({ data: { name: 'administrador' } });
+        }
 
-        await prisma.role.upsert({
-            where: { name: 'secretaria' },
-            update: {},
-            create: { name: 'secretaria' }
-        });
+        let secretariaRole = await prisma.role.findFirst({ where: { name: 'secretaria' } });
+        if (!secretariaRole) {
+            secretariaRole = await prisma.role.create({ data: { name: 'secretaria' } });
+        }
 
-        await prisma.role.upsert({
-            where: { name: 'tecnico' },
-            update: {},
-            create: { name: 'tecnico' }
-        });
+        let tecnicoRole = await prisma.role.findFirst({ where: { name: 'tecnico' } });
+        if (!tecnicoRole) {
+            tecnicoRole = await prisma.role.create({ data: { name: 'tecnico' } });
+        }
 
         console.log('🏢 Creando empresas...');
 
         // Crear empresas
-        const amestica = await prisma.company.upsert({
-            where: { name: 'Amestica Ltda' },
-            update: {},
-            create: {
-                name: 'Amestica Ltda',
-                address: 'Dirección Amestica',
-                phone: '+56 9 1234 5678',
-                email: 'contacto@amestica.cl'
-            }
-        });
+        let amestica = await prisma.company.findFirst({ where: { name: 'Amestica Ltda' } });
+        if (!amestica) {
+            amestica = await prisma.company.create({
+                data: {
+                    name: 'Amestica Ltda',
+                    address: 'Dirección Amestica',
+                    phone: '+56 9 1234 5678',
+                    email: 'contacto@amestica.cl'
+                }
+            });
+        }
 
-        const multifugas = await prisma.company.upsert({
-            where: { name: 'Multifugas' },
-            update: {},
-            create: {
-                name: 'Multifugas',
-                address: 'Dirección Multifugas',
-                phone: '+56 9 8765 4321',
-                email: 'contacto@multifugas.cl'
-            }
-        });
+        let multifugas = await prisma.company.findFirst({ where: { name: 'Multifugas' } });
+        if (!multifugas) {
+            multifugas = await prisma.company.create({
+                data: {
+                    name: 'Multifugas',
+                    address: 'Dirección Multifugas',
+                    phone: '+56 9 8765 4321',
+                    email: 'contacto@multifugas.cl'
+                }
+            });
+        }
 
-        const servifugas = await prisma.company.upsert({
-            where: { name: 'Servifugas' },
-            update: {},
-            create: {
-                name: 'Servifugas',
-                address: 'Dirección Servifugas',
-                phone: '+56 9 1122 3344',
-                email: 'contacto@servifugas.cl'
-            }
-        });
+        let servifugas = await prisma.company.findFirst({ where: { name: 'Servifugas' } });
+        if (!servifugas) {
+            servifugas = await prisma.company.create({
+                data: {
+                    name: 'Servifugas',
+                    address: 'Dirección Servifugas',
+                    phone: '+56 9 1122 3344',
+                    email: 'contacto@servifugas.cl'
+                }
+            });
+        }
 
         console.log('👤 Creando usuarios...');
-
-        // Obtener roles
-        const adminRole = await prisma.role.findUnique({ where: { name: 'administrador' } });
-        const secretariaRole = await prisma.role.findUnique({ where: { name: 'secretaria' } });
-        const tecnicoRole = await prisma.role.findUnique({ where: { name: 'tecnico' } });
 
         // Crear usuarios
         await prisma.user.upsert({
